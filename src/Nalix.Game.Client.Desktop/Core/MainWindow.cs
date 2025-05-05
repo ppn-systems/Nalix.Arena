@@ -107,6 +107,7 @@ internal class MainWindow : IDisposable
     {
         _window.Closed += (_, _) => _window.Close();
         _window.KeyPressed += OnKeyPressed;
+        _window.MouseButtonPressed += OnMouseButtonPressed;
     }
 
     private Text CreateText(Vector2f position, Color color)
@@ -136,6 +137,17 @@ internal class MainWindow : IDisposable
         }
     }
 
+    // Xử lý sự kiện nhấn chuột
+    private void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
+    {
+        switch (e.Button)
+        {
+            default:
+                SceneManager.Current.HandleMouseInput(e);
+                break;
+        }
+    }
+
     private void UpdateDebugMetrics(float deltaTime)
     {
         _frameCount++;
@@ -161,6 +173,7 @@ internal class MainWindow : IDisposable
         // Properly dispose of resources and detach events
         _window.Closed -= (_, _) => _window.Close();
         _window.KeyPressed -= OnKeyPressed;
+        _window.MouseButtonPressed -= OnMouseButtonPressed;
 
         _window.Dispose();
         _font.Dispose();

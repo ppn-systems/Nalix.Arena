@@ -10,4 +10,6 @@ internal interface IScene
     void Draw(RenderWindow window);
 
     void HandleInput(KeyEventArgs e);
+
+    void HandleMouseInput(MouseButtonEventArgs e);
 }

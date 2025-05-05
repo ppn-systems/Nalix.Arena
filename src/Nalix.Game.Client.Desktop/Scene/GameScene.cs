@@ -19,4 +19,8 @@ internal class GameScene : IScene
     {
         // Handle key press events
     }
+
+    public void HandleMouseInput(MouseButtonEventArgs e)
+    {
+    }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Nalix.Game.Client.Desktop.Content
 {
-    internal class AudioManager
+    internal class FontPath
     {
     }
 }

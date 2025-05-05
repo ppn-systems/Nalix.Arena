@@ -42,4 +42,12 @@ internal class MainMenuScene : IScene
             SceneManager.SwitchTo(new GameScene());
         }
     }
+
+    public void HandleMouseInput(MouseButtonEventArgs e)
+    {
+        if (e.Button == Mouse.Button.Left)
+        {
+            SceneManager.SwitchTo(new GameScene());
+        }
+    }
 }
