@@ -1,49 +1,172 @@
-﻿using SFML.Graphics;
+﻿using Nalix.Game.Client.Desktop.Scene;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
 
-namespace Nalix.Game.Client.Desktop;
-
-internal class Window
+internal class Window : IDisposable
 {
+    #region Constants
+
+    private const uint FontSize = 14;
+    private const uint FpsLimit = 60;
+    private const int WindowWidth = 1280;
+    private const int WindowHeight = 720;
+    private const string WindowTitle = "Nalix";
+
+    #endregion Constants
+
+    #region Fields
+
+    private readonly Font _font;
     private readonly Clock _clock;
+    private readonly Text _fpsText;
+    private readonly Text _debugText;
     private readonly GameScene _scene;
     private readonly RenderWindow _window;
 
+    private int _frameCount = 0;
+    private float _currentFps = 0f;
+    private float _fpsUpdateTimer = 0f;
+    private bool _showDebugInfo = true;
+
+    #endregion Fields
+
+    #region Constructor
+
     public Window()
     {
-        // Initialize the window here if needed
-        VideoMode mode = new(1280, 720); // HD resolution
+        _clock = new Clock();
+        _scene = new GameScene();
+        _font = new Font("assets/fonts/JetBrainsMono.ttf");
 
-        _clock = new Clock(); // Initialize the clock for delta time calculation
-        _scene = new GameScene(); // Initialize your game scene here
-        _window = new RenderWindow(mode, "Nalix");
+        // Initialize window
+        _window = Initialize();
+        this.AttachWindowEvents();
 
-        _window.SetFramerateLimit(60); // ✅ Limit FPS to 60
+        // Initialize debug text elements
+        _fpsText = CreateText(new Vector2f(10, 10), Color.Yellow);
+        _debugText = CreateText(new Vector2f(10, 30), Color.Green);
 
-        _window.Closed += (_, _) => _window.Close();
-        _window.KeyPressed += (_, e) =>
-        {
-            if (e.Code == Keyboard.Key.Escape)
-                _window.Close();
-            else
-                _scene.HandleInput(e);
-        };
+        SceneManager.SwitchTo(new MainMenuScene());
     }
+
+    #endregion Constructor
 
     public void GameLoop()
     {
-        // Game loop
+        const float frameTime = 1f / 60f; // Fixed time step for update logic
+        float accumulator = 0f;
+
         while (_window.IsOpen)
         {
+            float deltaTime = _clock.Restart().AsSeconds();
+            accumulator += deltaTime;
+
             _window.DispatchEvents();
 
-            // precise delta time
-            _scene.Update(_clock.Restart().AsSeconds());
+            // Update game logic with fixed time step
+            while (accumulator >= frameTime)
+            {
+                _scene.Update(frameTime);
+                accumulator -= frameTime;
+            }
 
-            // TODO: draw game here
-            _scene.Draw(_window);
-            _window.Display();
+            // Only update debug information when debug info is enabled
+            if (_showDebugInfo) this.UpdateDebugMetrics(deltaTime);
+
+            this.Render();
         }
     }
+
+    #region Private Methods
+
+    private static RenderWindow Initialize()
+    {
+        VideoMode mode = new(WindowWidth, WindowHeight); // HD resolution
+        RenderWindow window = new(mode, WindowTitle, Styles.Titlebar | Styles.Close);
+
+        window.SetFramerateLimit(FpsLimit);
+        window.SetVerticalSyncEnabled(true);
+        return window;
+    }
+
+    private void Render()
+    {
+        _window.Clear(Color.Black);
+        _scene.Draw(_window);
+
+        if (_showDebugInfo)
+        {
+            _window.Draw(_fpsText);
+            _window.Draw(_debugText);
+        }
+
+        _window.Display();
+    }
+
+    private void AttachWindowEvents()
+    {
+        _window.Closed += (_, _) => _window.Close();
+        _window.KeyPressed += OnKeyPressed;
+    }
+
+    private Text CreateText(Vector2f position, Color color)
+    {
+        return new Text("", _font, FontSize)
+        {
+            Position = position,
+            FillColor = color
+        };
+    }
+
+    private void OnKeyPressed(object sender, KeyEventArgs e)
+    {
+        switch (e.Code)
+        {
+            case Keyboard.Key.Escape:
+                _window.Close();
+                break;
+
+            case Keyboard.Key.F3:
+                _showDebugInfo = !_showDebugInfo;
+                break;
+
+            default:
+                _scene.HandleInput(e);
+                break;
+        }
+    }
+
+    private void UpdateDebugMetrics(float deltaTime)
+    {
+        _frameCount++;
+        _fpsUpdateTimer += deltaTime;
+
+        if (_fpsUpdateTimer >= 1.0f)
+        {
+            _currentFps = _frameCount / _fpsUpdateTimer;
+            _frameCount = 0;
+            _fpsUpdateTimer = 0f;
+
+            _fpsText.DisplayedString = $"FPS: {_currentFps:0}";
+            _debugText.DisplayedString = $"F3: Debug | Memory: {GC.GetTotalMemory(false) / 1024} KB";
+        }
+    }
+
+    #endregion Private Methods
+
+    #region Disposable
+
+    public void Dispose()
+    {
+        // Properly dispose of resources and detach events
+        _window.Closed -= (_, _) => _window.Close();
+        _window.KeyPressed -= OnKeyPressed;
+
+        _window.Dispose();
+        _font.Dispose();
+    }
+
+    #endregion Disposable
 }

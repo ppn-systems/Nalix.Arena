@@ -1,9 +1,9 @@
 ﻿using SFML.Graphics;
 using SFML.Window;
 
-namespace Nalix.Game.Client.Desktop;
+namespace Nalix.Game.Client.Desktop.Scene;
 
-internal class GameScene
+internal class GameScene : IScene
 {
     public void Update(float deltaTime)
     {

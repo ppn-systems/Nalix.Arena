@@ -13,4 +13,11 @@
 	<PackageReference Include="SFML.Graphics" Version="2.6.1" />
   </ItemGroup>
 
+	<ItemGroup>
+		<Content Include="..\..\assets\**\*.*">
+			<Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>
