@@ -4,15 +4,15 @@ using SFML.System;
 using SFML.Window;
 using System;
 
-internal class Window : IDisposable
+internal class MainWindow : IDisposable
 {
     #region Constants
 
-    private const uint FontSize = 14;
-    private const uint FpsLimit = 60;
-    private const int WindowWidth = 1280;
-    private const int WindowHeight = 720;
-    private const string WindowTitle = "Nalix";
+    public const uint FontSize = 14;
+    public const uint FpsLimit = 60;
+    public const int WindowWidth = 1280;
+    public const int WindowHeight = 720;
+    public const string WindowTitle = "Nalix";
 
     #endregion Constants
 
@@ -22,7 +22,6 @@ internal class Window : IDisposable
     private readonly Clock _clock;
     private readonly Text _fpsText;
     private readonly Text _debugText;
-    private readonly GameScene _scene;
     private readonly RenderWindow _window;
 
     private int _frameCount = 0;
@@ -34,10 +33,9 @@ internal class Window : IDisposable
 
     #region Constructor
 
-    public Window()
+    public MainWindow()
     {
         _clock = new Clock();
-        _scene = new GameScene();
         _font = new Font("assets/fonts/JetBrainsMono.ttf");
 
         // Initialize window
@@ -68,7 +66,7 @@ internal class Window : IDisposable
             // Update game logic with fixed time step
             while (accumulator >= frameTime)
             {
-                _scene.Update(frameTime);
+                SceneManager.Current.Update(frameTime);
                 accumulator -= frameTime;
             }
 
@@ -94,7 +92,7 @@ internal class Window : IDisposable
     private void Render()
     {
         _window.Clear(Color.Black);
-        _scene.Draw(_window);
+        SceneManager.Current.Draw(_window);
 
         if (_showDebugInfo)
         {
@@ -133,7 +131,7 @@ internal class Window : IDisposable
                 break;
 
             default:
-                _scene.HandleInput(e);
+                SceneManager.Current.HandleInput(e);
                 break;
         }
     }

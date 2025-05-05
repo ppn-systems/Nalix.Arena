@@ -4,7 +4,7 @@ internal class Program
 {
     internal static void Main(string[] args)
     {
-        Window window = new();
+        MainWindow window = new();
         window.GameLoop();
     }
 }
