@@ -1,12 +1,10 @@
-﻿using System;
+﻿namespace Nalix.Game.Client.Desktop;
 
-namespace Nalix.Game.Client.Desktop
+internal class Program
 {
-    internal class Program
+    internal static void Main(string[] args)
     {
-        private static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
-        }
+        Window window = new();
+        window.GameLoop();
     }
 }
