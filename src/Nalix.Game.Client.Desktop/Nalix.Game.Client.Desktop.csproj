@@ -5,4 +5,12 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+	<PackageReference Include="SFML.Net" Version="2.6.1" />
+	<PackageReference Include="SFML.Audio" Version="2.6.1" />
+	<PackageReference Include="SFML.System" Version="2.6.1" />
+    <PackageReference Include="SFML.Window" Version="2.6.1" />
+	<PackageReference Include="SFML.Graphics" Version="2.6.1" />
+  </ItemGroup>
+
 </Project>

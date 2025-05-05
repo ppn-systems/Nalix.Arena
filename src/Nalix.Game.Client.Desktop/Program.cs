@@ -1,8 +1,10 @@
-﻿namespace Nalix.Game.Client.Desktop
+﻿using System;
+
+namespace Nalix.Game.Client.Desktop
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello, World!");
         }
