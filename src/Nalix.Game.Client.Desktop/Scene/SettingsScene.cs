@@ -4,14 +4,17 @@ using Nalix.Game.Client.Desktop.UI;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
 internal class SettingsScene : IScene
 {
     private readonly Sprite _background;
+    private readonly Sprite _settingsTable;
     private readonly Button _backButton;
+
+    private float _backDelayTimer = 0f;
+    private bool _isBackPressed = false;
 
     public SettingsScene()
     {
@@ -26,8 +29,38 @@ internal class SettingsScene : IScene
         float scaleY = (float)WindowHost.Height / texture.Size.Y;
         _background.Scale = new Vector2f(scaleX, scaleY);
 
+        // Create the settings image (position, size, etc.)
+        Texture sTexture = new(string.Format(TexturePath.UI, 3)); // Adjust texture path for settings image
+        Vector2f scale = new(5f, 5f);
+
+        _settingsTable = new Sprite(sTexture)
+        {
+            Scale = scale // Adjust the scale of the settings image
+        };
+
+        float posX = (WindowHost.Width - sTexture.Size.X * scale.X) / 2f;
+        float posY = (WindowHost.Height - sTexture.Size.Y * scale.Y) / 2f;
+
+        _settingsTable.Position = new Vector2f(posX, posY);
+
+        Vector2f tableSize = new(
+            _settingsTable.Texture.Size.X * _settingsTable.Scale.X,
+            _settingsTable.Texture.Size.Y * _settingsTable.Scale.Y
+        );
+
+        Vector2f buttonSize = new(
+            tableSize.X * 0.18f, // ví dụ: 18% chiều rộng bảng
+            tableSize.Y * 0.11f  // ví dụ: 11% chiều cao bảng
+        );
+
+        // Vị trí nút: góc dưới trái
+        Vector2f buttonPos = new(
+            _settingsTable.Position.X + tableSize.X * 0.15f,
+            _settingsTable.Position.Y + tableSize.Y - tableSize.Y * 0.2f
+        );
+
         // Create the back button (position, size, etc.)
-        _backButton = new Button("Back", FontAssets.Pixel, new Vector2f(500, 500), new Vector2f(300, 150))
+        _backButton = new Button("Back", FontAssets.Pixel, buttonPos, buttonSize)
         {
             OnClick = OnBackButtonClick  // Set the action when clicked
         };
@@ -37,34 +70,34 @@ internal class SettingsScene : IScene
     {
         // Draw the background and button
         window.Draw(_background);
+        window.Draw(_settingsTable);
         _backButton.Draw(window);
     }
 
     public void HandleInput(KeyEventArgs e)
     {
         // You can handle keyboard input here if needed (e.g., escape key for going back)
-        if (e.Code == Keyboard.Key.Escape)
-        {
-            OnBackButtonClick();  // Trigger the back action
-        }
+        if (e.Code == Keyboard.Key.B) OnBackButtonClick();
     }
 
-    public void HandleMouseInput(MouseButtonEventArgs e)
-    {
-        // Pass mouse input to the button
-        _backButton.HandleMouseClick(e);
-    }
-
+    // Handle mouse input for the back button
     public void Update(float deltaTime)
     {
         // You can update your scene elements here if needed (animations, etc.)
+        if (_isBackPressed)
+        {
+            _backDelayTimer += deltaTime;
+            if (_backDelayTimer >= 0.1f)
+            {
+                SceneHost.SwitchTo(new MainMenuScene());
+                _isBackPressed = false;
+            }
+        }
     }
 
+    // Handle mouse input for the back button
+    public void HandleMouseInput(MouseButtonEventArgs e) => _backButton.HandleMouseClick(e);
+
     // Action when the back button is clicked
-    private void OnBackButtonClick()
-    {
-        // Logic for going back (for example, switching to the main menu scene)
-        Console.WriteLine("Back button clicked!");
-        // You can add your logic here to change the scene, e.g., to the main menu scene
-    }
+    private void OnBackButtonClick() => _isBackPressed = true;
 }

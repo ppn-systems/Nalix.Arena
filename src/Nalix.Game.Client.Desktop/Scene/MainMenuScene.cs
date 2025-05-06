@@ -60,6 +60,10 @@ internal class MainMenuScene : IScene
 
     public void HandleInput(KeyEventArgs e)
     {
+        if (e.Code == Keyboard.Key.S)
+        {
+            SceneHost.SwitchTo(new SettingsScene()); // Chuyển sang scene Settings
+        }
     }
 
     public void HandleMouseInput(MouseButtonEventArgs e)
