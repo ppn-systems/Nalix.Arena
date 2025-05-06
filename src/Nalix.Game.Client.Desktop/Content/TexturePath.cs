@@ -3,5 +3,6 @@
 internal class TexturePath
 {
     public const string Assets = "assets/";
-    public const string Background = "assets/background/{0}.png";
+    public const string UI = Assets + "ui/{0}.png";
+    public const string Background = Assets + "background/{0}.png";
 }

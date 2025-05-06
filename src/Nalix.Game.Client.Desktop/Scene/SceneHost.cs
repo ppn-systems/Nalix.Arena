@@ -1,6 +1,6 @@
 ﻿namespace Nalix.Game.Client.Desktop.Scene;
 
-internal class SceneManager
+internal static class SceneHost
 {
     public static IScene Current { get; private set; }
 

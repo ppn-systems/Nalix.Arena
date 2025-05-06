@@ -4,14 +4,15 @@ using SFML.System;
 using SFML.Window;
 using System;
 
+namespace Nalix.Game.Client.Desktop.Core;
+
 internal class MainWindow : IDisposable
 {
     #region Constants
 
     public const uint FontSize = 14;
-    public const uint FpsLimit = 60;
-    public const int WindowWidth = 1280;
-    public const int WindowHeight = 720;
+    public const uint WindowWidth = 1280;
+    public const uint WindowHeight = 720;
     public const string WindowTitle = "Nalix";
 
     #endregion Constants
@@ -22,7 +23,6 @@ internal class MainWindow : IDisposable
     private readonly Clock _clock;
     private readonly Text _fpsText;
     private readonly Text _debugText;
-    private readonly RenderWindow _window;
 
     private int _frameCount = 0;
     private float _currentFps = 0f;
@@ -31,83 +31,58 @@ internal class MainWindow : IDisposable
 
     #endregion Fields
 
-    #region Constructor
-
     public MainWindow()
     {
         _clock = new Clock();
         _font = new Font("assets/fonts/JetBrainsMono.ttf");
 
-        // Initialize window
-        _window = Initialize();
-        this.AttachWindowEvents();
+        WindowHost.Initialize(WindowWidth, WindowHeight, WindowTitle);
+        WindowHost.AttachEvents(OnKeyPressed, OnMouseButtonPressed, (_, _) => WindowHost.Window.Close());
 
-        // Initialize debug text elements
         _fpsText = CreateText(new Vector2f(10, 10), Color.Yellow);
         _debugText = CreateText(new Vector2f(10, 30), Color.Green);
 
-        SceneManager.SwitchTo(new MainMenuScene());
+        SceneHost.SwitchTo(new MainMenuScene());
     }
-
-    #endregion Constructor
 
     public void GameLoop()
     {
-        const float frameTime = 1f / 60f; // Fixed time step for update logic
+        const float frameTime = 1f / 60f;
         float accumulator = 0f;
 
-        while (_window.IsOpen)
+        while (WindowHost.Window.IsOpen)
         {
             float deltaTime = _clock.Restart().AsSeconds();
             accumulator += deltaTime;
 
-            _window.DispatchEvents();
+            WindowHost.PollEvents();
 
-            // Update game logic with fixed time step
             while (accumulator >= frameTime)
             {
-                SceneManager.Current.Update(frameTime);
+                SceneHost.Current.Update(frameTime);
                 accumulator -= frameTime;
             }
 
-            // Only update debug information when debug info is enabled
-            if (_showDebugInfo) this.UpdateDebugMetrics(deltaTime);
+            if (_showDebugInfo)
+                this.UpdateDebugMetrics(deltaTime);
 
             this.Render();
         }
     }
 
-    #region Private Methods
-
-    private static RenderWindow Initialize()
-    {
-        VideoMode mode = new(WindowWidth, WindowHeight); // HD resolution
-        RenderWindow window = new(mode, WindowTitle, Styles.Titlebar | Styles.Close);
-
-        window.SetFramerateLimit(FpsLimit);
-        window.SetVerticalSyncEnabled(true);
-        return window;
-    }
-
     private void Render()
     {
-        _window.Clear(Color.Black);
-        SceneManager.Current.Draw(_window);
+        var window = WindowHost.Window;
+        window.Clear(Color.Black);
+        SceneHost.Current.Draw(window);
 
         if (_showDebugInfo)
         {
-            _window.Draw(_fpsText);
-            _window.Draw(_debugText);
+            window.Draw(_fpsText);
+            window.Draw(_debugText);
         }
 
-        _window.Display();
-    }
-
-    private void AttachWindowEvents()
-    {
-        _window.Closed += (_, _) => _window.Close();
-        _window.KeyPressed += OnKeyPressed;
-        _window.MouseButtonPressed += OnMouseButtonPressed;
+        window.Display();
     }
 
     private Text CreateText(Vector2f position, Color color)
@@ -124,7 +99,7 @@ internal class MainWindow : IDisposable
         switch (e.Code)
         {
             case Keyboard.Key.Escape:
-                _window.Close();
+                WindowHost.Window.Close();
                 break;
 
             case Keyboard.Key.F3:
@@ -132,20 +107,14 @@ internal class MainWindow : IDisposable
                 break;
 
             default:
-                SceneManager.Current.HandleInput(e);
+                SceneHost.Current.HandleInput(e);
                 break;
         }
     }
 
-    // Xử lý sự kiện nhấn chuột
     private void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
     {
-        switch (e.Button)
-        {
-            default:
-                SceneManager.Current.HandleMouseInput(e);
-                break;
-        }
+        SceneHost.Current.HandleMouseInput(e);
     }
 
     private void UpdateDebugMetrics(float deltaTime)
@@ -164,20 +133,9 @@ internal class MainWindow : IDisposable
         }
     }
 
-    #endregion Private Methods
-
-    #region Disposable
-
     public void Dispose()
     {
-        // Properly dispose of resources and detach events
-        _window.Closed -= (_, _) => _window.Close();
-        _window.KeyPressed -= OnKeyPressed;
-        _window.MouseButtonPressed -= OnMouseButtonPressed;
-
-        _window.Dispose();
+        WindowHost.Dispose();
         _font.Dispose();
     }
-
-    #endregion Disposable
 }

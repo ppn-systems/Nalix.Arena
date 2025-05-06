@@ -1,4 +1,6 @@
-﻿namespace Nalix.Game.Client.Desktop;
+﻿using Nalix.Game.Client.Desktop.Core;
+
+namespace Nalix.Game.Client.Desktop;
 
 internal class Program
 {
