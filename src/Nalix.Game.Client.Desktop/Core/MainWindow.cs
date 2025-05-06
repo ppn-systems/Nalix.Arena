@@ -1,4 +1,5 @@
 ﻿using Nalix.Game.Client.Desktop.Scene;
+using Nalix.Game.Client.Desktop.Utils;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -10,10 +11,12 @@ internal class MainWindow : IDisposable
 {
     #region Constants
 
+    public const string WindowTitle = "Nalix";
+
     public const uint FontSize = 14;
     public const uint WindowWidth = 1280;
     public const uint WindowHeight = 720;
-    public const string WindowTitle = "Nalix";
+    private const float FrameTime = 1f / 60f;
 
     #endregion Constants
 
@@ -23,10 +26,8 @@ internal class MainWindow : IDisposable
     private readonly Clock _clock;
     private readonly Text _fpsText;
     private readonly Text _debugText;
+    private readonly DebugContext _fpsCounter;
 
-    private int _frameCount = 0;
-    private float _currentFps = 0f;
-    private float _fpsUpdateTimer = 0f;
     private bool _showDebugInfo = true;
 
     #endregion Fields
@@ -34,37 +35,42 @@ internal class MainWindow : IDisposable
     public MainWindow()
     {
         _clock = new Clock();
+        _fpsCounter = new DebugContext();
         _font = new Font("assets/fonts/JetBrainsMono.ttf");
 
-        WindowHost.Initialize(WindowWidth, WindowHeight, WindowTitle);
-        WindowHost.AttachEvents(OnKeyPressed, OnMouseButtonPressed, (_, _) => WindowHost.Window.Close());
+        GameWindow.Initialize(WindowWidth, WindowHeight, WindowTitle);
+        GameWindow.AttachEvents(OnKeyPressed, OnMouseButtonPressed, (_, _) => GameWindow.Window.Close());
 
         _fpsText = CreateText(new Vector2f(10, 10), Color.Yellow);
         _debugText = CreateText(new Vector2f(10, 30), Color.Green);
 
-        SceneHost.SwitchTo(new MainMenuScene());
+        SceneManager.Instance.SwitchTo(new MainMenuScene());
     }
 
     public void GameLoop()
     {
-        const float frameTime = 1f / 60f;
         float accumulator = 0f;
 
-        while (WindowHost.Window.IsOpen)
+        while (GameWindow.Window.IsOpen)
         {
             float deltaTime = _clock.Restart().AsSeconds();
             accumulator += deltaTime;
 
-            WindowHost.PollEvents();
+            GameWindow.PollEvents();
 
-            while (accumulator >= frameTime)
+            while (accumulator >= FrameTime)
             {
-                SceneHost.Current.Update(frameTime);
-                accumulator -= frameTime;
+                SceneManager.Instance.Current.Update(FrameTime);
+                accumulator -= FrameTime;
             }
 
             if (_showDebugInfo)
-                this.UpdateDebugMetrics(deltaTime);
+            {
+                _fpsCounter.Update(deltaTime);
+                _fpsText.DisplayedString = _fpsCounter.GetFpsText();
+                _debugText.DisplayedString =
+                    $"{_fpsCounter.GetElapsedTimeText()}\n{_fpsCounter.GetMemoryUsageText()}";
+            }
 
             this.Render();
         }
@@ -72,9 +78,9 @@ internal class MainWindow : IDisposable
 
     private void Render()
     {
-        var window = WindowHost.Window;
+        var window = GameWindow.Window;
         window.Clear(Color.Black);
-        SceneHost.Current.Draw(window);
+        SceneManager.Instance.Current.Draw(window);
 
         if (_showDebugInfo)
         {
@@ -99,7 +105,7 @@ internal class MainWindow : IDisposable
         switch (e.Code)
         {
             case Keyboard.Key.Escape:
-                WindowHost.Window.Close();
+                GameWindow.Window.Close();
                 break;
 
             case Keyboard.Key.F3:
@@ -107,35 +113,17 @@ internal class MainWindow : IDisposable
                 break;
 
             default:
-                SceneHost.Current.HandleInput(e);
+                SceneManager.Instance.Current.HandleInput(e);
                 break;
         }
     }
 
     private void OnMouseButtonPressed(object sender, MouseButtonEventArgs e)
-    {
-        SceneHost.Current.HandleMouseInput(e);
-    }
-
-    private void UpdateDebugMetrics(float deltaTime)
-    {
-        _frameCount++;
-        _fpsUpdateTimer += deltaTime;
-
-        if (_fpsUpdateTimer >= 1.0f)
-        {
-            _currentFps = _frameCount / _fpsUpdateTimer;
-            _frameCount = 0;
-            _fpsUpdateTimer = 0f;
-
-            _fpsText.DisplayedString = $"FPS: {_currentFps:0}";
-            _debugText.DisplayedString = $"F3: Debug | Memory: {GC.GetTotalMemory(false) / 1024} KB";
-        }
-    }
+        => SceneManager.Instance.Current.HandleMouseInput(e);
 
     public void Dispose()
     {
-        WindowHost.Dispose();
+        GameWindow.Dispose();
         _font.Dispose();
     }
 }

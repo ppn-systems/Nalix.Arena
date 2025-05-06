@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
-internal class MainMenuScene : IScene
+internal sealed class MainMenuScene : SceneBase
 {
     private readonly List<ParallaxLayer> _layers;
     private readonly Sprite _settingSprite;
@@ -40,42 +40,52 @@ internal class MainMenuScene : IScene
 
         // Đặt vị trí ở góc trên bên phải (cách mép phải và mép trên 20px)
         _settingSprite.Position = new SFML.System.Vector2f(
-            WindowHost.Width - bounds.Width - 20,
+            GameWindow.Width - bounds.Width - 20,
             20
         );
     }
 
-    public void Update(float deltaTime)
+    public override void OnEnter()
+    {
+        // TODO: Load music, reset menu state if needed
+    }
+
+    public override void OnExit()
+    {
+        // TODO: Save menu state or stop music if needed
+    }
+
+    public override void Update(float deltaTime)
     {
         foreach (ParallaxLayer layer in _layers)
             layer.Update(deltaTime);
     }
 
-    public void Draw(RenderWindow window)
+    public override void Draw(RenderWindow window)
     {
         foreach (ParallaxLayer layer in _layers) layer.Draw(window);
 
         window.Draw(_settingSprite);
     }
 
-    public void HandleInput(KeyEventArgs e)
+    public override void HandleInput(KeyEventArgs e)
     {
         if (e.Code == Keyboard.Key.S)
         {
-            SceneHost.SwitchTo(new SettingsScene()); // Chuyển sang scene Settings
+            SceneManager.Instance.SwitchTo(new SettingsScene()); // Chuyển sang scene Settings
         }
     }
 
-    public void HandleMouseInput(MouseButtonEventArgs e)
+    public override void HandleMouseInput(MouseButtonEventArgs e)
     {
         if (e.Button == Mouse.Button.Left)
         {
-            var mousePos = Mouse.GetPosition(WindowHost.Window); // hoặc window
+            var mousePos = Mouse.GetPosition(GameWindow.Window); // hoặc window
             var bounds = _settingSprite.GetGlobalBounds();
 
             if (bounds.Contains(mousePos.X, mousePos.Y))
             {
-                SceneHost.SwitchTo(new SettingsScene()); // Chuyển sang scene Settings
+                SceneManager.Instance.SwitchTo(new SettingsScene()); // Chuyển sang scene Settings
             }
         }
     }

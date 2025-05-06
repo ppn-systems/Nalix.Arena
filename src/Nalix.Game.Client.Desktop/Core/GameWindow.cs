@@ -8,7 +8,7 @@ namespace Nalix.Game.Client.Desktop.Core;
 /// <summary>
 /// Provides global access and utilities for managing the main game window.
 /// </summary>
-public static class WindowHost
+public static class GameWindow
 {
     /// <summary>
     /// Gets the current game window.
@@ -24,6 +24,16 @@ public static class WindowHost
     /// Gets the current window height in pixels.
     /// </summary>
     public static uint Height { get; private set; }
+
+    /// <summary>
+    /// Gets the current window width in pixels as an integer.
+    /// </summary>
+    public static int X => (int)Width;
+
+    /// <summary>
+    /// Gets the current window height in pixels as an integer.
+    /// </summary>
+    public static int Y => (int)Height;
 
     /// <summary>
     /// Initializes the main window with the specified size and title.
@@ -50,6 +60,11 @@ public static class WindowHost
     public static Vector2i GetMousePosition() => Mouse.GetPosition(Window);
 
     /// <summary>
+    /// Sets the window title to the specified string.
+    /// </summary>
+    public static void SetTitle(string title) => Window.SetTitle(title);
+
+    /// <summary>
     /// Sets the window size to the specified width and height.
     /// </summary>
     /// <param name="width">The new width of the window.</param>
@@ -67,6 +82,15 @@ public static class WindowHost
     public static void PollEvents() => Window.DispatchEvents();
 
     /// <summary>
+    /// Attaches focus events to the current window.
+    /// </summary>
+    public static void AttachFocusEvents(EventHandler lostFocus, EventHandler gainedFocus)
+    {
+        Window.LostFocus += lostFocus;
+        Window.GainedFocus += gainedFocus;
+    }
+
+    /// <summary>
     /// Attaches input and window events to the current window.
     /// </summary>
     /// <param name="keyHandler">The handler for key press events.</param>
@@ -82,6 +106,20 @@ public static class WindowHost
 
         if (closedHandler != null)
             Window.Closed += closedHandler;
+    }
+
+    /// <summary>
+    /// Attaches all events to the current window, including key, mouse, close, and resize events.
+    /// </summary>
+    public static void AttachAllEvents(
+        EventHandler<KeyEventArgs> keyHandler,
+        EventHandler<MouseButtonEventArgs> mouseHandler,
+        EventHandler closedHandler = null,
+        EventHandler<SizeEventArgs> resizeHandler = null)
+    {
+        AttachEvents(keyHandler, mouseHandler, closedHandler);
+        if (resizeHandler != null)
+            Window.Resized += resizeHandler;
     }
 
     /// <summary>

@@ -21,7 +21,7 @@ internal class ParallaxLayer
         _sprite = new Sprite(_texture)
         {
             // Kích thước mặc định của TextureRect
-            TextureRect = new IntRect(0, 0, (int)WindowHost.Width, (int)WindowHost.Height),
+            TextureRect = new IntRect(0, 0, (int)GameWindow.Width, (int)GameWindow.Height),
         };
 
         // Nếu cần phóng to, ta sẽ tính tỷ lệ phóng to
@@ -45,7 +45,7 @@ internal class ParallaxLayer
         _offset += _scrollSpeed * deltaTime;
 
         // Cuộn ngang: offset là tọa độ x bắt đầu hiển thị từ texture
-        _sprite.TextureRect = new IntRect((int)_offset, 0, (int)WindowHost.Width, (int)WindowHost.Height);
+        _sprite.TextureRect = new IntRect((int)_offset, 0, (int)GameWindow.Width, (int)GameWindow.Height);
     }
 
     public void Draw(RenderWindow window) => window.Draw(_sprite);

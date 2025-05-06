@@ -7,7 +7,7 @@ using SFML.Window;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
-internal class SettingsScene : IScene
+internal sealed class SettingsScene : SceneBase
 {
     private readonly Sprite _background;
     private readonly Sprite _settingsTable;
@@ -25,8 +25,8 @@ internal class SettingsScene : IScene
             Position = new Vector2f(0, 0)
         };
 
-        float scaleX = (float)WindowHost.Width / texture.Size.X;
-        float scaleY = (float)WindowHost.Height / texture.Size.Y;
+        float scaleX = (float)GameWindow.Width / texture.Size.X;
+        float scaleY = (float)GameWindow.Height / texture.Size.Y;
         _background.Scale = new Vector2f(scaleX, scaleY);
 
         // Create the settings image (position, size, etc.)
@@ -38,8 +38,8 @@ internal class SettingsScene : IScene
             Scale = scale // Adjust the scale of the settings image
         };
 
-        float posX = (WindowHost.Width - sTexture.Size.X * scale.X) / 2f;
-        float posY = (WindowHost.Height - sTexture.Size.Y * scale.Y) / 2f;
+        float posX = (GameWindow.Width - sTexture.Size.X * scale.X) / 2f;
+        float posY = (GameWindow.Height - sTexture.Size.Y * scale.Y) / 2f;
 
         _settingsTable.Position = new Vector2f(posX, posY);
 
@@ -66,7 +66,7 @@ internal class SettingsScene : IScene
         };
     }
 
-    public void Draw(RenderWindow window)
+    public override void Draw(RenderWindow window)
     {
         // Draw the background and button
         window.Draw(_background);
@@ -74,14 +74,14 @@ internal class SettingsScene : IScene
         _backButton.Draw(window);
     }
 
-    public void HandleInput(KeyEventArgs e)
+    public override void HandleInput(KeyEventArgs e)
     {
         // You can handle keyboard input here if needed (e.g., escape key for going back)
         if (e.Code == Keyboard.Key.B) OnBackButtonClick();
     }
 
     // Handle mouse input for the back button
-    public void Update(float deltaTime)
+    public override void Update(float deltaTime)
     {
         // You can update your scene elements here if needed (animations, etc.)
         if (_isBackPressed)
@@ -89,14 +89,14 @@ internal class SettingsScene : IScene
             _backDelayTimer += deltaTime;
             if (_backDelayTimer >= 0.1f)
             {
-                SceneHost.SwitchTo(new MainMenuScene());
+                SceneManager.Instance.SwitchTo(new MainMenuScene());
                 _isBackPressed = false;
             }
         }
     }
 
     // Handle mouse input for the back button
-    public void HandleMouseInput(MouseButtonEventArgs e) => _backButton.HandleMouseClick(e);
+    public override void HandleMouseInput(MouseButtonEventArgs e) => _backButton.HandleMouseClick(e);
 
     // Action when the back button is clicked
     private void OnBackButtonClick() => _isBackPressed = true;
