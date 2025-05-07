@@ -11,25 +11,23 @@ namespace Nalix.Client.Desktop.Scenes;
 
 internal class MainMenuScene : Scene
 {
-    public MainMenuScene() : base(NameScene.MainMenu)
-    {
-    }
+    public MainMenuScene() : base(NameScene.MainMenu) => this.CreateScene();
 
     protected override void LoadObjects()
     {
         // Add the parallax object to the scene
-        this.AddObject(new ParallaxRenderObject());
-        // Add the SettingRenderObject which contains the settings icon
-        this.AddObject(new SettingRenderObject());
+        this.AddObject(new ParallaxLayer());
+        // Add the SettingsIcon which contains the settings icon
+        this.AddObject(new SettingsIcon());
     }
 
     #region Private Class
 
-    private class ParallaxRenderObject : RenderObject
+    private class ParallaxLayer : RenderObject
     {
         private readonly ParallaxPlayer _parallax;
 
-        public ParallaxRenderObject()
+        public ParallaxLayer()
         {
             _parallax = new ParallaxPlayer(GameLoop.ScreenSize);
 
@@ -49,16 +47,16 @@ internal class MainMenuScene : Scene
 
         public override void Render(RenderTarget target)
         {
-            if (Visible)
-                _parallax.Draw(target);
+            if (!Visible) return;
+            _parallax.Draw(target);
         }
     }
 
-    private class SettingRenderObject : RenderObject
+    private class SettingsIcon : RenderObject
     {
         private readonly Sprite _settingsIcon;
 
-        public SettingRenderObject()
+        public SettingsIcon()
         {
             Texture texture = Assets.UITextures.Load("1.png");
 
@@ -72,8 +70,7 @@ internal class MainMenuScene : Scene
                 20
             );
 
-            Console.WriteLine($"[DEBUG] Settings Icon position: {_settingsIcon.Position.X}, {_settingsIcon.Position.Y}");
-            Console.WriteLine($"[DEBUG] Settings Icon size: {bounds.Width}x{bounds.Height}");
+            this.SetZIndex(1);
         }
 
         public override void Update(float deltaTime)
@@ -85,17 +82,12 @@ internal class MainMenuScene : Scene
 
             if (Input.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                var (X, Y) = Input.GetMousePositionTuple();
-                Console.WriteLine($"[DEBUG] Mouse clicked at {X}, {Y}");
-
-                if (_settingsIcon.GetGlobalBounds().Contains(X, Y))
+                if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
                 {
                     SceneManager.ChangeScene(NameScene.Settings);
                 }
             }
         }
-
-        protected override Drawable GetDrawable() => _settingsIcon;
 
         public override void Render(RenderTarget target)
         {
@@ -115,6 +107,9 @@ internal class MainMenuScene : Scene
                 target.Draw(debugRect);
             }
         }
+
+        protected override Drawable GetDrawable()
+            => throw new NotSupportedException("Use Render() instead of GetDrawable().");
     }
 
     #endregion Private Class
