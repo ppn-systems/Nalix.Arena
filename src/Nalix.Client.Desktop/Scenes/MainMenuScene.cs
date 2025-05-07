@@ -1,8 +1,8 @@
 ﻿using Nalix.Graphics;
-using Nalix.Graphics.Attributes;
-using Nalix.Graphics.Parallax;
-using Nalix.Graphics.Render;
-using Nalix.Graphics.Scene;
+using Nalix.Graphics.Assets.Manager;
+using Nalix.Graphics.Rendering.Object;
+using Nalix.Graphics.Rendering.Parallax;
+using Nalix.Graphics.Scenes;
 using Nalix.Graphics.Tools;
 using SFML.Audio;
 using SFML.Graphics;
@@ -21,26 +21,38 @@ internal class MainMenuScene : Scene
         this.AddObject(new ParallaxLayer());
         // Add the SettingsIcon which contains the settings icon
         this.AddObject(new SettingsIcon());
+
+        MusicManager.Play("assets/sounds/0.wav");
     }
 
     #region Private Class
 
-    [NotLoadable("RenderObject")]
+    [IgnoredLoad("RenderObject")]
     private class ParallaxLayer : RenderObject
     {
         private readonly ParallaxPlayer _parallax;
 
         public ParallaxLayer()
         {
-            _parallax = new ParallaxPlayer(GameLoop.ScreenSize);
+            _parallax = new ParallaxPlayer(GameEngine.ScreenSize);
 
-            _parallax.AddLayer(Assets.BgTextures.Load("7.png"), 0f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("6.png"), 25f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("5.png"), 30f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("4.png"), 35f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("3.png"), 40f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("2.png"), 45f, true);
-            _parallax.AddLayer(Assets.BgTextures.Load("1.png"), 50f, true);
+            if (new Random().Next(0, 50) % 2 != 0)
+            {
+                _parallax.AddLayer(Assets.BgTextures.Load("7.png"), 0f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("6.png"), 25f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("5.png"), 30f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("4.png"), 35f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("3.png"), 40f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("2.png"), 45f, true);
+                _parallax.AddLayer(Assets.BgTextures.Load("1.png"), 50f, true);
+            }
+            else
+            {
+                _parallax.AddLayer(Assets.BgTextures.Load("11.png"), 35f, false);
+                _parallax.AddLayer(Assets.BgTextures.Load("10.png"), 40f, false);
+                _parallax.AddLayer(Assets.BgTextures.Load("9.png"), 45f, false);
+                _parallax.AddLayer(Assets.BgTextures.Load("8.png"), 50f, false);
+            }
         }
 
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);
@@ -55,7 +67,7 @@ internal class MainMenuScene : Scene
         }
     }
 
-    [NotLoadable("RenderObject")]
+    [IgnoredLoad("RenderObject")]
     private class SettingsIcon : RenderObject
     {
         private readonly Sprite _settingsIcon;
@@ -73,7 +85,7 @@ internal class MainMenuScene : Scene
 
             FloatRect bounds = _settingsIcon.GetGlobalBounds();
             _settingsIcon.Position = new SFML.System.Vector2f(
-                GameLoop.ScreenSize.X - bounds.Width - 20,
+                GameEngine.ScreenSize.X - bounds.Width - 20,
                 20
             );
 
@@ -84,8 +96,11 @@ internal class MainMenuScene : Scene
 
         public override void Update(float deltaTime)
         {
+            if (!Visible) return;
+
             if (Input.IsKeyDown(Keyboard.Key.S))
             {
+                MusicManager.Stop();
                 SceneManager.ChangeScene(NameScene.Settings);
             }
 
@@ -93,6 +108,7 @@ internal class MainMenuScene : Scene
             {
                 if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
                 {
+                    MusicManager.Stop();
                     _clickSound.Play();
                     SceneManager.ChangeScene(NameScene.Settings);
                 }

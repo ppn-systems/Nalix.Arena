@@ -1,9 +1,8 @@
 ﻿using Nalix.Graphics;
-using Nalix.Graphics.Attributes;
-using Nalix.Graphics.Render;
-using Nalix.Graphics.Scene;
+using Nalix.Graphics.Rendering.Object;
+using Nalix.Graphics.Scenes;
 using Nalix.Graphics.Tools;
-using Nalix.Graphics.UI;
+using Nalix.Graphics.UI.Elements;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -28,7 +27,7 @@ public class SettingsScene : Scene
         this.AddObject(new ControlPanel(panel.PanelPosition, panel.PanelSize));
     }
 
-    [NotLoadable("RenderObject")]
+    [IgnoredLoad("RenderObject")]
     private class Panel : RenderObject
     {
         private readonly Sprite _background;
@@ -47,8 +46,8 @@ public class SettingsScene : Scene
 
             Texture bg = Assets.BgTextures.Load("0.png");
 
-            float scaleX = (float)GameLoop.ScreenSize.X / bg.Size.X;
-            float scaleY = (float)GameLoop.ScreenSize.Y / bg.Size.Y;
+            float scaleX = (float)GameEngine.ScreenSize.X / bg.Size.X;
+            float scaleY = (float)GameEngine.ScreenSize.Y / bg.Size.Y;
 
             _background = new Sprite(bg)
             {
@@ -61,7 +60,7 @@ public class SettingsScene : Scene
             Texture panel = Assets.UITextures.Load("3.png");
 
             // Calculate the scale based on the screen size and the panel's original size
-            float scaleFactor = Math.Min(GameLoop.ScreenSize.X / panel.Size.X, GameLoop.ScreenSize.Y / panel.Size.Y);
+            float scaleFactor = Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
 
             // Apply a reduction factor to make the panel smaller
             scaleFactor *= 0.9f; // Reduces the scale by 10%
@@ -70,8 +69,8 @@ public class SettingsScene : Scene
             Vector2f scale = new(scaleFactor, scaleFactor);
 
             // Center the panel on the screen
-            float posX = (GameLoop.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            float posY = (GameLoop.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+            float posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
+            float posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
 
             _panel = new Sprite(panel)
             {
@@ -93,12 +92,11 @@ public class SettingsScene : Scene
             => throw new NotSupportedException("Use Render() instead of GetDrawable().");
     }
 
-    [NotLoadable("RenderObject")]
+    [IgnoredLoad("RenderObject")]
     private class ControlPanel : RenderObject
     {
         private readonly Button _back;
 
-        private float _backDelay = 0f;
         private bool _clickBack = false;
 
         // Update the ControlPanel constructor to use the Button.Clicked event instead of the inaccessible OnClick property.
@@ -143,6 +141,11 @@ public class SettingsScene : Scene
         public override void Update(float deltaTime)
         {
             if (!Visible) return;
+
+            if (Input.IsKeyDown(Keyboard.Key.B))
+            {
+                SceneManager.ChangeScene(NameScene.MainMenu);
+            }
 
             // Handle the click for the 'Back' button
             var mousePos = Input.GetMousePosition();
