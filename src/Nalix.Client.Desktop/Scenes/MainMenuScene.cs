@@ -1,8 +1,10 @@
 ﻿using Nalix.Graphics;
+using Nalix.Graphics.Attributes;
 using Nalix.Graphics.Parallax;
 using Nalix.Graphics.Render;
 using Nalix.Graphics.Scene;
 using Nalix.Graphics.Tools;
+using SFML.Audio;
 using SFML.Graphics;
 using SFML.Window;
 using System;
@@ -23,6 +25,7 @@ internal class MainMenuScene : Scene
 
     #region Private Class
 
+    [NotLoadable("RenderObject")]
     private class ParallaxLayer : RenderObject
     {
         private readonly ParallaxPlayer _parallax;
@@ -52,12 +55,16 @@ internal class MainMenuScene : Scene
         }
     }
 
+    [NotLoadable("RenderObject")]
     private class SettingsIcon : RenderObject
     {
         private readonly Sprite _settingsIcon;
+        private readonly Sound _clickSound;
 
         public SettingsIcon()
         {
+            this.SetZIndex(1);
+
             Texture texture = Assets.UITextures.Load("1.png");
 
             ImageCutter image = new(texture, 16, 16);
@@ -70,7 +77,9 @@ internal class MainMenuScene : Scene
                 20
             );
 
-            this.SetZIndex(1);
+            // Load click sound
+            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
+            _clickSound = new Sound(buffer);
         }
 
         public override void Update(float deltaTime)
@@ -84,32 +93,13 @@ internal class MainMenuScene : Scene
             {
                 if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
                 {
+                    _clickSound.Play();
                     SceneManager.ChangeScene(NameScene.Settings);
                 }
             }
         }
 
-        public override void Render(RenderTarget target)
-        {
-            if (Visible)
-            {
-                target.Draw(_settingsIcon);
-
-                // DEBUG: Draw border around the icon
-                var bounds = _settingsIcon.GetGlobalBounds();
-                RectangleShape debugRect = new(new SFML.System.Vector2f(bounds.Width, bounds.Height))
-                {
-                    Position = _settingsIcon.Position,
-                    OutlineColor = Color.Red,
-                    OutlineThickness = 2,
-                    FillColor = Color.Transparent
-                };
-                target.Draw(debugRect);
-            }
-        }
-
-        protected override Drawable GetDrawable()
-            => throw new NotSupportedException("Use Render() instead of GetDrawable().");
+        protected override Drawable GetDrawable() => _settingsIcon;
     }
 
     #endregion Private Class

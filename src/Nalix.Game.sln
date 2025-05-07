@@ -5,10 +5,6 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game", "Nalix.Game\Nalix.Game.csproj", "{646C38CD-61F2-4371-A7C6-5D5818EE8D04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Client", "Nalix.Game.Client\Nalix.Game.Client.csproj", "{A9CDBD16-952A-4C14-A5AC-556B65883283}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Client.Desktop", "Nalix.Game.Client.Desktop\Nalix.Game.Client.Desktop.csproj", "{F5B06229-3C35-41CC-B8DE-DD02C4067E00}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Server", "Nalix.Game.Server\Nalix.Game.Server.csproj", "{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Protocol", "Nalix.Game.Protocol\Nalix.Game.Protocol.csproj", "{F8B2E332-5DA5-41C0-81C5-ED067768410D}"
@@ -25,14 +21,6 @@ Global
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9CDBD16-952A-4C14-A5AC-556B65883283}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9CDBD16-952A-4C14-A5AC-556B65883283}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9CDBD16-952A-4C14-A5AC-556B65883283}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9CDBD16-952A-4C14-A5AC-556B65883283}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5B06229-3C35-41CC-B8DE-DD02C4067E00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F5B06229-3C35-41CC-B8DE-DD02C4067E00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F5B06229-3C35-41CC-B8DE-DD02C4067E00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F5B06229-3C35-41CC-B8DE-DD02C4067E00}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Release|Any CPU.ActiveCfg = Release|Any CPU

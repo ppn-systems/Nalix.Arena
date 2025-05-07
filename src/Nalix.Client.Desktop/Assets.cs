@@ -8,4 +8,6 @@ internal static class Assets
 
     public static readonly TextureLoader UITextures = new("assets/ui");
     public static readonly TextureLoader BgTextures = new("assets/background");
+
+    public static readonly SfxLoader Sounds = new("assets/sounds");
 }
