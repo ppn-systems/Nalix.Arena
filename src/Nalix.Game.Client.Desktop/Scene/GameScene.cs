@@ -3,7 +3,7 @@ using SFML.Window;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
-internal sealed class GameScene : SceneBase
+internal sealed class GameScene : Scene
 {
     public override void Update(float deltaTime)
     {

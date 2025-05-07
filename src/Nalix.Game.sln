@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game", "Nalix.Game\Nalix.Game.csproj", "{646C38CD-61F2-4371-A7C6-5D5818EE8D04}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Server", "Nalix.Game.Server\Nalix.Game.Server.csproj", "{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Protocol", "Nalix.Game.Protocol\Nalix.Game.Protocol.csproj", "{F8B2E332-5DA5-41C0-81C5-ED067768410D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Client.Desktop", "Nalix.Client.Desktop\Nalix.Client.Desktop.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

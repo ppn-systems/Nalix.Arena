@@ -22,4 +22,10 @@
 		</Content>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="Nalix.Graphics">
+	    <HintPath>..\lib\Nalix.Graphics.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>

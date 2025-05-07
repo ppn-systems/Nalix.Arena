@@ -7,7 +7,7 @@ using SFML.Window;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
-internal sealed class SettingsScene : SceneBase
+internal sealed class SettingsScene : Scene
 {
     private readonly Sprite _background;
     private readonly Sprite _settingsTable;

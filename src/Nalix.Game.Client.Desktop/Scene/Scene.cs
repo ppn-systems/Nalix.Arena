@@ -7,7 +7,7 @@ namespace Nalix.Game.Client.Desktop.Scene;
 /// Base class that implements IScene with default logic.
 /// Override what you need in your derived scenes.
 /// </summary>
-internal abstract class SceneBase : IScene
+internal abstract class Scene : IScene
 {
     public virtual void OnEnter()
     {

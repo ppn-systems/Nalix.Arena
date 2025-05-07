@@ -8,11 +8,10 @@ using System.Collections.Generic;
 
 namespace Nalix.Game.Client.Desktop.Scene;
 
-internal sealed class MainMenuScene : SceneBase
+internal sealed class MainMenuScene : Scene
 {
     private readonly List<ParallaxLayer> _layers;
     private readonly Sprite _settingSprite;
-    private readonly Texture _settingTexture;
 
     public MainMenuScene()
     {
