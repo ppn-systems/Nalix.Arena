@@ -1,13 +1,14 @@
-﻿using Nalix.Graphics;
+﻿using Nalix.Client.Desktop.Utils;
+using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
-using Nalix.Graphics.Tools;
 using Nalix.Graphics.UI.Elements;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
+using System.Collections.Generic;
 
 namespace Nalix.Client.Desktop.Scenes;
 
@@ -19,32 +20,35 @@ public class SettingsScene : Scene
 
     protected override void LoadObjects()
     {
+        // Load the background
+        this.AddObject(new Background());
+
         // Load the settings object
-        Panel panel = new();
+        Banner panel = new();
         this.AddObject(panel);
 
+        // Load the frame sequence animator
+        // Set the animator's position on the panel
+
+        SpriteAnimation animator = new();
+        animator.SetPosition(panel.PanelPosition + new Vector2f(50, -5));
+
+        this.AddObject(animator);
+
         // Load the control
-        this.AddObject(new ControlPanel(panel.PanelPosition, panel.PanelSize));
+        this.AddObject(new ButtonBack(panel.PanelPosition, panel.PanelSize));
     }
 
     [IgnoredLoad("RenderObject")]
-    private class Panel : RenderObject
+    private class Background : RenderObject
     {
         private readonly Sprite _background;
-        private readonly Sprite _panel;
 
-        public Vector2f PanelPosition => _panel.Position;
-
-        public Vector2f PanelSize => new(
-            _panel.Texture.Size.X * _panel.Scale.X,
-            _panel.Texture.Size.Y * _panel.Scale.Y
-        );
-
-        public Panel()
+        public Background()
         {
-            this.SetZIndex(0);
+            this.SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
 
-            Texture bg = Assets.BgTextures.Load("0.png");
+            Texture bg = Assets.Bg.Load("0.png");
 
             float scaleX = (float)GameEngine.ScreenSize.X / bg.Size.X;
             float scaleY = (float)GameEngine.ScreenSize.Y / bg.Size.Y;
@@ -55,37 +59,14 @@ public class SettingsScene : Scene
                 Scale = new Vector2f(scaleX, scaleY),
                 Color = new Color(255, 255, 255, 180) // Màu trắng với alpha = 180 (mờ nhẹ)
             };
-
-            // Panel setup
-            Texture panel = Assets.UITextures.Load("3.png");
-
-            // Calculate the scale based on the screen size and the panel's original size
-            float scaleFactor = Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
-
-            // Apply a reduction factor to make the panel smaller
-            scaleFactor *= 0.9f; // Reduces the scale by 10%
-
-            // Scale the panel to fit within the screen while maintaining the aspect ratio
-            Vector2f scale = new(scaleFactor, scaleFactor);
-
-            // Center the panel on the screen
-            float posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            float posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
-
-            _panel = new Sprite(panel)
-            {
-                Scale = scale,
-                Position = new Vector2f(posX, posY)
-            };
         }
 
         public override void Render(RenderTarget target)
         {
             if (!Visible) return;
 
-            // Render the background
+            // Render nền
             target.Draw(_background);
-            target.Draw(_panel);
         }
 
         protected override Drawable GetDrawable()
@@ -93,16 +74,99 @@ public class SettingsScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    private class ControlPanel : RenderObject
+    private class Banner : RenderObject
+    {
+        private readonly Sprite _banner;
+
+        public Vector2f PanelPosition => _banner.Position;
+
+        public Vector2f PanelSize => new(
+            _banner.Texture.Size.X * _banner.Scale.X,
+            _banner.Texture.Size.Y * _banner.Scale.Y
+        );
+
+        public Banner()
+        {
+            this.SetZIndex(2);
+
+            // Banner setup
+            Texture panel = Assets.UI.Load("banners/8.png");
+
+            // Calculate the scale based on the screen size and the panel's original size
+            float scaleFactor = Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
+
+            // Scale the panel to fit within the screen while maintaining the aspect ratio
+            Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
+
+            // Center the panel on the screen
+            float posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
+            float posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+
+            _banner = new Sprite(panel)
+            {
+                Scale = scale,
+                Position = new Vector2f(posX, posY)
+            };
+        }
+
+        protected override Drawable GetDrawable() => _banner;
+    }
+
+    [IgnoredLoad("RenderObject")]
+    public class SpriteAnimation : RenderObject
+    {
+        private readonly Sprite _sprite;
+        private readonly List<IntRect> _frames;
+        private readonly float _frameDuration;
+
+        private float _elapsedTime = 0f;
+        private int _currentFrame = 0;
+
+        public SpriteAnimation()
+        {
+            this.SetZIndex(1);
+            Texture texture = Assets.UI.Load("4.png");
+            // 1, 2, 5, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1
+            int[] columns = [1, 2, 5, 4, 2, 2];
+
+            _frameDuration = 0.1f;
+            _frames = FrameUtils.GenerateFrames(32, 32, columns);
+
+            _sprite = new Sprite(texture)
+            {
+                TextureRect = _frames[0],
+                Scale = new Vector2f(2f, 2f)
+            };
+        }
+
+        public void SetPosition(Vector2f position) => _sprite.Position = position;
+
+        public override void Update(float deltaTime)
+        {
+            _elapsedTime += deltaTime;
+
+            if (_elapsedTime >= _frameDuration)
+            {
+                _elapsedTime -= _frameDuration;
+                _currentFrame = (_currentFrame + 1) % _frames.Count;
+                _sprite.TextureRect = _frames[_currentFrame];
+            }
+        }
+
+        protected override Drawable GetDrawable() => _sprite;
+    }
+
+    [IgnoredLoad("RenderObject")]
+    private class ButtonBack : RenderObject
     {
         private readonly Button _back;
 
         private bool _clickBack = false;
 
-        // Update the ControlPanel constructor to use the Button.Clicked event instead of the inaccessible OnClick property.
-        public ControlPanel(Vector2f panelPosition, Vector2f panelSize)
+        // Update the ButtonBack constructor to use the Button.Clicked event instead of the inaccessible OnClick property.
+        public ButtonBack(Vector2f panelPosition, Vector2f panelSize)
         {
-            this.SetZIndex(1);
+            this.SetZIndex(3);
 
             Vector2f buttonSize = new(
                 panelSize.X * 0.18f,
@@ -121,17 +185,10 @@ public class SettingsScene : Scene
             // Subscribe to the Clicked event to handle the button click
             _back.Clicked += () => _clickBack = true;
 
-            Texture texture = Assets.UITextures.Load("2.png");
-            ImageCutter cutter = new(texture, 96, 32);
+            Texture normal = Assets.UI.Load("buttons/3.png");
+            Texture pressed = Assets.UI.Load("buttons/4.png");
 
-            //  +--------+--------+
-            //  | (0, 0) | (1, 0) |   ← row 0
-            //  + -------+--------+
-            //  | (0, 1) | (1, 1) |   ← row 1
-            //  + -------+--------+
-            IntRect normal = cutter.GetRectAt(0, 0);
-            IntRect pressed = cutter.GetRectAt(1, 0);
-            _back.SetTexture(texture, normal, pressed);
+            _back.SetTexture(normal, pressed);
 
             SoundBuffer sound = Assets.Sounds.Load("1.wav");
 
@@ -172,7 +229,6 @@ public class SettingsScene : Scene
             target.Draw(_back);
         }
 
-        protected override Drawable GetDrawable()
-            => throw new NotSupportedException("Use Render() instead of GetDrawable().");
+        protected override Drawable GetDrawable() => _back;
     }
 }
