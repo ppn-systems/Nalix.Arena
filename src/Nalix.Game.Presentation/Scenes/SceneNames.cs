@@ -1,7 +1,7 @@
 ﻿namespace Nalix.Client.Desktop.Scenes;
 
-internal static class NameScene
+internal static class SceneNames
 {
-    public const string MainMenu = "main";
+    public const string Main = "main";
     public const string Settings = "settings";
 }

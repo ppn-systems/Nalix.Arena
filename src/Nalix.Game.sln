@@ -5,11 +5,15 @@ VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game", "Nalix.Game\Nalix.Game.csproj", "{646C38CD-61F2-4371-A7C6-5D5818EE8D04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Server", "Nalix.Game.Server\Nalix.Game.Server.csproj", "{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Presentation", "Nalix.Game.Presentation\Nalix.Game.Presentation.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Protocol", "Nalix.Game.Protocol\Nalix.Game.Protocol.csproj", "{F8B2E332-5DA5-41C0-81C5-ED067768410D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Appication", "Nalix.Game.Appication\Nalix.Game.Appication.csproj", "{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Client.Desktop", "Nalix.Client.Desktop\Nalix.Client.Desktop.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Infrastructure", "Nalix.Game.Infrastructure\Nalix.Game.Infrastructure.csproj", "{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Domain", "Nalix.Game.Domain\Nalix.Game.Domain.csproj", "{C647D001-85DC-4387-98C4-CB4F075B5A53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Host", "Nalix.Game.Host\Nalix.Game.Host.csproj", "{98A40ADC-5F80-4229-9959-B98642DAAC6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,18 +25,26 @@ Global
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F19AAA2-7E03-49A4-BB0C-8AA4AD8C2820}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F8B2E332-5DA5-41C0-81C5-ED067768410D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C647D001-85DC-4387-98C4-CB4F075B5A53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C647D001-85DC-4387-98C4-CB4F075B5A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C647D001-85DC-4387-98C4-CB4F075B5A53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C647D001-85DC-4387-98C4-CB4F075B5A53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

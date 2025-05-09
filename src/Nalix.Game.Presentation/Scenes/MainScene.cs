@@ -1,29 +1,45 @@
-﻿using Nalix.Graphics;
+﻿using Nalix.Client.Desktop.Utils;
+using Nalix.Graphics;
 using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
 using SFML.Audio;
 using SFML.Graphics;
+using SFML.System;
 using SFML.Window;
 using System;
+using System.Collections.Generic;
 
 namespace Nalix.Client.Desktop.Scenes;
 
-internal class MainMenuScene : Scene
+internal class MainScene : Scene
 {
-    public MainMenuScene() : base(NameScene.MainMenu)
+    public MainScene() : base(SceneNames.Main)
         => MusicManager.Play("assets/sounds/0.wav");
 
     protected override void LoadObjects()
     {
-        MusicManager.Resume();
-
+        //MusicManager.Resume();
         // Add the parallax object to the scene
         this.AddObject(new ParallaxLayer());
         // Add the icon
-        this.AddObject(new SettingIcon());
         this.AddObject(new MusicIcon());
+        this.AddObject(new SettingIcon());
+
+        // Add the animation
+        // 1, 2, 5, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1
+        SpriteAnimation animation1 = new("4.png", [1, 2, 5, 4, 2, 2]);
+        SpriteAnimation animation2 = new("4.png", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0]);
+        SpriteAnimation animation3 = new("4.png", [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0]);
+
+        animation1.SetPosition(new Vector2f(0, 660));
+        animation2.SetPosition(new Vector2f(60, 660));
+        animation3.SetPosition(new Vector2f(120, 660));
+
+        this.AddObject(animation1);
+        this.AddObject(animation2);
+        this.AddObject(animation3);
     }
 
     #region Private Class
@@ -37,7 +53,7 @@ internal class MainMenuScene : Scene
         {
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
-            _parallax.AddLayer(Assets.Bg.Load("7.png"), 0f, true);
+            _parallax.AddLayer(Assets.Bg.Load("7.png"), 00f, true);
             _parallax.AddLayer(Assets.Bg.Load("6.png"), 25f, true);
             _parallax.AddLayer(Assets.Bg.Load("5.png"), 30f, true);
             _parallax.AddLayer(Assets.Bg.Load("4.png"), 35f, true);
@@ -56,57 +72,6 @@ internal class MainMenuScene : Scene
             if (!Visible) return;
             _parallax.Draw(target);
         }
-    }
-
-    [IgnoredLoad("RenderObject")]
-    private class SettingIcon : RenderObject
-    {
-        private readonly Sprite _settingsIcon;
-        private readonly Sound _clickSound;
-
-        public SettingIcon()
-        {
-            this.SetZIndex(1);
-
-            // Load the settings icon
-            Texture texture = Assets.UI.Load("icons/3.png");
-
-            _settingsIcon = new Sprite(texture)
-            {
-                Scale = new SFML.System.Vector2f(2f, 2f),
-                Color = new Color(255, 255, 180),
-            };
-
-            FloatRect bounds = _settingsIcon.GetGlobalBounds();
-            _settingsIcon.Position = new SFML.System.Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
-
-            // Load click sound
-            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-            _clickSound = new Sound(buffer);
-        }
-
-        public override void Update(float deltaTime)
-        {
-            if (!Visible) return;
-
-            if (Input.IsKeyDown(Keyboard.Key.S))
-            {
-                MusicManager.Pause();
-                SceneManager.ChangeScene(NameScene.Settings);
-            }
-
-            if (Input.IsMouseButtonPressed(Mouse.Button.Left))
-            {
-                if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
-                {
-                    MusicManager.Pause();
-                    _clickSound.Play();
-                    SceneManager.ChangeScene(NameScene.Settings);
-                }
-            }
-        }
-
-        protected override Drawable GetDrawable() => _settingsIcon;
     }
 
     [IgnoredLoad("RenderObject")]
@@ -192,6 +157,100 @@ internal class MainMenuScene : Scene
         }
 
         protected override Drawable GetDrawable() => _icon;
+    }
+
+    [IgnoredLoad("RenderObject")]
+    private class SettingIcon : RenderObject
+    {
+        private readonly Sprite _settingsIcon;
+        private readonly Sound _clickSound;
+
+        public SettingIcon()
+        {
+            this.SetZIndex(1);
+
+            // Load the settings icon
+            Texture texture = Assets.UI.Load("icons/3.png");
+
+            _settingsIcon = new Sprite(texture)
+            {
+                Scale = new SFML.System.Vector2f(2f, 2f),
+                Color = new Color(255, 255, 180),
+            };
+
+            FloatRect bounds = _settingsIcon.GetGlobalBounds();
+            _settingsIcon.Position = new SFML.System.Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+
+            // Load click sound
+            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
+            _clickSound = new Sound(buffer);
+        }
+
+        public override void Update(float deltaTime)
+        {
+            if (!Visible) return;
+
+            if (Input.IsKeyDown(Keyboard.Key.S))
+            {
+                MusicManager.Pause();
+                _clickSound.Play();
+                SceneManager.ChangeScene(SceneNames.Settings);
+            }
+
+            if (Input.IsMouseButtonPressed(Mouse.Button.Left))
+            {
+                if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
+                {
+                    MusicManager.Pause();
+                    _clickSound.Play();
+                    SceneManager.ChangeScene(SceneNames.Settings);
+                }
+            }
+        }
+
+        protected override Drawable GetDrawable() => _settingsIcon;
+    }
+
+    [IgnoredLoad("RenderObject")]
+    public class SpriteAnimation : RenderObject
+    {
+        private readonly Sprite _sprite;
+        private readonly List<IntRect> _frames;
+        private readonly float _frameDuration;
+
+        private float _elapsedTime = 0f;
+        private int _currentFrame = 0;
+
+        public SpriteAnimation(string path, int[] columns)
+        {
+            this.SetZIndex(1);
+            Texture texture = Assets.UI.Load(path);
+
+            _frameDuration = 0.1f;
+            _frames = FrameUtils.GenerateFrames(32, 32, columns);
+
+            _sprite = new Sprite(texture)
+            {
+                TextureRect = _frames[0],
+                Scale = new Vector2f(2f, 2f)
+            };
+        }
+
+        public void SetPosition(Vector2f position) => _sprite.Position = position;
+
+        public override void Update(float deltaTime)
+        {
+            _elapsedTime += deltaTime;
+
+            if (_elapsedTime >= _frameDuration)
+            {
+                _elapsedTime -= _frameDuration;
+                _currentFrame = (_currentFrame + 1) % _frames.Count;
+                _sprite.TextureRect = _frames[_currentFrame];
+            }
+        }
+
+        protected override Drawable GetDrawable() => _sprite;
     }
 
     #endregion Private Class

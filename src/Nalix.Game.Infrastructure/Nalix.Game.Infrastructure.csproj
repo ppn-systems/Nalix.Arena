@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Nalix.Game\Nalix.Game.csproj" />
+		
+		<PackageReference Include="Nalix.Common" Version="0.8.26" />
+		<PackageReference Include="Nalix.Logging" Version="0.8.26" />
+		<PackageReference Include="Nalix.Network" Version="0.8.26" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Connections\" />
+	</ItemGroup>
+
+</Project>

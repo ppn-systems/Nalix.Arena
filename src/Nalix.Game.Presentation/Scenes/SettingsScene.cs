@@ -1,5 +1,4 @@
-﻿using Nalix.Client.Desktop.Utils;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using Nalix.Graphics.UI.Elements;
@@ -8,13 +7,12 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
-using System.Collections.Generic;
 
 namespace Nalix.Client.Desktop.Scenes;
 
 public class SettingsScene : Scene
 {
-    public SettingsScene() : base(NameScene.Settings)
+    public SettingsScene() : base(SceneNames.Settings)
     {
     }
 
@@ -26,14 +24,6 @@ public class SettingsScene : Scene
         // Load the settings object
         Banner panel = new();
         this.AddObject(panel);
-
-        // Load the frame sequence animator
-        // Set the animator's position on the panel
-
-        SpriteAnimation animator = new();
-        animator.SetPosition(panel.PanelPosition + new Vector2f(50, -5));
-
-        this.AddObject(animator);
 
         // Load the control
         this.AddObject(new ButtonBack(panel.PanelPosition, panel.PanelSize));
@@ -113,50 +103,6 @@ public class SettingsScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    public class SpriteAnimation : RenderObject
-    {
-        private readonly Sprite _sprite;
-        private readonly List<IntRect> _frames;
-        private readonly float _frameDuration;
-
-        private float _elapsedTime = 0f;
-        private int _currentFrame = 0;
-
-        public SpriteAnimation()
-        {
-            this.SetZIndex(1);
-            Texture texture = Assets.UI.Load("4.png");
-            // 1, 2, 5, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1
-            int[] columns = [1, 2, 5, 4, 2, 2];
-
-            _frameDuration = 0.1f;
-            _frames = FrameUtils.GenerateFrames(32, 32, columns);
-
-            _sprite = new Sprite(texture)
-            {
-                TextureRect = _frames[0],
-                Scale = new Vector2f(2f, 2f)
-            };
-        }
-
-        public void SetPosition(Vector2f position) => _sprite.Position = position;
-
-        public override void Update(float deltaTime)
-        {
-            _elapsedTime += deltaTime;
-
-            if (_elapsedTime >= _frameDuration)
-            {
-                _elapsedTime -= _frameDuration;
-                _currentFrame = (_currentFrame + 1) % _frames.Count;
-                _sprite.TextureRect = _frames[_currentFrame];
-            }
-        }
-
-        protected override Drawable GetDrawable() => _sprite;
-    }
-
-    [IgnoredLoad("RenderObject")]
     private class ButtonBack : RenderObject
     {
         private readonly Button _back;
@@ -201,7 +147,7 @@ public class SettingsScene : Scene
 
             if (Input.IsKeyDown(Keyboard.Key.B))
             {
-                SceneManager.ChangeScene(NameScene.MainMenu);
+                SceneManager.ChangeScene(SceneNames.Main);
             }
 
             // Handle the click for the 'Back' button
@@ -219,7 +165,7 @@ public class SettingsScene : Scene
 
             if (_clickBack)
             {
-                SceneManager.ChangeScene(NameScene.MainMenu);
+                SceneManager.ChangeScene(SceneNames.Main);
             }
         }
 
