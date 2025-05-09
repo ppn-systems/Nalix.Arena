@@ -36,8 +36,7 @@ public abstract class Monster : IMonster
         // Khởi tạo các giá trị mặc định nếu cần
         Id = -1;
         IdMap = -1;
-        X = 0;
-        Y = 0;
+        Position = new Position(0, 0);
 
         TimeRefresh = 0;
         IsRefresh = false;
