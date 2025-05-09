@@ -1,5 +1,4 @@
 ﻿using Nalix.Game.Domain.Shared;
-using Nalix.Identifiers;
 using Nalix.Shared.Time;
 using System.Collections.Generic;
 
@@ -29,7 +28,7 @@ public abstract class Monster : IMonster
 
     public MonsterType Type { get; set; }
 
-    public Dictionary<Base36Id, int> SessionAttack { get; set; }
+    public Dictionary<int, int> SessionAttack { get; set; }
 
     public Monster()
     {

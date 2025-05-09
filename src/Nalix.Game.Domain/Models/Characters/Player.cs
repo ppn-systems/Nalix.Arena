@@ -1,4 +1,5 @@
-﻿using Nalix.Game.Domain.Shared;
+﻿using Nalix.Common.Connection;
+using Nalix.Game.Domain.Shared;
 
 namespace Nalix.Game.Domain.Models.Characters;
 
@@ -10,4 +11,5 @@ public class Player
 
     public Power Power { get; set; }
     public Position Position { get; set; }
+    public IConnection Connection { get; set; } // Kết nối của người chơi
 }
