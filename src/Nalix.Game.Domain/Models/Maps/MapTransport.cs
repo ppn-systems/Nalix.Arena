@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Maps;
+﻿namespace Nalix.Game.Domain.Models.Maps;
 
 internal class MapTransport
 {

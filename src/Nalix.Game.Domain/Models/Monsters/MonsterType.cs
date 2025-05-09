@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Monsters;
+﻿namespace Nalix.Game.Domain.Models.Monsters;
 
 public enum MonsterType : byte
 {

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using Nalix.Game.Domain.Models.Monsters;
+using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Maps;
+namespace Nalix.Game.Domain.Models.Maps;
 
 public class TileMap
 {
@@ -23,7 +24,7 @@ public class TileMap
 
     public List<Npc> Npcs { get; set; }       // Danh sách NPC trong bản đồ
     public List<WayPoint> WayPoints { get; set; } // Danh sách các điểm waypoint
-    public List<MonsterMap> Monsters { get; set; } // Danh sách bản đồ quái vật
+    public List<Monster> Monsters { get; set; } // Danh sách bản đồ quái vật
     public List<BackgroundItem> BackgroundItems { get; set; } // Danh sách các item nền
     public List<ActionItem> ActionItems { get; set; }         // Danh sách hành động
 }
