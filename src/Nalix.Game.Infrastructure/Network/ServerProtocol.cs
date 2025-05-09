@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Connection;
+using Nalix.Game.Infrastructure.Connections;
 using Nalix.Logging;
 using Nalix.Network.Dispatch;
 using Nalix.Network.Package;
@@ -17,16 +18,20 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
     public override void OnAccept(IConnection connection, CancellationToken cancellationToken = default)
     {
         base.OnAccept(connection, cancellationToken);
-        NLogix.Host.Instance.Info($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
+
+        // Thêm kết nối vào danh sách quản lý
+        ConnectionManager.Instance.AddConnection(connection);
+
+        NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
     }
 
     public override void ProcessMessage(object sender, IConnectEventArgs args)
     {
         try
         {
-            NLogix.Host.Instance.Info($"[ProcessMessage] Received packet from {args.Connection.RemoteEndPoint}");
+            NLogix.Host.Instance.Debug($"[ProcessMessage] Received packet from {args.Connection.RemoteEndPoint}");
             _packetDispatcher.HandlePacket(args.Connection.IncomingPacket, args.Connection);
-            NLogix.Host.Instance.Info($"[ProcessMessage] Successfully processed packet from {args.Connection.RemoteEndPoint}");
+            NLogix.Host.Instance.Debug($"[ProcessMessage] Successfully processed packet from {args.Connection.RemoteEndPoint}");
         }
         catch (Exception ex)
         {
@@ -43,7 +48,7 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
 
     protected override void OnDisposing()
     {
-        NLogix.Host.Instance.Info("[OnDisposing] ServerProtocol is shutting down.");
+        NLogix.Host.Instance.Debug("[OnDisposing] ServerProtocol is shutting down.");
         base.OnDisposing();
     }
 }

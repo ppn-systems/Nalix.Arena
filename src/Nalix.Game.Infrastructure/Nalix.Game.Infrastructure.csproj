@@ -12,8 +12,4 @@
 		<PackageReference Include="Nalix.Network" Version="0.8.26" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Connections\" />
-	</ItemGroup>
-
 </Project>
