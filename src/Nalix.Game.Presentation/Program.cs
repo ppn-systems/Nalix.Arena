@@ -1,6 +1,6 @@
 ﻿using Nalix.Graphics;
 
-namespace Nalix.Client.Desktop;
+namespace Nalix.Game.Presentation;
 
 internal class Program
 {

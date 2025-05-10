@@ -1,4 +1,6 @@
-﻿using Nalix.Game.Domain.Models.Monsters;
+﻿using Nalix.Game.Domain.Models.Maps.Items;
+using Nalix.Game.Domain.Models.Maps.NPCs;
+using Nalix.Game.Domain.Models.Monsters;
 using System.Collections.Generic;
 
 namespace Nalix.Game.Domain.Models.Maps;

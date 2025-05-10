@@ -8,7 +8,7 @@ using SFML.System;
 using SFML.Window;
 using System;
 
-namespace Nalix.Client.Desktop.Scenes;
+namespace Nalix.Game.Presentation.Scenes;
 
 public class SettingsScene : Scene
 {
@@ -19,14 +19,14 @@ public class SettingsScene : Scene
     protected override void LoadObjects()
     {
         // Load the background
-        this.AddObject(new Background());
+        AddObject(new Background());
 
         // Load the settings object
         Banner panel = new();
-        this.AddObject(panel);
+        AddObject(panel);
 
         // Load the control
-        this.AddObject(new ButtonBack(panel.PanelPosition, panel.PanelSize));
+        AddObject(new ButtonBack(panel.PanelPosition, panel.PanelSize));
     }
 
     [IgnoredLoad("RenderObject")]
@@ -36,7 +36,7 @@ public class SettingsScene : Scene
 
         public Background()
         {
-            this.SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
+            SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
 
             Texture bg = Assets.Bg.Load("0.png");
 
@@ -77,7 +77,7 @@ public class SettingsScene : Scene
 
         public Banner()
         {
-            this.SetZIndex(2);
+            SetZIndex(2);
 
             // Banner setup
             Texture panel = Assets.UI.Load("banners/8.png");
@@ -112,7 +112,7 @@ public class SettingsScene : Scene
         // Update the ButtonBack constructor to use the Button.Clicked event instead of the inaccessible OnClick property.
         public ButtonBack(Vector2f panelPosition, Vector2f panelSize)
         {
-            this.SetZIndex(3);
+            SetZIndex(3);
 
             Vector2f buttonSize = new(
                 panelSize.X * 0.18f,

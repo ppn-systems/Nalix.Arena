@@ -1,7 +1,7 @@
 ﻿using SFML.Graphics;
 using System.Collections.Generic;
 
-namespace Nalix.Client.Desktop.Utils;
+namespace Nalix.Game.Presentation.Utils;
 
 public static class FrameUtils
 {

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Client.Desktop.Scenes;
+﻿namespace Nalix.Game.Presentation.Scenes;
 
 internal static class SceneNames
 {

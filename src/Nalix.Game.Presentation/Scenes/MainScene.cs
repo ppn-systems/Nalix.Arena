@@ -1,4 +1,5 @@
-﻿using Nalix.Client.Desktop.Utils;
+﻿using Nalix.Game.Presentation;
+using Nalix.Game.Presentation.Utils;
 using Nalix.Graphics;
 using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
@@ -11,7 +12,7 @@ using SFML.Window;
 using System;
 using System.Collections.Generic;
 
-namespace Nalix.Client.Desktop.Scenes;
+namespace Nalix.Game.Presentation.Scenes;
 
 internal class MainScene : Scene
 {
@@ -22,10 +23,10 @@ internal class MainScene : Scene
     {
         //MusicManager.Resume();
         // Add the parallax object to the scene
-        this.AddObject(new ParallaxLayer());
+        AddObject(new ParallaxLayer());
         // Add the icon
-        this.AddObject(new MusicIcon());
-        this.AddObject(new SettingIcon());
+        AddObject(new MusicIcon());
+        AddObject(new SettingIcon());
 
         // Add the animation
         // 1, 2, 5, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1
@@ -37,9 +38,9 @@ internal class MainScene : Scene
         animation2.SetPosition(new Vector2f(60, 660));
         animation3.SetPosition(new Vector2f(120, 660));
 
-        this.AddObject(animation1);
-        this.AddObject(animation2);
-        this.AddObject(animation3);
+        AddObject(animation1);
+        AddObject(animation2);
+        AddObject(animation3);
     }
 
     #region Private Class
@@ -86,7 +87,7 @@ internal class MainScene : Scene
 
         public MusicIcon()
         {
-            this.SetZIndex(1);
+            SetZIndex(1);
 
             _isPlaying = true;
 
@@ -96,12 +97,12 @@ internal class MainScene : Scene
 
             _icon = new Sprite(_texture1)
             {
-                Scale = new SFML.System.Vector2f(2f, 2f),
+                Scale = new Vector2f(2f, 2f),
                 Color = new Color(255, 255, 180),
             };
 
             FloatRect bounds = _icon.GetGlobalBounds();
-            _icon.Position = new SFML.System.Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, 60);
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, 60);
 
             // Load click sound
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
@@ -167,19 +168,19 @@ internal class MainScene : Scene
 
         public SettingIcon()
         {
-            this.SetZIndex(1);
+            SetZIndex(1);
 
             // Load the settings icon
             Texture texture = Assets.UI.Load("icons/3.png");
 
             _settingsIcon = new Sprite(texture)
             {
-                Scale = new SFML.System.Vector2f(2f, 2f),
+                Scale = new Vector2f(2f, 2f),
                 Color = new Color(255, 255, 180),
             };
 
             FloatRect bounds = _settingsIcon.GetGlobalBounds();
-            _settingsIcon.Position = new SFML.System.Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+            _settingsIcon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
             // Load click sound
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
@@ -223,7 +224,7 @@ internal class MainScene : Scene
 
         public SpriteAnimation(string path, int[] columns)
         {
-            this.SetZIndex(1);
+            SetZIndex(1);
             Texture texture = Assets.UI.Load(path);
 
             _frameDuration = 0.1f;

@@ -1,6 +1,6 @@
 ﻿using Nalix.Graphics.Assets;
 
-namespace Nalix.Client.Desktop;
+namespace Nalix.Game.Presentation;
 
 internal static class Assets
 {

@@ -6,23 +6,13 @@ public interface IMonster
 {
     int Id { get; set; }
     int IdMap { get; set; }
-    public Position Position { get; set; }
     string Name { get; set; }
-
     bool IsAlive { get; }
-    int Level { get; set; }                   // Cấp độ của quái vật
-    int Armor { get; set; }                   // Chỉ số phòng thủ của quái vật
-    int Damage { get; set; }
-    int Health { get; set; }
-    int MaxHealth { get; set; }
-    int Experience { get; set; }
     long TimeAttack { get; set; }
 
-    int[] LootTable { get; set; } // Danh sách ID của loot table
-    float LootDropChance { get; set; } // Tỷ lệ rơi vật phẩm
-
-    bool IsRefresh { get; set; }
-    long TimeRefresh { get; set; }
-
-    MonsterType Type { get; set; }
+    Position Position { get; set; }
+    MonsterStats Stats { get; set; }              // Các chỉ số quái vật
+    LootTable Loot { get; set; }                   // Loot table của quái vật
+    RefreshInfo Refresh { get; set; }              // Thông tin làm mới quái vật
+    MonsterType Type { get; set; }                 // Loại quái vật
 }

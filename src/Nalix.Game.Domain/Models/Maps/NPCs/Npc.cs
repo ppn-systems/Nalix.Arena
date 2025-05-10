@@ -1,6 +1,6 @@
 ﻿using Nalix.Game.Domain.Shared;
 
-namespace Nalix.Game.Domain.Models.Maps;
+namespace Nalix.Game.Domain.Models.Maps.NPCs;
 
 public class Npc
 {
@@ -13,11 +13,4 @@ public class Npc
     public NpcState State { get; set; }               // Current NPC state (Idle, etc.)
     public bool IsInteractive { get; set; }           // Can the player interact with this NPC?
     public string[] Dialogues { get; set; } = [];     // Dialogues the NPC can say
-}
-
-public enum NpcState : byte
-{
-    Idle = 0,           // Đứng yên
-    Sleeping = 1,       // Không hoạt động
-    Hidden = 2,         // Không hiển thị trên map
 }
