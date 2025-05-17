@@ -1,5 +1,4 @@
-﻿using Nalix.Game.Presentation;
-using Nalix.Game.Presentation.Utils;
+﻿using Nalix.Game.Presentation.Utils;
 using Nalix.Graphics;
 using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
@@ -21,10 +20,11 @@ internal class MainScene : Scene
 
     protected override void LoadObjects()
     {
-        //MusicManager.Resume();
+        MusicManager.Resume();
         // Add the parallax object to the scene
         AddObject(new ParallaxLayer());
         // Add the icon
+        AddObject(new Menu());
         AddObject(new MusicIcon());
         AddObject(new SettingIcon());
 
@@ -44,6 +44,26 @@ internal class MainScene : Scene
     }
 
     #region Private Class
+
+    public class Menu : RenderObject
+    {
+        private readonly Sprite _menuSprite;
+
+        public Menu()
+        {
+            SetZIndex(1);
+            // Load the menu sprite
+            Texture texture = Assets.UI.Load("tiles/11.png");
+            _menuSprite = new Sprite(texture)
+            {
+                //Color = new Color(255, 255, 180),
+                Scale = new Vector2f(GameEngine.ScreenSize.X * 0.022f, GameEngine.ScreenSize.Y * 0.022f),
+                Position = new Vector2f(GameEngine.ScreenSize.X * 0.15f, GameEngine.ScreenSize.Y * 0.15f)
+            };
+        }
+
+        protected override Drawable GetDrawable() => _menuSprite;
+    }
 
     [IgnoredLoad("RenderObject")]
     private class ParallaxLayer : RenderObject

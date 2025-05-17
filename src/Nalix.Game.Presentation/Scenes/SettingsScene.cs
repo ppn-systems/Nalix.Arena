@@ -80,7 +80,7 @@ public class SettingsScene : Scene
             SetZIndex(2);
 
             // Banner setup
-            Texture panel = Assets.UI.Load("banners/8.png");
+            Texture panel = Assets.UI.Load("tiles/7.png");
 
             // Calculate the scale based on the screen size and the panel's original size
             float scaleFactor = Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);

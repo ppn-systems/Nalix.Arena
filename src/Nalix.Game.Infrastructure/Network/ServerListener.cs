@@ -8,4 +8,7 @@ namespace Nalix.Game.Infrastructure.Network;
 public sealed class ServerListener(IProtocol protocol, IBufferPool bufferPool, ILogger logger)
     : Listener(protocol, bufferPool, logger)
 {
+    public override void UpdateTime(long milliseconds)
+    {
+    }
 }

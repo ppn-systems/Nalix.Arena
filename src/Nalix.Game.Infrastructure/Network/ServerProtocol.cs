@@ -45,10 +45,4 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
         base.OnConnectionError(connection, exception);
         NLogix.Host.Instance.Error($"[OnConnectionError] Connection error with {connection.RemoteEndPoint}: {exception}");
     }
-
-    protected override void OnDisposing()
-    {
-        NLogix.Host.Instance.Debug("[OnDisposing] ServerProtocol is shutting down.");
-        base.OnDisposing();
-    }
 }
