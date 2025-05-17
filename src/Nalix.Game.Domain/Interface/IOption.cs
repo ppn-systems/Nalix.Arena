@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Options;
+﻿namespace Nalix.Game.Domain.Interface;
 
 public interface IOption : System.ICloneable
 {

@@ -1,11 +1,14 @@
 ﻿using Nalix.Game.Domain.Entities;
+using Nalix.Game.Domain.Models.Attacks;
+using Nalix.Game.Domain.Models.Combat;
+using Nalix.Game.Domain.Models.Monsters;
 
-namespace Nalix.Game.Domain.Models.Monsters;
+namespace Nalix.Game.Domain.Interface;
 
 /// <summary>
 /// Giao diện định nghĩa các thuộc tính và hành vi cơ bản của một quái vật trong game.
 /// </summary>
-public interface IMonster
+public interface IMonster : ICombatant
 {
     /// <summary>
     /// Mã định danh duy nhất của quái vật.
@@ -16,11 +19,6 @@ public interface IMonster
     /// Tên của quái vật.
     /// </summary>
     string Name { get; set; }
-
-    /// <summary>
-    /// Kiểm tra xem quái vật còn sống hay không (dựa trên chỉ số máu).
-    /// </summary>
-    bool IsAlive { get; }
 
     /// <summary>
     /// Thời điểm tấn công tiếp theo của quái vật (dựa trên Unix milliseconds).
@@ -35,7 +33,7 @@ public interface IMonster
     /// <summary>
     /// Các chỉ số của quái vật (máu, sát thương, phòng thủ...).
     /// </summary>
-    MonsterStats Stats { get; set; }
+    MonsterStats MonsterStats { get; set; }
 
     /// <summary>
     /// Bảng vật phẩm rơi ra khi quái vật bị tiêu diệt.
@@ -48,7 +46,12 @@ public interface IMonster
     RefreshInfo Refresh { get; set; }
 
     /// <summary>
-    /// Loại quái vật (ví dụ: cận chiến, tầm xa...).
+    /// Hành vi tấn công cận chiến của quái vật.
     /// </summary>
-    MonsterType Type { get; set; }
+    IAttackBehavior MeleeAttack { get; set; }
+
+    /// <summary>
+    /// Hành vi tấn công tầm xa của quái vật.
+    /// </summary>
+    IAttackBehavior RangedAttack { get; set; }
 }

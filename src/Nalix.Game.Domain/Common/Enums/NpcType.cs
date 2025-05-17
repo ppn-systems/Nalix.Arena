@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.NPCs;
+﻿namespace Nalix.Game.Domain.Common.Enums;
 
 /// <summary>
 /// Xác định loại của NPC trong trò chơi.

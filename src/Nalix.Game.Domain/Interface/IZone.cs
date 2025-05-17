@@ -1,11 +1,9 @@
 ﻿using Nalix.Game.Domain.Models.Characters;
 using Nalix.Game.Domain.Models.Items;
-using Nalix.Game.Domain.Models.Maps;
-using Nalix.Game.Domain.Models.Monsters;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Models.Zones;
+namespace Nalix.Game.Domain.Interface;
 
 /// <summary>
 /// Đại diện cho một khu vực trong bản đồ trò chơi.

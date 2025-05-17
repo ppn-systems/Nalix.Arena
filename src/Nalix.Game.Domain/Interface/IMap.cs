@@ -1,11 +1,10 @@
-﻿using Nalix.Game.Domain.Models.Maps.Items;
+﻿using Nalix.Game.Domain.Models.Maps;
+using Nalix.Game.Domain.Models.Maps.Items;
 using Nalix.Game.Domain.Models.Monsters;
-using Nalix.Game.Domain.Models.NPCs;
-using Nalix.Game.Domain.Models.Zones;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Nalix.Game.Domain.Models.Maps;
+namespace Nalix.Game.Domain.Interface;
 
 /// <summary>
 /// Giao diện định nghĩa các thuộc tính và hành vi của một bản đồ trong game.

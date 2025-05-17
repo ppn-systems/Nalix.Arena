@@ -1,5 +1,8 @@
 ﻿using Nalix.Game.Domain.Common;
 using Nalix.Game.Domain.Entities;
+using Nalix.Game.Domain.Interface;
+using Nalix.Game.Domain.Models.Attacks;
+using Nalix.Game.Domain.Models.Combat;
 using Nalix.Shared.Time;
 using System.Collections.Generic;
 
@@ -18,7 +21,7 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     /// <summary>
     /// Kiểm tra xem quái vật còn sống hay không (dựa trên chỉ số máu).
     /// </summary>
-    public bool IsAlive => Stats.Health > 0;
+    public bool IsAlive => CombatStats.Health > 0;
 
     /// <summary>
     /// Bảng vật phẩm rơi ra khi quái vật bị tiêu diệt.
@@ -26,24 +29,34 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     public LootTable Loot { get; set; }
 
     /// <summary>
-    /// Loại quái vật (ví dụ: cận chiến, tầm xa...).
-    /// </summary>
-    public MonsterType Type { get; set; }
-
-    /// <summary>
     /// Vị trí hiện tại của quái vật trên bản đồ.
     /// </summary>
     public Position Position { get; set; }
 
     /// <summary>
-    /// Các chỉ số của quái vật (máu, sát thương, phòng thủ...).
-    /// </summary>
-    public MonsterStats Stats { get; set; }
-
-    /// <summary>
     /// Thông tin về thời gian và cách làm mới quái vật trên bản đồ.
     /// </summary>
     public RefreshInfo Refresh { get; set; }
+
+    /// <summary>
+    /// Thông tin về chỉ số chiến đấu của quái vật (sát thương, phòng thủ, tốc độ...).
+    /// </summary>
+    public CharacterStats CombatStats { get; set; }
+
+    /// <summary>
+    /// Các chỉ số của quái vật (máu gốc, kinh nghiệm...).
+    /// </summary>
+    public MonsterStats MonsterStats { get; set; }
+
+    /// <summary>
+    /// Hành vi tấn công của quái vật, có thể là tấn công cận chiến hoặc tấn công từ xa.
+    /// </summary>
+    public IAttackBehavior MeleeAttack { get; set; }
+
+    /// <summary>
+    /// Hành vi tấn công từ xa của quái vật, có thể là tấn công bằng phép thuật hoặc vũ khí.
+    /// </summary>
+    public IAttackBehavior RangedAttack { get; set; }
 
     /// <summary>
     /// Danh sách lưu trữ thông tin về sát thương mà các người chơi gây ra cho quái vật
@@ -57,13 +70,38 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     public Monster()
     {
         // Khởi tạo các giá trị mặc định nếu cần
-        Id = 0;
-        TimeAttack = 10000 + Clock.UnixMillisecondsNow();
+        this.Id = 0;
+        this.TimeAttack = 10000 + Clock.UnixMillisecondsNow();
 
-        Position = new Position(0, 0);
-        Stats = new MonsterStats();
-        Loot = new LootTable();
-        Refresh = new RefreshInfo();
-        Type = MonsterType.Melee;
+        this.Position = new Position(0, 0);
+        this.MonsterStats = new MonsterStats();
+        this.Loot = new LootTable();
+        this.Refresh = new RefreshInfo();
+    }
+
+    public void TakeDamage(long amount)
+    {
+        // Giảm sát thương theo giáp (Armor)
+        long damageTaken = amount - CombatStats.Defense;
+        if (damageTaken < 1)
+            damageTaken = 1; // Luôn nhận ít nhất 1 sát thương
+
+        CombatStats.Health -= damageTaken;
+
+        if (CombatStats.Health < 0)
+            CombatStats.Health = 0;
+    }
+
+    public long CalculateDamage(ICombatant target)
+    {
+        // Nếu target có chỉ số phòng thủ
+        long targetArmor = 0;
+        if (target is ICombatant combatant)
+        {
+            targetArmor = combatant.CombatStats.Defense;
+        }
+
+        long finalDamage = CombatStats.Attack - targetArmor;
+        return finalDamage < 1 ? 1 : finalDamage; // Tối thiểu luôn gây 1 sát thương
     }
 }

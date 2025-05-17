@@ -1,7 +1,8 @@
 ﻿using Nalix.Game.Domain.Common;
+using Nalix.Game.Domain.Common.Enums;
 using Nalix.Game.Domain.Entities;
 
-namespace Nalix.Game.Domain.Models.NPCs;
+namespace Nalix.Game.Domain.Models.Maps;
 
 /// <summary>
 /// Đại diện cho một NPC trong trò chơi.

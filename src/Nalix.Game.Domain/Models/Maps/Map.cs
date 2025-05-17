@@ -1,8 +1,7 @@
 ﻿using Nalix.Game.Domain.Common;
+using Nalix.Game.Domain.Interface;
 using Nalix.Game.Domain.Models.Maps.Items;
 using Nalix.Game.Domain.Models.Monsters;
-using Nalix.Game.Domain.Models.NPCs;
-using Nalix.Game.Domain.Models.Zones;
 using System;
 using System.Collections.Generic;
 using System.Linq;

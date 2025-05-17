@@ -1,5 +1,4 @@
 ﻿using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Entities.Players;
 using Nalix.Game.Domain.Models.Items;
 
 namespace Nalix.Game.Domain.Models.Characters;

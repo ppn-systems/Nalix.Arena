@@ -1,4 +1,6 @@
-﻿namespace Nalix.Game.Domain.Models.Options;
+﻿using Nalix.Game.Domain.Interface;
+
+namespace Nalix.Game.Domain.Models.Options;
 
 public sealed class OptionItem : IOption
 {

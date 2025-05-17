@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Entities.Players;
+﻿namespace Nalix.Game.Domain.Entities;
 
 /// <summary>
 /// Lớp chứa các chỉ số nhân vật trong trò chơi.
@@ -8,22 +8,22 @@ public sealed class CharacterStats
     /// <summary>
     /// Sức tấn công (Damage).
     /// </summary>
-    public ulong Attack { get; set; }
+    public long Attack { get; set; }
 
     /// <summary>
     /// Máu tối đa (HP).
     /// </summary>
-    public ulong Health { get; set; }
+    public long Health { get; set; }
 
     /// <summary>
     /// Năng lượng tối đa (Energy).
     /// </summary>
-    public ulong Energy { get; set; }
+    public long Energy { get; set; }
 
     /// <summary>
     /// Phòng thủ.
     /// </summary>
-    public ulong Defense { get; set; }
+    public long Defense { get; set; }
 
     /// <summary>
     /// Tỉ lệ chí mạng (%).

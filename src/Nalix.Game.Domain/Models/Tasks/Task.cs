@@ -1,5 +1,6 @@
 ﻿using Nalix.Game.Domain.Common;
 using Nalix.Game.Domain.Entities;
+using Nalix.Game.Domain.Interface;
 using System.Collections.Generic;
 
 namespace Nalix.Game.Domain.Models.Tasks;
