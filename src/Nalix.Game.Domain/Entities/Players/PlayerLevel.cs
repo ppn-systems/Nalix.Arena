@@ -1,7 +1,17 @@
 ﻿namespace Nalix.Game.Domain.Entities.Players;
 
+/// <summary>
+/// Lớp đại diện cho thông tin cấp độ và kinh nghiệm của người chơi trong game.
+/// </summary>
 public sealed class PlayerLevel
 {
-    public int Level { get; set; }          // Cấp độ (Level)
-    public long Experience { get; set; }     // Kinh nghiệm (Experience)
+    /// <summary>
+    /// Cấp độ hiện tại của người chơi.
+    /// </summary>
+    public uint Level { get; set; }
+
+    /// <summary>
+    /// Lượng kinh nghiệm hiện tại của người chơi.
+    /// </summary>
+    public ulong Experience { get; set; }
 }

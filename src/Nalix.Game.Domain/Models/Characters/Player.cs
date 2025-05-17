@@ -2,11 +2,28 @@
 
 namespace Nalix.Game.Domain.Models.Characters;
 
+/// <summary>
+/// Đại diện cho một người chơi trong trò chơi.
+/// </summary>
 public sealed class Player
 {
+    /// <summary>
+    /// ID duy nhất của người chơi.
+    /// </summary>
     public int Id { get; set; }
+
+    /// <summary>
+    /// Tên của người chơi.
+    /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    /// Nhân vật mà người chơi điều khiển.
+    /// </summary>
     public Character Character { get; set; }
-    public IConnection Connection { get; set; }     // Kết nối của người chơi
+
+    /// <summary>
+    /// Kết nối của người chơi với hệ thống.
+    /// </summary>
+    public IConnection Connection { get; set; }
 }

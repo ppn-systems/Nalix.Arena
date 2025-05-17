@@ -3,11 +3,28 @@ using System.Collections.Generic;
 
 namespace Nalix.Game.Domain.Entities;
 
+/// <summary>
+/// Lớp đại diện cho phần thưởng nhận được trong game.
+/// </summary>
 public class Reward
 {
-    public int Experience { get; set; }      // EXP nhận được
-    public int Gold { get; set; }            // Vàng nhận được
-    public int Gems { get; set; }            // Kim cương nhận được
+    /// <summary>
+    /// Lượng kinh nghiệm (EXP) nhận được từ phần thưởng.
+    /// </summary>
+    public uint Experience { get; set; }
 
-    public List<Item> Items { get; set; } = []; // Danh sách vật phẩm nhận được
+    /// <summary>
+    /// Lượng vàng nhận được từ phần thưởng.
+    /// </summary>
+    public uint Gold { get; set; }
+
+    /// <summary>
+    /// Lượng kim cương nhận được từ phần thưởng.
+    /// </summary>
+    public uint Gems { get; set; }
+
+    /// <summary>
+    /// Danh sách các vật phẩm nhận được từ phần thưởng.
+    /// </summary>
+    public List<Item> Items { get; set; } = [];
 }

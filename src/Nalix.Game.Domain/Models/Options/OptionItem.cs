@@ -2,7 +2,10 @@
 
 public sealed class OptionItem : IOption
 {
+    /// <inheritdoc />
     public int Id { get; set; }
+
+    /// <inheritdoc />
     public int Param { get; set; }
 
     /// <summary>

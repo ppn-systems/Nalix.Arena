@@ -1,4 +1,5 @@
-﻿using Nalix.Game.Domain.Models.Options;
+﻿using Nalix.Game.Domain.Common;
+using Nalix.Game.Domain.Models.Options;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,37 +8,27 @@ namespace Nalix.Game.Domain.Models.Items;
 /// <summary>
 /// Đại diện cho một vật phẩm trong trò chơi, bao gồm thông tin giá cả, số lượng và các tùy chọn bổ sung.
 /// </summary>
-public sealed class Item
+public sealed class Item : NamedEntity<ushort>
 {
-    /// <summary>
-    /// Lấy hoặc đặt mã định danh duy nhất của vật phẩm.
-    /// </summary>
-    public short Id { get; set; }
-
     /// <summary>
     /// Lấy hoặc đặt chỉ số giao diện người dùng (UI) của vật phẩm.
     /// </summary>
     public int IndexUI { get; set; }
 
     /// <summary>
-    /// Lấy hoặc đặt tên của vật phẩm.
-    /// </summary>
-    public string Name { get; set; }
-
-    /// <summary>
     /// Lấy hoặc đặt giá mua vật phẩm bằng vàng.
     /// </summary>
-    public int Buy { get; set; } = 0;
+    public uint Buy { get; set; } = 0;
 
     /// <summary>
     /// Lấy hoặc đặt giá bán vật phẩm bằng vàng.
     /// </summary>
-    public int Sale { get; set; } = 1;
+    public uint Sale { get; set; } = 1;
 
     /// <summary>
     /// Lấy hoặc đặt số lượng vật phẩm.
     /// </summary>
-    public int Quantity { get; set; } = 1;
+    public uint Quantity { get; set; } = 1;
 
     /// <summary>
     /// Lấy hoặc đặt danh sách các tùy chọn bổ sung của vật phẩm.
