@@ -7,7 +7,7 @@ namespace Nalix.Game.Domain.Models.Items;
 /// <summary>
 /// Đại diện cho một vật phẩm trong trò chơi, bao gồm thông tin giá cả, số lượng và các tùy chọn bổ sung.
 /// </summary>
-public class Item
+public sealed class Item
 {
     /// <summary>
     /// Lấy hoặc đặt mã định danh duy nhất của vật phẩm.

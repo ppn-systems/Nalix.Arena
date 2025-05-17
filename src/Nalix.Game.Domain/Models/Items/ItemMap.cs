@@ -1,9 +1,9 @@
-﻿using Nalix.Game.Domain.Shared;
+﻿using Nalix.Game.Domain.Entities;
 using Nalix.Shared.Time;
 
 namespace Nalix.Game.Domain.Models.Items;
 
-public class ItemMap
+public sealed class ItemMap
 {
     public int Id { get; set; }
     public int PlayerId { get; set; }

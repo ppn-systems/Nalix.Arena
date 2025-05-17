@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Nalix.Game.Domain.Models.Items;
 
-public class ItemContainer
+public sealed class ItemContainer
 {
     private readonly List<Item> _items = [];
 

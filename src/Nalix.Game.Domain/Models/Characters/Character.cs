@@ -1,14 +1,15 @@
-﻿using Nalix.Game.Domain.Models.Items;
-using Nalix.Game.Domain.Shared;
+﻿using Nalix.Game.Domain.Entities;
+using Nalix.Game.Domain.Entities.Players;
+using Nalix.Game.Domain.Models.Items;
 
 namespace Nalix.Game.Domain.Models.Characters;
 
-public class Character
+public sealed class Character
 {
     public int MapId { get; set; }
 
-    public Power Power { get; set; }
     public Position Position { get; set; }
+    public CharacterStats CharacterStats { get; set; }
 
     // Inventory and Chest for the player
 

@@ -1,6 +1,6 @@
-﻿namespace Nalix.Game.Domain.Models.Monsters;
+﻿namespace Nalix.Game.Domain.Entities;
 
-public class RefreshInfo
+public sealed class RefreshInfo
 {
     public bool IsRefresh { get; set; }
     public long TimeRefresh { get; set; }

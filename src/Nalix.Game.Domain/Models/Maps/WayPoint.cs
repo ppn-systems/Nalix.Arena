@@ -1,6 +1,6 @@
 ﻿namespace Nalix.Game.Domain.Models.Maps;
 
-public class WayPoint
+public sealed class WayPoint
 {
     public short MinX { get; set; }        // Vị trí min X (trái)
     public short MinY { get; set; }        // Vị trí min Y (trên)

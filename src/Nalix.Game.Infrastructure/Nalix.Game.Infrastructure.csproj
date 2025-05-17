@@ -6,7 +6,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nalix.Game\Nalix.Game.csproj" />
-		<PackageReference Include="Nalix.Network" Version="0.8.26" />
+		<PackageReference Include="Nalix.Network" Version="0.8.73" />
 	</ItemGroup>
 
 </Project>

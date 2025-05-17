@@ -1,4 +1,4 @@
-﻿using Nalix.Game.Domain.Shared;
+﻿using Nalix.Game.Domain.Entities;
 using Nalix.Shared.Time;
 using System.Collections.Generic;
 
@@ -8,18 +8,16 @@ public abstract class Monster : IMonster
 {
     public int Id { get; set; }
     public int IdMap { get; set; }
-    public Position Position { get; set; }
     public string Name { get; set; }
-
-    public bool IsAlive => Stats.Health > 0;
     public long TimeAttack { get; set; }
+    public bool IsAlive => Stats.Health > 0;
 
-    public MonsterStats Stats { get; set; }              // Các chỉ số quái vật
     public LootTable Loot { get; set; }                   // Loot table của quái vật
-    public RefreshInfo Refresh { get; set; }              // Thông tin làm mới quái vật
     public MonsterType Type { get; set; }                 // Loại quái vật
-
-    public Dictionary<int, int> SessionAttack { get; set; }
+    public Position Position { get; set; }
+    public MonsterStats Stats { get; set; }              // Các chỉ số quái vật
+    public RefreshInfo Refresh { get; set; }              // Thông tin làm mới quái vật
+    public Dictionary<int, int> PlayerAttack { get; set; }
 
     public Monster()
     {

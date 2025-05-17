@@ -6,11 +6,9 @@ using System.Collections.Generic;
 
 namespace Nalix.Game.Domain.Models.Maps.Zones;
 
-public class Zone : IZone
+public sealed class Zone : IZone
 {
     public int Id { get; set; }                          // ID duy nhất của Zone
-    public int MapId { get; set; }                       // ID bản đồ mà zone này thuộc về
-    public string Name { get; set; }                     // Tên khu vực
 
     public IMap Map { get; set; }
     public List<IMonster> Monsters { get; set; }         // Danh sách quái vật trong zone

@@ -9,9 +9,6 @@ namespace Nalix.Game.Domain.Models.Maps.Zones;
 public interface IZone
 {
     int Id { get; }
-    int MapId { get; }
-    string Name { get; }
-
     IMap Map { get; }
 
     List<IMonster> Monsters { get; }

@@ -2,7 +2,7 @@
 
 namespace Nalix.Game.Domain.Models.Characters;
 
-public class Player
+public sealed class Player
 {
     public int Id { get; set; }
     public string Name { get; set; }

@@ -1,4 +1,4 @@
-﻿using Nalix.Game.Domain.Shared;
+﻿using Nalix.Game.Domain.Entities;
 
 namespace Nalix.Game.Domain.Models.Maps.Items;
 

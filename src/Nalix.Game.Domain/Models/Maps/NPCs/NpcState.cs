@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Maps;
+﻿namespace Nalix.Game.Domain.Models.Maps.NPCs;
 
 public enum NpcState : byte
 {
