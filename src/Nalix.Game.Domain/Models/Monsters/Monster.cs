@@ -21,7 +21,7 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     /// <summary>
     /// Kiểm tra xem quái vật còn sống hay không (dựa trên chỉ số máu).
     /// </summary>
-    public bool IsAlive => CombatStats.Health > 0;
+    public bool IsAlive => CharacterStats.Health > 0;
 
     /// <summary>
     /// Bảng vật phẩm rơi ra khi quái vật bị tiêu diệt.
@@ -41,7 +41,7 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     /// <summary>
     /// Thông tin về chỉ số chiến đấu của quái vật (sát thương, phòng thủ, tốc độ...).
     /// </summary>
-    public CharacterStats CombatStats { get; set; }
+    public CharacterStats CharacterStats { get; set; }
 
     /// <summary>
     /// Các chỉ số của quái vật (máu gốc, kinh nghiệm...).
@@ -82,14 +82,14 @@ public abstract class Monster : NamedEntity<uint>, IMonster
     public void TakeDamage(long amount)
     {
         // Giảm sát thương theo giáp (Armor)
-        long damageTaken = amount - CombatStats.Defense;
+        long damageTaken = amount - CharacterStats.Defense;
         if (damageTaken < 1)
             damageTaken = 1; // Luôn nhận ít nhất 1 sát thương
 
-        CombatStats.Health -= damageTaken;
+        CharacterStats.Health -= damageTaken;
 
-        if (CombatStats.Health < 0)
-            CombatStats.Health = 0;
+        if (CharacterStats.Health < 0)
+            CharacterStats.Health = 0;
     }
 
     public long CalculateDamage(ICombatant target)
@@ -98,10 +98,10 @@ public abstract class Monster : NamedEntity<uint>, IMonster
         long targetArmor = 0;
         if (target is ICombatant combatant)
         {
-            targetArmor = combatant.CombatStats.Defense;
+            targetArmor = combatant.CharacterStats.Defense;
         }
 
-        long finalDamage = CombatStats.Attack - targetArmor;
+        long finalDamage = CharacterStats.Attack - targetArmor;
         return finalDamage < 1 ? 1 : finalDamage; // Tối thiểu luôn gây 1 sát thương
     }
 }

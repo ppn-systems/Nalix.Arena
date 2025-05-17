@@ -10,12 +10,12 @@ public interface ICombatant
     /// <summary>
     ///
     /// </summary>
-    CharacterStats CombatStats { get; set; }
+    CharacterStats CharacterStats { get; set; }
 
     /// <summary>
     /// Xác định xem chiến binh còn sống hay không.
     /// </summary>
-    bool IsAlive => CombatStats.Health > 0;
+    bool IsAlive => CharacterStats.Health > 0;
 
     /// <summary>
     /// Gây sát thương lên chiến binh.
