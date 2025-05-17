@@ -29,7 +29,7 @@ public sealed class Zone : IZone
     /// <param name="id">ID của khu vực.</param>
     /// <param name="map">Bản đồ mà khu vực thuộc về.</param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-    public Zone(int id, IMap map)
+    public Zone(uint id, IMap map)
     {
         Id = id;
         Map = map;

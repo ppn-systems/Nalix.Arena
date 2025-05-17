@@ -8,7 +8,7 @@ public sealed class MeleeAttack : IAttackBehavior
 
     public void Execute(ICombatant attacker, ICombatant target)
     {
-        int damage = attacker.CalculateDamage(target);
+        long damage = attacker.CalculateDamage(target);
         target.TakeDamage(damage);
     }
 }
