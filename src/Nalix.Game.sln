@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game", "Nalix.Game\Nalix.Game.csproj", "{646C38CD-61F2-4371-A7C6-5D5818EE8D04}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Presentation", "Nalix.Game.Presentation\Nalix.Game.Presentation.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Appication", "Nalix.Game.Appication\Nalix.Game.Appication.csproj", "{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Application", "Nalix.Game.Application\Nalix.Game.Application.csproj", "{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Infrastructure", "Nalix.Game.Infrastructure\Nalix.Game.Infrastructure.csproj", "{D566CA57-FDA5-4069-AB4B-BB30C34ACAF6}"
 EndProject
@@ -15,16 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Domain", "Nalix.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Host", "Nalix.Game.Host\Nalix.Game.Host.csproj", "{98A40ADC-5F80-4229-9959-B98642DAAC6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Game.Shared", "Nalix.Game.Shared\Nalix.Game.Shared.csproj", "{99E5F3A6-0998-4C57-980B-621312EA7673}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{646C38CD-61F2-4371-A7C6-5D5818EE8D04}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF3C2997-BCA2-4030-809B-EBCB68F171A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +41,10 @@ Global
 		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98A40ADC-5F80-4229-9959-B98642DAAC6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99E5F3A6-0998-4C57-980B-621312EA7673}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99E5F3A6-0998-4C57-980B-621312EA7673}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99E5F3A6-0998-4C57-980B-621312EA7673}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99E5F3A6-0998-4C57-980B-621312EA7673}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

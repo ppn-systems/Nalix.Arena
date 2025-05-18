@@ -4,4 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
+
+	<ItemGroup>
+		<ProjectReference Include="..\Nalix.Game.Shared\Nalix.Game.Shared.csproj" />
+	</ItemGroup>
+
 </Project>

@@ -5,8 +5,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Nalix.Game\Nalix.Game.csproj" />
+		<ProjectReference Include="..\Nalix.Game.Shared\Nalix.Game.Shared.csproj" />
 		<PackageReference Include="Nalix.Network" Version="0.8.73" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Persistence\" />
 	</ItemGroup>
 
 </Project>
