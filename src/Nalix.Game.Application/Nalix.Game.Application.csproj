@@ -7,6 +7,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nalix.Game.Shared\Nalix.Game.Shared.csproj" />
+		<ProjectReference Include="..\Nalix.Game.Infrastructure\Nalix.Game.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

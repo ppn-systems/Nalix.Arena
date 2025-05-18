@@ -96,7 +96,7 @@ public class Map : NamedEntity<uint>, IMap
     /// </summary>
     public void SetZone()
     {
-        for (var i = 0; i < ZoneCount; i++)
+        for (uint i = 0; i < ZoneCount; i++)
         {
             Zones.Add(new Zone(i, this));
         }
