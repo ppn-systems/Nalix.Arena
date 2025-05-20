@@ -186,4 +186,50 @@ internal class AccountService(GameDbContext context)
 
         return "Logout successful.";
     }
+
+    [PacketId((ushort)Command.ChangePassword)]
+    [PacketPermission(PermissionLevel.User)]
+    internal async Task<string> ChangePasswordAsync(IPacket packet, IConnection connection)
+    {
+        if (!connection.Metadata.TryGetValue("Username", out object value) || value is not string username)
+        {
+            NLogix.Host.Instance.Warn(
+                "Change password attempt without valid username metadata from connection {0}",
+                connection.RemoteEndPoint);
+
+            return "Invalid session. Please login again.";
+        }
+
+        if (!PasswordChange.TryParse(packet.Payload.Span, out var request))
+            return "Invalid password change format.";
+
+        Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username);
+        if (account == null)
+            return "Account does not exist.";
+
+        if (!SecureCredentials.VerifyCredentialHash(request.OldPassword, account.Salt, account.Hash))
+            return "Old password is incorrect.";
+
+        try
+        {
+            SecureCredentials.GenerateCredentialHash(request.NewPassword, out byte[] salt, out byte[] hash);
+            account.Salt = salt;
+            account.Hash = hash;
+            await _accounts.SaveChangesAsync();
+
+            NLogix.Host.Instance.Info(
+                "User {0} changed password successfully from connection {1}",
+                username, connection.RemoteEndPoint);
+
+            return "Password changed successfully.";
+        }
+        catch (Exception ex)
+        {
+            NLogix.Host.Instance.Error(
+                "Failed to change password for {0} from connection {1}, Ex: {2}",
+                username, connection.RemoteEndPoint, ex);
+
+            return "Failed to change password due to internal error.";
+        }
+    }
 }

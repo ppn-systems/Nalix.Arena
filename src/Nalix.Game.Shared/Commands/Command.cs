@@ -8,12 +8,17 @@ public enum Command : ushort
     Login = 0x64,
 
     /// <summary>
-    /// Lệnh để người chơi đăng ký tài khoản mới.
-    /// </summary>
-    Register = 0x65,
-
-    /// <summary>
     /// Lệnh để người chơi đăng xuất khỏi trò chơi.
     /// </summary>
-    Logout = 0x66,
+    Logout = 0x65,
+
+    /// <summary>
+    /// Lệnh để người chơi đăng ký tài khoản mới.
+    /// </summary>
+    Register = 0x66,
+
+    /// <summary>
+    /// Lệnh để người chơi thay đổi mật khẩu tài khoản.
+    /// </summary>
+    ChangePassword = 0x67,
 }
