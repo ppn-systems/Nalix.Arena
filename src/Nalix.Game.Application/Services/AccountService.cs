@@ -14,11 +14,11 @@ using System.Threading.Tasks;
 namespace Nalix.Game.Application.Services;
 
 [PacketController]
-internal class AccountService(GameDbContext context)
+public class AccountService(GameDbContext context)
 {
     private readonly Repository<Credentials> _accounts = new(context);
 
-    [PacketId((ushort)Command.Register)]
+    [PacketOpcode((ushort)Command.Register)]
     [PacketPermission(PermissionLevel.Guest)]
     internal async Task<string> RegisterAsync(IPacket packet, IConnection connection)
     {
@@ -64,7 +64,7 @@ internal class AccountService(GameDbContext context)
         }
     }
 
-    [PacketId((ushort)Command.Login)]
+    [PacketOpcode((ushort)Command.Login)]
     [PacketPermission(PermissionLevel.Guest)]
     public async Task<string> LoginAsync(IPacket packet, IConnection connection)
     {
@@ -137,7 +137,7 @@ internal class AccountService(GameDbContext context)
         }
     }
 
-    [PacketId((ushort)Command.Logout)]
+    [PacketOpcode((ushort)Command.Logout)]
     [PacketPermission(PermissionLevel.User)]
     internal async Task<string> LogoutAsync(IPacket _, IConnection connection)
     {
@@ -187,7 +187,7 @@ internal class AccountService(GameDbContext context)
         return "Logout successful.";
     }
 
-    [PacketId((ushort)Command.ChangePassword)]
+    [PacketOpcode((ushort)Command.ChangePassword)]
     [PacketPermission(PermissionLevel.User)]
     internal async Task<string> ChangePasswordAsync(IPacket packet, IConnection connection)
     {

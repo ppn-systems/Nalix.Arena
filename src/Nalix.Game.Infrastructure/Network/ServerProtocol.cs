@@ -1,6 +1,7 @@
 ﻿using Nalix.Common.Connection;
-using Nalix.Game.Infrastructure.Connections;
+using Nalix.Common.Package.Metadata;
 using Nalix.Logging;
+using Nalix.Network.Connection;
 using Nalix.Network.Dispatch;
 using Nalix.Network.Package;
 using Nalix.Network.Protocols;
@@ -35,9 +36,26 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
         base.OnAccept(connection, cancellationToken);
 
         // Thêm kết nối vào danh sách quản lý
-        ConnectionManager.Instance.AddConnection(connection);
+        ConnectionHub.Instance.RegisterConnection(connection);
 
         NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
+    }
+
+    public override void ProcessMessage(ReadOnlySpan<byte> bytes)
+    {
+        IConnection connection = ConnectionHub.Instance.GetConnection(bytes[PacketSize.Header..sizeof(uint)]);
+
+        try
+        {
+            NLogix.Host.Instance.Debug($"[ProcessMessage] Received packet from {connection.RemoteEndPoint}");
+            _packetDispatcher.HandlePacket(bytes, connection);
+            NLogix.Host.Instance.Debug($"[ProcessMessage] Successfully processed packet from {connection.RemoteEndPoint}");
+        }
+        catch (Exception ex)
+        {
+            NLogix.Host.Instance.Error($"[ProcessMessage] Error processing packet from {connection.RemoteEndPoint}: {ex}");
+            connection.Disconnect();
+        }
     }
 
     /// <summary>

@@ -1,12 +1,8 @@
-﻿using System;
+﻿namespace Nalix.Game.Host;
 
-namespace Nalix.Game.Host
+internal class Program
 {
-    internal class Program
-    {
-        private static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
-        }
-    }
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
+    private static void Main(string[] args) => Terminal.ExitEvent.Wait();
 }
