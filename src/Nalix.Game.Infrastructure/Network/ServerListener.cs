@@ -19,8 +19,8 @@ public sealed class ServerListener : Listener
     public ServerListener(IProtocol protocol, IBufferPool bufferPool, ILogger logger)
         : base(protocol, bufferPool, logger)
     {
-        EnableUdp = true;
-        EnableUpdate = true;
+        IsUdpEnabled = true; // Bật UDP cho listener
+        IsTimeSyncEnabled = true; // Bật đồng bộ thời gian
     }
 
     /// <summary>

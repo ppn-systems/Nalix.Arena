@@ -89,8 +89,8 @@ public class SettingsScene : Scene
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
             // Center the panel on the screen
-            float posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            float posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+            float posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
+            float posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
             _banner = new Sprite(panel)
             {
@@ -120,8 +120,8 @@ public class SettingsScene : Scene
             );
 
             Vector2f buttonPos = new(
-                panelPosition.X + panelSize.X * 0.15f,
-                panelPosition.Y + panelSize.Y - panelSize.Y * 0.2f
+                panelPosition.X + (panelSize.X * 0.15f),
+                panelPosition.Y + panelSize.Y - (panelSize.Y * 0.2f)
             );
 
             // Assuming a Font instance is required for the Button constructor
@@ -145,13 +145,13 @@ public class SettingsScene : Scene
         {
             if (!Visible) return;
 
-            if (Input.IsKeyDown(Keyboard.Key.B))
+            if (InputState.IsKeyDown(Keyboard.Key.B))
             {
                 SceneManager.ChangeScene(SceneNames.Main);
             }
 
             // Handle the click for the 'Back' button
-            var mousePos = Input.GetMousePosition();
+            var mousePos = InputState.GetMousePosition();
             bool isMouseDown = Mouse.IsButtonPressed(Mouse.Button.Left);
 
             // Chỉ xử lý click một lần duy nhất khi người dùng nhấn chuột trái

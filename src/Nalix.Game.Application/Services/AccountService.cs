@@ -1,6 +1,6 @@
-﻿using Nalix.Common.Connection;
+﻿using Nalix.Common.Attributes;
+using Nalix.Common.Connection;
 using Nalix.Common.Package;
-using Nalix.Common.Package.Attributes;
 using Nalix.Common.Security;
 using Nalix.Cryptography.Security;
 using Nalix.Game.Infrastructure.Database;
@@ -8,6 +8,7 @@ using Nalix.Game.Infrastructure.Repositories;
 using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Security;
 using Nalix.Logging;
+using Nalix.Serialization;
 using System;
 using System.Threading.Tasks;
 
@@ -22,8 +23,8 @@ public class AccountService(GameDbContext context)
     [PacketPermission(PermissionLevel.Guest)]
     internal async Task<string> RegisterAsync(IPacket packet, IConnection connection)
     {
-        if (!Credentials.TryParse(packet.Payload.Span, out Credentials credentials))
-            return "Invalid credentials format.";
+        Credentials credentials = new();
+        BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
 
         if (await _accounts.AnyAsync(a => a.Username == credentials.Username))
         {
@@ -68,8 +69,8 @@ public class AccountService(GameDbContext context)
     [PacketPermission(PermissionLevel.Guest)]
     public async Task<string> LoginAsync(IPacket packet, IConnection connection)
     {
-        if (!Credentials.TryParse(packet.Payload.Span, out Credentials credentials))
-            return "Invalid credentials format.";
+        Credentials credentials = new();
+        BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
 
         Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == credentials.Username);
         if (account == null)
@@ -165,10 +166,10 @@ public class AccountService(GameDbContext context)
             account.IsActive = false;
             await _accounts.SaveChangesAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log the error
-            NLogix.Host.Instance.Error($"Failed to update account {account.Username} status: {ex}");
+            NLogix.Host.Instance.Info("User {0} logged out from connection {1}", username, connection.RemoteEndPoint);
             return "Failed to update account status.";
         }
 
@@ -179,7 +180,7 @@ public class AccountService(GameDbContext context)
 
         // Xóa thông tin metadata và hạ quyền
         connection.Level = PermissionLevel.Guest;
-        connection.Metadata.Clear(); // hoặc chỉ remove "Username"
+        connection.Metadata.Remove("Username");
 
         // Ngắt kết nối nếu cần
         connection.Disconnect();

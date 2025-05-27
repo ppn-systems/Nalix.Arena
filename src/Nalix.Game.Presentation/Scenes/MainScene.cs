@@ -133,7 +133,7 @@ internal class MainScene : Scene
         {
             if (!Visible) return;
 
-            if (Input.IsKeyDown(Keyboard.Key.M))
+            if (InputState.IsKeyDown(Keyboard.Key.M))
             {
                 _clickSound.Play();
 
@@ -153,9 +153,9 @@ internal class MainScene : Scene
                 }
             }
 
-            if (Input.IsMouseButtonPressed(Mouse.Button.Left))
+            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                if (_icon.GetGlobalBounds().Contains(Input.GetMousePosition()))
+                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     _clickSound.Play();
 
@@ -211,16 +211,16 @@ internal class MainScene : Scene
         {
             if (!Visible) return;
 
-            if (Input.IsKeyDown(Keyboard.Key.S))
+            if (InputState.IsKeyDown(Keyboard.Key.S))
             {
                 MusicManager.Pause();
                 _clickSound.Play();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
 
-            if (Input.IsMouseButtonPressed(Mouse.Button.Left))
+            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                if (_settingsIcon.GetGlobalBounds().Contains(Input.GetMousePosition()))
+                if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     MusicManager.Pause();
                     _clickSound.Play();

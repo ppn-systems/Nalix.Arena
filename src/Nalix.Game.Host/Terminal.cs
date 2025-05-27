@@ -56,7 +56,7 @@ internal class Terminal
 
     private static readonly ConcurrentDictionary<ConsoleKey, Action> Shortcuts = new()
     {
-        [ConsoleKey.H] = () => ShowHelp(),
+        [ConsoleKey.H] = () => ShowShortcuts(),
         [ConsoleKey.Q] = () =>
         {
             AppConfig.Logger.Info("Ctrl+Q pressed: Initiating graceful shutdown...");
@@ -131,14 +131,15 @@ internal class Terminal
         };
     }
 
-    private static void ShowHelp()
+    private static void ShowShortcuts()
     {
         string indent = new(' ', 45);
         StringBuilder builder = new();
         builder.AppendLine("Available shortcuts:");
         foreach (var shortcut in Shortcuts)
         {
-            builder.AppendLine($"{indent}Ctrl+{shortcut.Key}".PadRight(10) + $"→ {GetShortcutDescription(shortcut.Key)}");
+            builder.AppendLine(
+                $"{indent}Ctrl+{shortcut.Key}".PadRight(10) + $"→ {GetShortcutDescription(shortcut.Key)}");
         }
         AppConfig.Logger.Info(builder.ToString());
     }
