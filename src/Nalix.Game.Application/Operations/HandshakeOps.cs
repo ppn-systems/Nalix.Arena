@@ -1,6 +1,7 @@
 ﻿using Nalix.Common.Connection;
 using Nalix.Common.Connection.Protocols;
 using Nalix.Common.Constants;
+using Nalix.Common.Identity;
 using Nalix.Common.Package;
 using Nalix.Common.Package.Attributes;
 using Nalix.Common.Package.Enums;
@@ -8,211 +9,253 @@ using Nalix.Common.Security;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Extensions.Primitives;
-using Nalix.Identifiers;
 using Nalix.Logging;
-using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 namespace Nalix.Game.Application.Operations;
 
 /// <summary>
-/// Handles the secure handshake process for establishing encrypted connections using X25519 and ISHA.
-/// This class manages both the initiation and finalization of secure connections with clients.
-/// The class ensures secure communication by exchanging keys and validating them using X25519 and hashing via ISHA.
+/// Quản lý quá trình bắt tay bảo mật để thiết lập kết nối mã hóa an toàn với client.
+/// Sử dụng thuật toán X25519 để trao đổi khóa và SHA256 để băm, đảm bảo tính bảo mật và toàn vẹn.
+/// Lớp này xử lý hai giai đoạn: khởi tạo và hoàn tất bắt tay, đồng thời duy trì trạng thái tạm thời
+/// và dọn dẹp định kỳ để tối ưu hóa tài nguyên.
 /// </summary>
 [PacketController]
 internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFactory<TPacket>
 {
-    private static readonly ConcurrentDictionary<Base36Id, HandshakeState> _states = new();
-    private static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(10);
-    private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(1);
+    // Lưu trữ trạng thái bắt tay tạm thời, sử dụng ConcurrentDictionary để đảm bảo an toàn luồng
+    private static readonly ConcurrentDictionary<IEncodedId, HandshakeState> _states = new();
+
+    // Thời gian chờ tối đa cho trạng thái bắt tay (10 giây)
+    private static readonly System.TimeSpan HandshakeTimeout = System.TimeSpan.FromSeconds(10);
+
+    // Khoảng thời gian giữa các lần dọn dẹp trạng thái hết hạn (1 phút)
+    private static readonly System.TimeSpan CleanupInterval = System.TimeSpan.FromMinutes(1);
 
     /// <summary>
-    /// Initiates a secure connection by performing a handshake with the client.
-    /// Expects a binary packet containing the client's X25519 public key (32 bytes).
+    /// Khởi tạo lớp HandshakeOps và kích hoạt tác vụ nền để dọn dẹp trạng thái bắt tay hết hạn.
+    /// Tác vụ chạy liên tục, định kỳ xóa các trạng thái vượt quá thời gian chờ để tiết kiệm tài nguyên.
     /// </summary>
-    /// <param name="packet">The incoming packet containing the client's public key.</param>
-    /// <param name="connection">The connection to the client that is requesting the handshake.</param>
+    static HandshakeOps()
+    {
+        // Khởi động tác vụ nền không đồng bộ để dọn dẹp trạng thái
+        _ = Task.Run(CleanupLoop).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Khởi tạo quá trình bắt tay bảo mật với client.
+    /// Nhận gói tin chứa khóa công khai X25519 (32 byte), tạo cặp khóa X25519 cho server,
+    /// tính toán khóa mã hóa chung, lưu trạng thái và gửi khóa công khai của server về client.
+    /// Phương thức này kiểm tra định dạng gói tin và ngăn chặn tấn công lặp lại (replay attack).
+    /// </summary>
+    /// <param name="packet">Gói tin chứa khóa công khai X25519 của client (dự kiến 32 byte, định dạng nhị phân).</param>
+    /// <param name="connection">Thông tin kết nối của client yêu cầu bắt tay.</param>
+    /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
     [PacketTimeout(Timeouts.Moderate)]
     [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((ushort)ProtocolCommand.StartHandshake)]
     [System.Runtime.CompilerServices.MethodImpl(
-         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static System.Memory<byte> StartHandshake(IPacket packet, IConnection connection)
     {
-        // CheckLimit if the packet type is binary (as expected for X25519 public key).
+        // Kiểm tra định dạng gói tin (phải là nhị phân để chứa khóa X25519)
         if (packet.Type != PacketType.Binary)
         {
             NLogix.Host.Instance.Debug("Received non-binary packet [Type={0}] from {1}",
-                           packet.Type, connection.RemoteEndPoint);
-
+                packet.Type, connection.RemoteEndPoint);
             return TPacket.Create((ushort)ProtocolCommand.StartHandshake, "Invalid packet type")
                           .Serialize();
         }
 
-        // Validate that the public key length is 32 bytes (X25519 standard).
+        // Xác thực độ dài khóa công khai (phải là 32 byte theo chuẩn X25519)
         if (packet.Payload.Length != 32)
         {
-            NLogix.Host.Instance.Debug("Invalid public key length [Length={0}] from {1}",
-                           packet.Payload.Length, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Debug(
+                "Invalid public key length [Length={0}] from {1}",
+                packet.Payload.Length, connection.RemoteEndPoint);
 
             return TPacket.Create((ushort)ProtocolCommand.StartHandshake, ProtocolMessage.InvalidData)
                           .Serialize();
         }
 
+        // Phát hiện và chặn nỗ lực tấn công lặp lại
         if (IsReplayAttempt(connection))
         {
-            NLogix.Host.Instance.Debug("Detected handshake replay attempt from {0}", connection.RemoteEndPoint);
-            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.RateLimited).Serialize();
+            NLogix.Host.Instance.Debug(
+                "Detected handshake replay attempt from {0}", connection.RemoteEndPoint);
+
+            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.RateLimited)
+                          .Serialize();
         }
 
-        // Generate an X25519 key pair (private and public keys).
-        (byte[] @private, byte[] @public) = X25519.GenerateKeyPair();
+        // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server
+        (byte[] privateKey, byte[] publicKey) = X25519.GenerateKeyPair();
 
-        // Store the private key in connection metadata for later use.
-        connection.Metadata[Meta.PrivateKey] = @private;
-        connection.Metadata[Meta.LastHandshakeTime] = System.DateTime.UtcNow;
+        // Lưu trữ trạng thái bắt tay, bao gồm khóa riêng và thời gian khởi tạo
+        var state = new HandshakeState
+        {
+            PrivateKey = privateKey,
+            LastTime = System.DateTime.UtcNow
+        };
+        _states[connection.Id] = state;
 
-        // Derive the shared secret key using the server's private key and the client's public key.
-        connection.EncryptionKey = DeriveSharedKey(@private, packet.Payload.ToArray());
+        // Lấy khóa công khai của client từ gói tin
+        byte[] clientPubKey = System.Runtime.InteropServices.MemoryMarshal.TryGetArray(
+            packet.Payload, out System.ArraySegment<byte> seg)
+            ? seg.Array : packet.Payload.ToArray();
 
-        // Elevate the client's access level after successful handshake initiation.
+        // Tính toán khóa mã hóa chung từ khóa riêng của server và khóa công khai của client
+        connection.EncryptionKey = DeriveSharedKey(privateKey, clientPubKey);
+
+        // Nâng cấp quyền truy cập của client lên mức User sau khi khởi tạo thành công
         connection.Level = PermissionLevel.User;
 
-        // SendPacket the server's public key back to the client for the next phase of the handshake.
+        // Gửi khóa công khai của server về client để tiếp tục giai đoạn hoàn tất
         return TPacket.Create(
-            (ushort)ProtocolCommand.StartHandshake,
-            PacketType.Binary, PacketFlags.None, PacketPriority.Low, @public).Serialize();
+            (ushort)ProtocolCommand.StartHandshake, PacketType.Binary,
+            PacketFlags.None, PacketPriority.Low, publicKey).Serialize();
     }
 
     /// <summary>
-    /// Finalizes the secure connection by verifying the client's public key and comparing it to the derived encryption key.
-    /// This method ensures the integrity of the handshake process by performing key comparison.
+    /// Hoàn tất quá trình bắt tay bảo mật bằng cách xác minh khóa công khai của client.
+    /// Tính toán lại khóa mã hóa chung và so sánh với khóa hiện tại để đảm bảo tính toàn vẹn.
+    /// Nếu thành công, kết nối bảo mật được thiết lập và trạng thái tạm thời được xóa.
     /// </summary>
-    /// <param name="packet">The incoming packet containing the client's public key for finalization.</param>
-    /// <param name="connection">The connection to the client.</param>
+    /// <param name="packet">Gói tin chứa khóa công khai của client để hoàn tất (dự kiến 32 byte).</param>
+    /// <param name="connection">Thông tin kết nối của client.</param>
+    /// <returns>Gói tin thông báo kết quả (thành công hoặc lỗi) của quá trình hoàn tất.</returns>
     [PacketEncryption(false)]
     [PacketTimeout(Timeouts.Moderate)]
     [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((ushort)ProtocolCommand.CompleteHandshake)]
     [System.Runtime.CompilerServices.MethodImpl(
-         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static System.Memory<byte> CompleteHandshake(IPacket packet, IConnection connection)
     {
-        // Ensure the packet type is binary (expected for public key).
+        // Kiểm tra định dạng gói tin (phải là nhị phân)
         if (packet.Type != PacketType.Binary)
         {
-            NLogix.Host.Instance.Debug("Received non-binary packet [Type={0}] from {1}",
-                           packet.Type, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Debug(
+                "Received non-binary packet [Type={0}] from {1}",
+                packet.Type, connection.RemoteEndPoint);
 
-            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.InvalidData).Serialize();
+            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.InvalidData)
+                          .Serialize();
         }
 
-        // CheckLimit if the public key length is correct (32 bytes).
+        // Xác thực độ dài khóa công khai (phải là 32 byte)
         if (packet.Payload.Length != 32)
         {
-            NLogix.Host.Instance.Debug("Invalid public key length [Length={0}] from {1}",
-                           packet.Payload.Length, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Debug(
+                "Invalid public key length [Length={0}] from {1}",
+                packet.Payload.Length, connection.RemoteEndPoint);
 
-            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.InvalidPayload).Serialize();
+            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.InvalidPayload)
+                          .Serialize();
         }
 
-        // Retrieve the stored private key from connection metadata.
-        if (!connection.Metadata.TryGetValue(Meta.PrivateKey, out object privateKeyObj) ||
-            privateKeyObj is not byte[] @private)
+        // Lấy và xóa trạng thái bắt tay từ bộ nhớ tạm
+        if (!_states.TryRemove(connection.Id, out var state))
         {
-            NLogix.Host.Instance.Debug("Missing or invalid private key for {0}", connection.RemoteEndPoint);
+            NLogix.Host.Instance.Debug(
+                "Missing handshake state for {0}", connection.RemoteEndPoint);
 
-            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.UnknownError).Serialize();
+            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.UnknownError)
+                          .Serialize();
         }
 
-        // Derive the shared secret using the private key and the client's public key.
-        byte[] derivedKey = DeriveSharedKey(@private, packet.Payload.ToArray());
+        // Tính toán lại khóa chung từ khóa riêng của server và khóa công khai của client
+        byte[] derived = DeriveSharedKey(state.PrivateKey, packet.Payload.ToArray());
+        System.Array.Clear(state.PrivateKey, 0, state.PrivateKey.Length); // Xóa khóa riêng để tăng bảo mật
 
-        // Remove the private key from metadata to prevent future misuse.
-        System.Array.Clear(@private, 0, @private.Length);
-        connection.Metadata.Remove(Meta.PrivateKey);
-
-        // Compare the derived key with the encryption key in the connection.
-        if (connection.EncryptionKey is null || !connection.EncryptionKey.IsEqualTo(derivedKey))
+        // So sánh khóa chung với khóa mã hóa hiện tại của kết nối
+        if (connection.EncryptionKey is null || !connection.EncryptionKey.IsEqualTo(derived))
         {
-            NLogix.Host.Instance.Debug("Key mismatch during handshake finalization for {0}", connection.RemoteEndPoint);
-            return TPacket.Create(
-                (ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.Conflict).Serialize();
+            NLogix.Host.Instance.Debug(
+                "Key mismatch during handshake finalization for {0}", connection.RemoteEndPoint);
+
+            return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.Conflict)
+                          .Serialize();
         }
 
+        // Ghi log khi kết nối bảo mật được thiết lập thành công
         NLogix.Host.Instance.Debug("Secure connection established for {0}", connection.RemoteEndPoint);
-        return TPacket.Create(
-                (ushort)ProtocolCommand.CompleteHandshake,
-                ProtocolMessage.Success).Serialize();
+        return TPacket.Create((ushort)ProtocolCommand.CompleteHandshake, ProtocolMessage.Success)
+                      .Serialize();
     }
 
     #region Private Methods
 
     /// <summary>
-    /// Computes a derived encryption key by performing the X25519 key exchange and then hashing the result.
-    /// This method produces a shared secret by combining the client's public key and the server's private key,
-    /// followed by hashing the result using the specified hashing algorithm.
+    /// Vòng lặp dọn dẹp các trạng thái bắt tay đã hết hạn.
+    /// Định kỳ kiểm tra và xóa các trạng thái vượt quá thời gian chờ (HandshakeTimeout).
     /// </summary>
-    /// <param name="privateKey">The server's private key used in the key exchange.</param>
-    /// <param name="publicKey">The client's public key involved in the key exchange.</param>
-    /// <returns>The derived encryption key, which is used to establish a secure connection.</returns>
-    [System.Runtime.CompilerServices.MethodImpl(
-         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static byte[] DeriveSharedKey(byte[] privateKey, byte[] publicKey)
-    {
-        // Perform the X25519 key exchange to derive the shared secret.
-        byte[] secret = X25519.ComputeSharedSecret(privateKey, publicKey);
-
-        // Hash the shared secret to produce the final encryption key.
-        return SHA256.HashData(secret);
-    }
-
-    /// <summary>
-    /// Checks if the connection is attempting to replay a previous handshake.
-    /// </summary>
-    /// <param name="connection"></param>
-    /// <returns></returns>
-    [System.Runtime.CompilerServices.MethodImpl(
-         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static bool IsReplayAttempt(IConnection connection)
-    {
-        return _states.TryGetValue(connection.Id, out var state) &&
-               (DateTime.UtcNow - state.LastTime) < HandshakeTimeout;
-
-        return false;
-    }
-
+    /// <returns>Task đại diện cho vòng lặp dọn dẹp liên tục.</returns>
     private static async Task CleanupLoop()
     {
         while (true)
         {
             try
             {
-                DateTime now = DateTime.UtcNow;
+                System.DateTime now = System.DateTime.UtcNow;
                 foreach (var kvp in _states)
                 {
                     if ((now - kvp.Value.LastTime) > HandshakeTimeout)
                         _states.TryRemove(kvp.Key, out _);
                 }
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                NLogix.Host.Instance.Warn("HandshakeOps cleanup error: {0}", ex.Message);
+                NLogix.Host.Instance.Warn("Error during HandshakeOps cleanup: {0}", ex.Message);
             }
 
             await Task.Delay(CleanupInterval);
         }
     }
 
+    /// <summary>
+    /// Kiểm tra xem kết nối có đang cố gắng lặp lại bắt tay (replay attack) hay không.
+    /// Trả về true nếu trạng thái bắt tay tồn tại và chưa hết thời gian chờ.
+    /// </summary>
+    /// <param name="connection">Thông tin kết nối của client.</param>
+    /// <returns>True nếu phát hiện nỗ lực lặp lại, ngược lại là False.</returns>
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static bool IsReplayAttempt(IConnection connection)
+        => _states.TryGetValue(connection.Id, out HandshakeState state)
+        && (System.DateTime.UtcNow - state.LastTime) < HandshakeTimeout;
+
+    /// <summary>
+    /// Tính toán khóa mã hóa chung bằng cách thực hiện trao đổi khóa X25519 và băm kết quả bằng SHA256.
+    /// Kết hợp khóa riêng của server và khóa công khai của client để tạo bí mật chung,
+    /// sau đó băm để tạo khóa mã hóa cuối cùng.
+    /// </summary>
+    /// <param name="privateKey">Khóa riêng của server dùng trong trao đổi khóa.</param>
+    /// <param name="publicKey">Khóa công khai của client dùng trong trao đổi khóa.</param>
+    /// <returns>Khóa mã hóa chung dùng để thiết lập kết nối bảo mật.</returns>
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static byte[] DeriveSharedKey(byte[] privateKey, byte[] publicKey)
+    {
+        // Thực hiện trao đổi khóa X25519 để tạo bí mật chung
+        byte[] secret = X25519.ComputeSharedSecret(privateKey, publicKey);
+
+        // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa
+        return SHA256.HashData(secret);
+    }
+
+    /// <summary>
+    /// Lớp nội bộ lưu trữ trạng thái bắt tay, bao gồm khóa riêng và thời gian khởi tạo.
+    /// Được sử dụng để quản lý thông tin tạm thời trong quá trình bắt tay.
+    /// </summary>
     private sealed class HandshakeState
     {
         public byte[] PrivateKey = null!;
-        public DateTime LastTime;
+        public System.DateTime LastTime;
     }
 
     #endregion Private Methods
