@@ -1,84 +1,28 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
+﻿using Nalix.Common.Serialization;
+using Nalix.Common.Serialization.Attributes;
 
 namespace Nalix.Game.Shared.Security;
 
+/// <summary>
+/// Đại diện cho một yêu cầu thay đổi mật khẩu của người dùng.
+/// Lớp này chứa thông tin về mật khẩu cũ và mật khẩu mới, được sử dụng trong quá trình xử lý thay đổi mật khẩu.
+/// Được đánh dấu với thuộc tính <see cref="SerializePackableAttribute"/>
+/// để hỗ trợ tuần tự hóa dữ liệu (serialization) theo bố cục tuần tự.
+/// </summary>
+[SerializePackable(SerializeLayout.Sequential)]
 public class PasswordChange
 {
     /// <summary>
-    /// The old password to be changed.
+    /// Mật khẩu cũ của người dùng, dùng để xác thực trước khi thay đổi.
+    /// Thuộc tính này được khởi tạo mặc định là chuỗi rỗng để tránh giá trị null.
+    /// Chỉ có thể được thiết lập thông qua setter private để đảm bảo tính đóng gói.
     /// </summary>
     public string OldPassword { get; private set; } = string.Empty;
 
     /// <summary>
-    /// The new password to be set.
+    /// Mật khẩu mới mà người dùng muốn thiết lập.
+    /// Thuộc tính này được khởi tạo mặc định là chuỗi rỗng để tránh giá trị null.
+    /// Chỉ có thể được thiết lập thông qua setter private để đảm bảo tính đóng gói.
     /// </summary>
     public string NewPassword { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Parses the given byte array into a PasswordChange object.
-    /// </summary>
-    public static bool TryParse(
-        ReadOnlySpan<byte> data,
-        [NotNullWhen(true)] out PasswordChange result)
-    {
-        result = null;
-
-        try
-        {
-            int offset = 0;
-
-            // Old Password
-            if (offset >= data.Length) return false;
-            byte oldPassLen = data[offset++];
-            if (offset + oldPassLen > data.Length) return false;
-            string oldPassword = Encoding.UTF8.GetString(data.Slice(offset, oldPassLen));
-            offset += oldPassLen;
-
-            // New Password
-            if (offset >= data.Length) return false;
-            byte newPassLen = data[offset++];
-            if (offset + newPassLen > data.Length) return false;
-            string newPassword = Encoding.UTF8.GetString(data.Slice(offset, newPassLen));
-
-            result = new PasswordChange
-            {
-                OldPassword = oldPassword,
-                NewPassword = newPassword
-            };
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Builds a byte array from the old and new passwords.
-    /// </summary>
-    public byte[] Build()
-    {
-        byte[] oldPassBytes = Encoding.UTF8.GetBytes(OldPassword);
-        byte[] newPassBytes = Encoding.UTF8.GetBytes(NewPassword);
-
-        if (oldPassBytes.Length > Credentials.PasswordMaxLength)
-            throw new ArgumentException("Old password is too long.");
-        if (newPassBytes.Length > Credentials.PasswordMaxLength)
-            throw new ArgumentException("New password is too long.");
-
-        byte[] buffer = new byte[1 + oldPassBytes.Length + 1 + newPassBytes.Length];
-        int offset = 0;
-
-        buffer[offset++] = (byte)oldPassBytes.Length;
-        oldPassBytes.CopyTo(buffer.AsSpan(offset));
-        offset += oldPassBytes.Length;
-
-        buffer[offset++] = (byte)newPassBytes.Length;
-        newPassBytes.CopyTo(buffer.AsSpan(offset));
-
-        return buffer;
-    }
 }

@@ -247,9 +247,8 @@ public class AccountService(GameDbContext context)
             return "Invalid session. Please login again.";
         }
 
-        // Phân tích yêu cầu thay đổi mật khẩu
-        if (!PasswordChange.TryParse(packet.Payload.Span, out var request))
-            return "Invalid password change format.";
+        PasswordChange request = new();
+        BitSerializer.Deserialize(packet.Payload.Span, ref request);
 
         // Tìm tài khoản trong cơ sở dữ liệu
         Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username);

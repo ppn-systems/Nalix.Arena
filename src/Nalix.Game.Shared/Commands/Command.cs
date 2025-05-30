@@ -1,7 +1,12 @@
 ﻿namespace Nalix.Game.Shared.Commands;
 
-public enum Command : ushort
+public enum Command : System.UInt16
 {
+    /// <summary>
+    /// Lệnh để thiết lập kết nối ban đầu giữa máy khách và máy chủ.
+    /// </summary>
+    Handshake = 0x01,
+
     /// <summary>
     /// Lệnh để người chơi đăng nhập vào trò chơi.
     /// </summary>

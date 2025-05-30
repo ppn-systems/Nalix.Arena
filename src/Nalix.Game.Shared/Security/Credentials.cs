@@ -1,4 +1,6 @@
 ﻿using Nalix.Common.Security;
+using Nalix.Common.Serialization;
+using Nalix.Common.Serialization.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,6 +14,7 @@ namespace Nalix.Game.Shared.Security;
 /// Có cấu hình kiểm tra độ dài tối thiểu và tối đa của username và password.
 /// </summary>
 [Table("Account")]
+[SerializePackable(SerializeLayout.Explicit)]
 public sealed class Credentials
 {
     #region Constants
@@ -42,12 +45,14 @@ public sealed class Credentials
     [MaxLength(20)]
     [RegularExpression(@"^[a-zA-Z0-9_-]+$",
         ErrorMessage = "Username can only contain letters, numbers, underscores, and hyphens.")]
+    [SerializeOrder(0)]
     public string Username { get; set; }
 
     /// <summary>
     /// Mật khẩu (chỉ dùng trong code, không lưu vào database).
     /// </summary>
     [NotMapped]
+    [SerializeOrder(1)]
     public string Password { get; set; }
 
     /// <summary>
