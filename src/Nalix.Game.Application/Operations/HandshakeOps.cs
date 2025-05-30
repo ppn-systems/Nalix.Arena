@@ -1,14 +1,18 @@
-﻿using Nalix.Common.Attributes;
-using Nalix.Common.Connection;
+﻿using Nalix.Common.Connection;
 using Nalix.Common.Connection.Protocols;
 using Nalix.Common.Constants;
 using Nalix.Common.Package;
+using Nalix.Common.Package.Attributes;
 using Nalix.Common.Package.Enums;
 using Nalix.Common.Security;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Extensions.Primitives;
+using Nalix.Identifiers;
 using Nalix.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Nalix.Game.Application.Operations;
 
@@ -20,6 +24,10 @@ namespace Nalix.Game.Application.Operations;
 [PacketController]
 internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFactory<TPacket>
 {
+    private static readonly ConcurrentDictionary<Base36Id, HandshakeState> _states = new();
+    private static readonly TimeSpan HandshakeTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromMinutes(1);
+
     /// <summary>
     /// Initiates a secure connection by performing a handshake with the client.
     /// Expects a binary packet containing the client's X25519 public key (32 bytes).
@@ -28,9 +36,9 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
     /// <param name="connection">The connection to the client that is requesting the handshake.</param>
     [PacketEncryption(false)]
     [PacketTimeout(Timeouts.Moderate)]
+    [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((ushort)ProtocolCommand.StartHandshake)]
-    [PacketRateLimit(RequestLimitType.Low)]
     [System.Runtime.CompilerServices.MethodImpl(
          System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static System.Memory<byte> StartHandshake(IPacket packet, IConnection connection)
@@ -88,9 +96,9 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
     /// <param name="connection">The connection to the client.</param>
     [PacketEncryption(false)]
     [PacketTimeout(Timeouts.Moderate)]
+    [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((ushort)ProtocolCommand.CompleteHandshake)]
-    [PacketRateLimit(RequestLimitType.Low)]
     [System.Runtime.CompilerServices.MethodImpl(
          System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static System.Memory<byte> CompleteHandshake(IPacket packet, IConnection connection)
@@ -125,6 +133,8 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
         // Derive the shared secret using the private key and the client's public key.
         byte[] derivedKey = DeriveSharedKey(@private, packet.Payload.ToArray());
 
+        // Remove the private key from metadata to prevent future misuse.
+        System.Array.Clear(@private, 0, @private.Length);
         connection.Metadata.Remove(Meta.PrivateKey);
 
         // Compare the derived key with the encryption key in the connection.
@@ -171,17 +181,38 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
          System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static bool IsReplayAttempt(IConnection connection)
     {
-        if (connection.Metadata.TryGetValue(Meta.LastHandshakeTime,
-            out object lastTimeObj) && lastTimeObj is System.DateTime lastTime)
-            return (System.DateTime.UtcNow - lastTime).TotalSeconds < 10;
+        return _states.TryGetValue(connection.Id, out var state) &&
+               (DateTime.UtcNow - state.LastTime) < HandshakeTimeout;
 
         return false;
     }
 
-    private static class Meta
+    private static async Task CleanupLoop()
     {
-        public const string PrivateKey = "X25519_PrivateKey";
-        public const string LastHandshakeTime = "LastHandshakeTime";
+        while (true)
+        {
+            try
+            {
+                DateTime now = DateTime.UtcNow;
+                foreach (var kvp in _states)
+                {
+                    if ((now - kvp.Value.LastTime) > HandshakeTimeout)
+                        _states.TryRemove(kvp.Key, out _);
+                }
+            }
+            catch (Exception ex)
+            {
+                NLogix.Host.Instance.Warn("HandshakeOps cleanup error: {0}", ex.Message);
+            }
+
+            await Task.Delay(CleanupInterval);
+        }
+    }
+
+    private sealed class HandshakeState
+    {
+        public byte[] PrivateKey = null!;
+        public DateTime LastTime;
     }
 
     #endregion Private Methods
