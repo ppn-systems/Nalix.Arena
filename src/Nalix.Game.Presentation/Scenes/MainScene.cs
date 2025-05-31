@@ -1,5 +1,4 @@
-﻿using Nalix.Game.Presentation.Utils;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
@@ -9,38 +8,25 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
-using System.Collections.Generic;
 
 namespace Nalix.Game.Presentation.Scenes;
 
 internal class MainScene : Scene
 {
     public MainScene() : base(SceneNames.Main)
-        => MusicManager.Play("assets/sounds/0.wav");
+    { }
+
+    //   => MusicManager.Play("assets/sounds/0.wav");
 
     protected override void LoadObjects()
     {
-        MusicManager.Resume();
         // Add the parallax object to the scene
         AddObject(new ParallaxLayer());
+
         // Add the icon
-        AddObject(new Menu());
+        //AddObject(new Menu());
         AddObject(new MusicIcon());
         AddObject(new SettingIcon());
-
-        // Add the animation
-        // 1, 2, 5, 4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1
-        SpriteAnimation animation1 = new("4.png", [1, 2, 5, 4, 2, 2]);
-        SpriteAnimation animation2 = new("4.png", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0]);
-        SpriteAnimation animation3 = new("4.png", [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0]);
-
-        animation1.SetPosition(new Vector2f(0, 660));
-        animation2.SetPosition(new Vector2f(60, 660));
-        animation3.SetPosition(new Vector2f(120, 660));
-
-        AddObject(animation1);
-        AddObject(animation2);
-        AddObject(animation3);
     }
 
     #region Private Class
@@ -52,14 +38,6 @@ internal class MainScene : Scene
         public Menu()
         {
             SetZIndex(1);
-            // Load the menu sprite
-            Texture texture = Assets.UI.Load("tiles/11.png");
-            _menuSprite = new Sprite(texture)
-            {
-                //Color = new Color(255, 255, 180),
-                Scale = new Vector2f(GameEngine.ScreenSize.X * 0.022f, GameEngine.ScreenSize.Y * 0.022f),
-                Position = new Vector2f(GameEngine.ScreenSize.X * 0.15f, GameEngine.ScreenSize.Y * 0.15f)
-            };
         }
 
         protected override Drawable GetDrawable() => _menuSprite;
@@ -72,6 +50,8 @@ internal class MainScene : Scene
 
         public ParallaxLayer()
         {
+            base.SetZIndex(1);
+
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
             _parallax.AddLayer(Assets.Bg.Load("7.png"), 00f, true);
@@ -96,7 +76,7 @@ internal class MainScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    private class MusicIcon : RenderObject
+    internal class MusicIcon : RenderObject
     {
         private readonly Sprite _icon;
         private readonly Texture _texture1;
@@ -107,13 +87,13 @@ internal class MainScene : Scene
 
         public MusicIcon()
         {
-            SetZIndex(1);
+            SetZIndex(2);
 
             _isPlaying = true;
 
             // Load the settings icon
-            _texture1 = Assets.UI.Load("icons/5.png");
-            _texture2 = Assets.UI.Load("icons/6.png");
+            _texture1 = Assets.UI.Load("icons/6.png");
+            _texture2 = Assets.UI.Load("icons/5.png");
 
             _icon = new Sprite(_texture1)
             {
@@ -181,14 +161,14 @@ internal class MainScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    private class SettingIcon : RenderObject
+    internal class SettingIcon : RenderObject
     {
         private readonly Sprite _settingsIcon;
         private readonly Sound _clickSound;
 
         public SettingIcon()
         {
-            SetZIndex(1);
+            SetZIndex(2);
 
             // Load the settings icon
             Texture texture = Assets.UI.Load("icons/3.png");
@@ -205,6 +185,9 @@ internal class MainScene : Scene
             // Load click sound
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _clickSound = new Sound(buffer);
+
+            MusicManager.Play("assets/sounds/0.wav");
+            MusicManager.Pause();
         }
 
         public override void Update(float deltaTime)
@@ -213,7 +196,6 @@ internal class MainScene : Scene
 
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
-                MusicManager.Pause();
                 _clickSound.Play();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
@@ -222,7 +204,6 @@ internal class MainScene : Scene
             {
                 if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
-                    MusicManager.Pause();
                     _clickSound.Play();
                     SceneManager.ChangeScene(SceneNames.Settings);
                 }
@@ -230,48 +211,6 @@ internal class MainScene : Scene
         }
 
         protected override Drawable GetDrawable() => _settingsIcon;
-    }
-
-    [IgnoredLoad("RenderObject")]
-    public class SpriteAnimation : RenderObject
-    {
-        private readonly Sprite _sprite;
-        private readonly List<IntRect> _frames;
-        private readonly float _frameDuration;
-
-        private float _elapsedTime = 0f;
-        private int _currentFrame = 0;
-
-        public SpriteAnimation(string path, int[] columns)
-        {
-            SetZIndex(1);
-            Texture texture = Assets.UI.Load(path);
-
-            _frameDuration = 0.1f;
-            _frames = FrameUtils.GenerateFrames(32, 32, columns);
-
-            _sprite = new Sprite(texture)
-            {
-                TextureRect = _frames[0],
-                Scale = new Vector2f(2f, 2f)
-            };
-        }
-
-        public void SetPosition(Vector2f position) => _sprite.Position = position;
-
-        public override void Update(float deltaTime)
-        {
-            _elapsedTime += deltaTime;
-
-            if (_elapsedTime >= _frameDuration)
-            {
-                _elapsedTime -= _frameDuration;
-                _currentFrame = (_currentFrame + 1) % _frames.Count;
-                _sprite.TextureRect = _frames[_currentFrame];
-            }
-        }
-
-        protected override Drawable GetDrawable() => _sprite;
     }
 
     #endregion Private Class

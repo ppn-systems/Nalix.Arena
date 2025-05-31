@@ -19,14 +19,11 @@ public class SettingsScene : Scene
     protected override void LoadObjects()
     {
         // Load the background
-        AddObject(new Background());
-
-        // Load the settings object
-        Banner panel = new();
-        AddObject(panel);
+        base.AddObject(new Background());
 
         // Load the control
-        AddObject(new ButtonBack(panel.PanelPosition, panel.PanelSize));
+        base.AddObject(new MainScene.MusicIcon());
+        base.AddObject(new MainScene.SettingIcon());
     }
 
     [IgnoredLoad("RenderObject")]
@@ -36,7 +33,7 @@ public class SettingsScene : Scene
 
         public Background()
         {
-            SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
+            base.SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
 
             Texture bg = Assets.Bg.Load("0.png");
 
