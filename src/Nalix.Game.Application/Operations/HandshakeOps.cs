@@ -52,7 +52,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
             PacketPriority.Low,
             BitSerializer.Serialize(new PacketResponse<byte>
             {
-                Code = ResponseCode.InternalError,
+                Code = ResponseCode.InvalidType,
                 Message = "Invalid packet type",
                 Data = 0x00
             })
@@ -65,7 +65,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
             PacketPriority.Low,
             BitSerializer.Serialize(new PacketResponse<byte>
             {
-                Code = ResponseCode.InternalError,
+                Code = ResponseCode.InvalidLength,
                 Message = "Invalid public key length",
                 Data = 0x00
             })
@@ -112,8 +112,10 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
         if (packet.Payload.Length != 32)
         {
-            NLogix.Host.Instance.Debug("Invalid public key length [Length={0}] from {1}",
+            NLogix.Host.Instance.Debug(
+                "Invalid public key length [Length={0}] from {1}",
                 packet.Payload.Length, connection.RemoteEndPoint);
+
             return _badKeyLen;
         }
 

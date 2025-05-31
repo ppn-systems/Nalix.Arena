@@ -11,10 +11,23 @@ public enum ResponseCode : System.UInt16
     /// </summary>
     Success = 0,
 
+    // === System/Internal Errors (1-49) ===
+
     /// <summary>
-    /// Lỗi nội bộ xảy ra trong quá trình xử lý yêu cầu, thường do vấn đề hệ thống hoặc cơ sở dữ liệu.
+    /// Lỗi nội bộ không xác định, có thể do lỗi hệ thống hoặc lỗi không mong muốn trong quá trình xử lý.
     /// </summary>
     InternalError = 1,
+
+    /// <summary>
+    /// Lỗi xảy ra khi nhận được gói tin không đúng loại,
+    /// ví dụ như gói tin không phải là nhị phân hoặc không phải là gói tin mong đợi.
+    /// </summary>
+    InvalidType = 2,
+
+    /// <summary>
+    /// Lỗi xảy ra khi độ dài của gói tin không hợp lệ,
+    /// </summary>
+    InvalidLength = 3,
 
     /// <summary>
     /// Mật khẩu cung cấp không hợp lệ, không đúng định dạng hoặc không đáp ứng các yêu cầu bảo mật.
