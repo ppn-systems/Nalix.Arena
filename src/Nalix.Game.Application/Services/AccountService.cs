@@ -9,6 +9,7 @@ using Nalix.Game.Infrastructure.Repositories;
 using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Security;
 using Nalix.Logging;
+using Nalix.Network.Connection;
 using Nalix.Serialization;
 using System;
 using System.Threading.Tasks;
@@ -148,8 +149,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
             await _accounts.SaveChangesAsync();
 
             // Cập nhật thông tin kết nối với quyền và tên người dùng
-            connection.Level = account.Role;
-            connection.Metadata["Username"] = account.Username;
+            ConnectionHub.Instance.AssociateUsername(connection, account.Username);
 
             NLogix.Host.Instance.Info(
                 $"User {0} logged in successfully from connection {1}",
@@ -180,7 +180,9 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     internal async Task<Memory<byte>> LogoutAsync(IPacket _, IConnection connection)
     {
         // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
-        if (!connection.Metadata.TryGetValue("Username", out object value) || value is not string username)
+        string username = ConnectionHub.Instance.GetUsername(connection.Id);
+
+        if (username is null)
         {
             NLogix.Host.Instance.Warn(
                 "Logout attempt without valid username metadata from connection {0}",
@@ -220,7 +222,6 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
 
         // Xóa thông tin metadata và hạ quyền về mức Guest
         connection.Level = PermissionLevel.Guest;
-        connection.Metadata.Remove("Username");
 
         // Ngắt kết nối
         connection.Disconnect();
@@ -240,7 +241,9 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     internal async Task<string> ChangePasswordAsync(IPacket packet, IConnection connection)
     {
         // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
-        if (!connection.Metadata.TryGetValue("Username", out object value) || value is not string username)
+        string username = ConnectionHub.Instance.GetUsername(connection.Id);
+
+        if (username is null)
         {
             NLogix.Host.Instance.Warn(
                 "Change password attempt without valid username metadata from connection {0}",
