@@ -6,10 +6,9 @@ using Nalix.Common.Package.Enums;
 using Nalix.Common.Security;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
+using Nalix.Game.Application.Caching;
 using Nalix.Game.Shared.Commands;
-using Nalix.Game.Shared.Messages;
 using Nalix.Logging;
-using Nalix.Serialization;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -23,55 +22,6 @@ namespace Nalix.Game.Application.Operations;
 [PacketController]
 internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFactory<TPacket>
 {
-    private readonly Memory<byte> _done;
-    private readonly Memory<byte> _badType;
-    private readonly Memory<byte> _badKeyLen;
-
-    public HandshakeOps()
-    {
-        // Khởi tạo các thành phần cần thiết cho quá trình bắt tay bảo mật
-        NLogix.Host.Instance.Debug("HandshakeOps initialized");
-
-        _done = TPacket.Create(
-            Command.Handshake.AsUInt16(),
-            PacketType.Object,
-            PacketFlags.None,
-            PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
-            {
-                Code = ResponseCode.InternalError,
-                Message = "Handshake already completed.",
-                Data = 0x00
-            })
-        ).Serialize();
-
-        _badType = TPacket.Create(
-            Command.Handshake.AsUInt16(),
-            PacketType.Object,
-            PacketFlags.None,
-            PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
-            {
-                Code = ResponseCode.InvalidType,
-                Message = "Invalid packet type",
-                Data = 0x00
-            })
-        ).Serialize();
-
-        _badKeyLen = TPacket.Create(
-            Command.Handshake.AsUInt16(),
-            PacketType.Object,
-            PacketFlags.None,
-            PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
-            {
-                Code = ResponseCode.InvalidLength,
-                Message = "Invalid public key length",
-                Data = 0x00
-            })
-        ).Serialize();
-    }
-
     /// <summary>
     /// Khởi tạo quá trình bắt tay bảo mật với client.
     /// Nhận gói tin chứa khóa công khai X25519 (32 byte) từ client, tạo cặp khóa X25519 cho server,
@@ -87,7 +37,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((ushort)Command.Handshake)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Memory<byte> Handshake(IPacket packet, IConnection connection)
+    internal static Memory<byte> Handshake(IPacket packet, IConnection connection)
     {
         // Nếu đã handshake, không cho phép lặp lại
         if (connection.EncryptionKey is not null)
@@ -96,7 +46,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
                 "Handshake already completed for {0}",
                 connection.RemoteEndPoint);
 
-            return _done;
+            return PacketCache<TPacket>.HandshakeAlreadyDone;
         }
 
         // Kiểm tra định dạng gói tin, đảm bảo là nhị phân để chứa khóa công khai X25519
@@ -106,7 +56,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
                 "Received non-binary packet [Type={0}] from {1}",
                 packet.Type, connection.RemoteEndPoint);
 
-            return _badType;
+            return PacketCache<TPacket>.HandshakeInvalidType;
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
@@ -116,7 +66,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
                 "Invalid public key length [Length={0}] from {1}",
                 packet.Payload.Length, connection.RemoteEndPoint);
 
-            return _badKeyLen;
+            return PacketCache<TPacket>.HandshakeInvalidKeyLength;
         }
 
         // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server

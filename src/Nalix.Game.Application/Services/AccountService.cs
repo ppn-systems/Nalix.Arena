@@ -3,6 +3,7 @@ using Nalix.Common.Package;
 using Nalix.Common.Package.Attributes;
 using Nalix.Common.Security;
 using Nalix.Cryptography.Security;
+using Nalix.Game.Application.Caching;
 using Nalix.Game.Infrastructure.Database;
 using Nalix.Game.Infrastructure.Repositories;
 using Nalix.Game.Shared.Commands;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 namespace Nalix.Game.Application.Services;
 
 [PacketController]
-public class AccountService(GameDbContext context)
+public class AccountService<TPacket>(GameDbContext context) where TPacket : IPacket, IPacketFactory<TPacket>
 {
     private readonly Repository<Credentials> _accounts = new(context);
 
@@ -29,7 +30,7 @@ public class AccountService(GameDbContext context)
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng ký.</returns>
     [PacketOpcode((ushort)Command.Register)]
     [PacketPermission(PermissionLevel.Guest)]
-    internal async Task<string> RegisterAsync(IPacket packet, IConnection connection)
+    internal async Task<Memory<byte>> RegisterAsync(IPacket packet, IConnection connection)
     {
         Credentials credentials = new();
         BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
@@ -41,7 +42,7 @@ public class AccountService(GameDbContext context)
                 $"Username {0} already exists from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Username already existed.";
+            return PacketCache<TPacket>.DuplicateUsername;
         }
 
         try
@@ -64,7 +65,7 @@ public class AccountService(GameDbContext context)
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Account registered successfully.";
+            return PacketCache<TPacket>.RegisterSuccess;
         }
         catch (Exception ex)
         {
@@ -73,7 +74,7 @@ public class AccountService(GameDbContext context)
                 "Failed to register account {0} from connection {1}, Ex: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex);
 
-            return "Failed to register account due to an internal error.";
+            return PacketCache<TPacket>.RegisterInternalError;
         }
     }
 
@@ -87,7 +88,7 @@ public class AccountService(GameDbContext context)
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng nhập.</returns>
     [PacketOpcode((ushort)Command.Login)]
     [PacketPermission(PermissionLevel.Guest)]
-    public async Task<string> LoginAsync(IPacket packet, IConnection connection)
+    public async Task<Memory<byte>> LoginAsync(IPacket packet, IConnection connection)
     {
         Credentials credentials = new();
         BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
@@ -100,7 +101,7 @@ public class AccountService(GameDbContext context)
                 "Login account attempt with non-existent username {0} from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Username does not exist.";
+            return PacketCache<TPacket>.LoginUserNotExist;
         }
 
         // Kiểm tra nếu tài khoản bị khóa do quá nhiều lần đăng nhập thất bại
@@ -111,7 +112,7 @@ public class AccountService(GameDbContext context)
                 "Account {0} locked due to too many failed attempts from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Account locked due to too many failed attempts.";
+            return PacketCache<TPacket>.LoginAccountLocked;
         }
 
         // Xác thực mật khẩu
@@ -126,7 +127,7 @@ public class AccountService(GameDbContext context)
                 "Incorrect password for {0}, attempt {1} from connection {2}",
                 credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
 
-            return "Incorrect password.";
+            return PacketCache<TPacket>.LoginIncorrectPassword;
         }
 
         // Kiểm tra trạng thái hoạt động của tài khoản
@@ -136,7 +137,7 @@ public class AccountService(GameDbContext context)
                 "Login account attempt on disabled account {0} from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Account is disabled.";
+            return PacketCache<TPacket>.LoginAccountDisabled;
         }
 
         try
@@ -149,11 +150,12 @@ public class AccountService(GameDbContext context)
             // Cập nhật thông tin kết nối với quyền và tên người dùng
             connection.Level = account.Role;
             connection.Metadata["Username"] = account.Username;
+
             NLogix.Host.Instance.Info(
                 $"User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return "Login successful.";
+            return PacketCache<TPacket>.LoginSuccess;
         }
         catch (Exception ex)
         {
@@ -162,7 +164,7 @@ public class AccountService(GameDbContext context)
                 "Failed to complete login for {0} from connection {1}, Ex: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex);
 
-            return "Failed to login due to an internal error.";
+            return PacketCache<TPacket>.LoginInternalError;
         }
     }
 
@@ -175,7 +177,7 @@ public class AccountService(GameDbContext context)
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng xuất.</returns>
     [PacketOpcode((ushort)Command.Logout)]
     [PacketPermission(PermissionLevel.User)]
-    internal async Task<string> LogoutAsync(IPacket _, IConnection connection)
+    internal async Task<Memory<byte>> LogoutAsync(IPacket _, IConnection connection)
     {
         // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
         if (!connection.Metadata.TryGetValue("Username", out object value) || value is not string username)
@@ -184,7 +186,7 @@ public class AccountService(GameDbContext context)
                 "Logout attempt without valid username metadata from connection {0}",
                 connection.RemoteEndPoint);
 
-            return "Invalid session. Please login again.";
+            return PacketCache<TPacket>.LogoutInvalidSession;
         }
 
         // Tìm tài khoản trong cơ sở dữ liệu
@@ -195,7 +197,7 @@ public class AccountService(GameDbContext context)
                 "Logout attempt with non-existent username {0} from connection {1}",
                 username, connection.RemoteEndPoint);
 
-            return "Username does not exist.";
+            return PacketCache<TPacket>.LogoutUserNotExist;
         }
 
         try
@@ -208,7 +210,7 @@ public class AccountService(GameDbContext context)
         {
             // Ghi log lỗi nhưng vẫn tiếp tục đăng xuất
             NLogix.Host.Instance.Info("User {0} logged out from connection {1}", username, connection.RemoteEndPoint);
-            return "Failed to update account status.";
+            return PacketCache<TPacket>.LogoutUpdateFailed;
         }
 
         // Ghi log sự kiện đăng xuất
@@ -223,7 +225,7 @@ public class AccountService(GameDbContext context)
         // Ngắt kết nối
         connection.Disconnect();
 
-        return "Logout successful.";
+        return PacketCache<TPacket>.LogoutSuccess;
     }
 
     /// <summary>

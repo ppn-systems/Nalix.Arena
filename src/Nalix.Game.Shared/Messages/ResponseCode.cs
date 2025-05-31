@@ -30,14 +30,29 @@ public enum ResponseCode : System.UInt16
     InvalidLength = 3,
 
     /// <summary>
+    /// Lỗi xảy ra khi phiên làm việc (session) không hợp lệ hoặc đã hết hạn.
+    /// </summary>
+    InvalidSession = 4,
+
+    /// <summary>
+    /// Dữ liệu bị trùng lặp.
+    /// </summary>
+    Duplicate = 5,
+
+    /// <summary>
+    /// Trạng thái lỗi khi không tìm thấy tài nguyên.
+    /// </summary>
+    NotFound = 6,
+
+    /// <summary>
+    /// Yêu cầu bị từ chối.
+    /// </summary>
+    Forbidden = 7,
+
+    /// <summary>
     /// Mật khẩu cung cấp không hợp lệ, không đúng định dạng hoặc không đáp ứng các yêu cầu bảo mật.
     /// </summary>
     InvalidPassword = 100,
-
-    /// <summary>
-    /// Người dùng không được tìm thấy trong hệ thống, có thể do tên người dùng không tồn tại.
-    /// </summary>
-    UserNotFound = 101,
 
     /// <summary>
     /// Yêu cầu thiếu tham số bắt buộc để xử lý, ví dụ như thiếu tên người dùng hoặc mật khẩu.
