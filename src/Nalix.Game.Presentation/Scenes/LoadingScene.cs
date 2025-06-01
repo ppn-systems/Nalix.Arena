@@ -1,5 +1,4 @@
-﻿using Nalix.Game.Presentation.Utils;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using SFML.Graphics;
@@ -22,31 +21,47 @@ internal class LoadingScene : Scene
     [IgnoredLoad("RenderObject")]
     public class LoadingMenu : RenderObject
     {
-        private readonly ArcShape _arc;
         private float _angle;
+        private readonly Sprite _iconSprite;
+        private readonly RectangleShape _background;
 
         public LoadingMenu()
         {
             base.SetZIndex(1);
 
-            // vẽ cung tròn từ 20 đến 340 độ
-            _arc = new ArcShape(30, 20, 340, 30, new Color(100, 220, 220))
+            _background = new RectangleShape((Vector2f)GameEngine.ScreenSize)
             {
-                Position = new Vector2f(GameEngine.ScreenSize.X / 2, GameEngine.ScreenSize.Y / 2)
+                FillColor = Color.Black,
+                Position = new Vector2f(0, 0)
+            };
+
+            // Tải icon
+            Texture iconTexture = Assets.UI.Load("icons/15.png");
+            _iconSprite = new Sprite(iconTexture)
+            {
+                Origin = new Vector2f(iconTexture.Size.X / 2f, iconTexture.Size.Y / 2f),
+                Position = new Vector2f(GameEngine.ScreenSize.X / 2f, GameEngine.ScreenSize.Y / 2f),
+                Scale = new Vector2f(0.5f, 0.5f) // scale nếu cần
             };
         }
 
         public override void Update(float deltaTime)
-        {
-            _angle += deltaTime * 200;
-        }
+            => _angle += deltaTime * 200f;
 
         public override void Render(RenderTarget target)
         {
             if (!Visible) return;
-            var states = new RenderStates { Transform = Transform.Identity };
-            states.Transform.Rotate(_angle, _arc.Position);
-            _arc.Draw(target, states);
+
+            Transform transform = Transform.Identity;
+            transform.Rotate(_angle, _iconSprite.Position);
+
+            RenderStates states = new()
+            {
+                Transform = transform
+            };
+
+            target.Draw(_background);
+            target.Draw(_iconSprite, states);
         }
 
         protected override Drawable GetDrawable()

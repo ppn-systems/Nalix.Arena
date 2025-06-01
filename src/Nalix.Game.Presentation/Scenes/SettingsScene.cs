@@ -1,7 +1,7 @@
 ﻿using Nalix.Graphics;
+using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
-using Nalix.Graphics.UI.Elements;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -22,8 +22,7 @@ public class SettingsScene : Scene
         base.AddObject(new Background());
 
         // Load the control
-        base.AddObject(new MainScene.MusicIcon());
-        base.AddObject(new MainScene.SettingIcon());
+        base.AddObject(new CloseIcon());
     }
 
     [IgnoredLoad("RenderObject")]
@@ -100,78 +99,55 @@ public class SettingsScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    private class ButtonBack : RenderObject
+    internal class CloseIcon : RenderObject
     {
-        private readonly Button _back;
+        private readonly Sound _clickSound;
+        private readonly Sprite _closeIcon;
 
-        private bool _clickBack = false;
-
-        // Update the ButtonBack constructor to use the Button.Clicked event instead of the inaccessible OnClick property.
-        public ButtonBack(Vector2f panelPosition, Vector2f panelSize)
+        public CloseIcon()
         {
-            SetZIndex(3);
+            base.SetZIndex(2);
 
-            Vector2f buttonSize = new(
-                panelSize.X * 0.18f,
-                panelSize.Y * 0.11f
-            );
+            // Load the settings icon
+            Texture texture = Assets.UI.Load("icons/1.png");
 
-            Vector2f buttonPos = new(
-                panelPosition.X + (panelSize.X * 0.15f),
-                panelPosition.Y + panelSize.Y - (panelSize.Y * 0.2f)
-            );
+            _closeIcon = new Sprite(texture)
+            {
+                Scale = new Vector2f(2f, 2f),
+                Color = new Color(255, 255, 180),
+            };
 
-            // Assuming a Font instance is required for the Button constructor
-            Font font = Assets.Font.Load("4.ttf"); // Replace with the actual font path or name
-            _back = new Button(font, "Back", buttonPos, buttonSize);
+            FloatRect bounds = _closeIcon.GetGlobalBounds();
+            _closeIcon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
-            // Subscribe to the Clicked event to handle the button click
-            _back.Clicked += () => _clickBack = true;
+            // Load click sound
+            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
+            _clickSound = new Sound(buffer);
 
-            Texture normal = Assets.UI.Load("buttons/3.png");
-            Texture pressed = Assets.UI.Load("buttons/4.png");
-
-            _back.SetTexture(normal, pressed);
-
-            SoundBuffer sound = Assets.Sounds.Load("1.wav");
-
-            _back.SetSounds(new Sound(sound));
+            MusicManager.Play("assets/sounds/0.wav");
+            MusicManager.Pause();
         }
 
         public override void Update(float deltaTime)
         {
             if (!Visible) return;
 
-            if (InputState.IsKeyDown(Keyboard.Key.B))
+            if (InputState.IsKeyDown(Keyboard.Key.S))
             {
+                _clickSound.Play();
                 SceneManager.ChangeScene(SceneNames.Main);
             }
 
-            // Handle the click for the 'Back' button
-            var mousePos = InputState.GetMousePosition();
-            bool isMouseDown = Mouse.IsButtonPressed(Mouse.Button.Left);
-
-            // Chỉ xử lý click một lần duy nhất khi người dùng nhấn chuột trái
-            if (isMouseDown)
+            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                _back.HandleClick(Mouse.Button.Left, mousePos);
-            }
-
-            // Hover logic tách riêng để tránh gây nhầm là click
-            _back.Update(mousePos);
-
-            if (_clickBack)
-            {
-                SceneManager.ChangeScene(SceneNames.Main);
+                if (_closeIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
+                {
+                    _clickSound.Play();
+                    SceneManager.ChangeScene(SceneNames.Main);
+                }
             }
         }
 
-        public override void Render(RenderTarget target)
-        {
-            if (!Visible) return;
-            target.Draw(_back);
-        }
-
-        protected override Drawable GetDrawable() => _back;
+        protected override Drawable GetDrawable() => _closeIcon;
     }
 }

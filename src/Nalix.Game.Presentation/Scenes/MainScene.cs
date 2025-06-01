@@ -16,15 +16,12 @@ internal class MainScene : Scene
     public MainScene() : base(SceneNames.Main)
     { }
 
-    //   => MusicManager.Play("assets/sounds/0.wav");
-
     protected override void LoadObjects()
     {
         // Add the parallax object to the scene
         AddObject(new ParallaxLayer());
 
         // Add the icon
-        //AddObject(new Menu());
         AddObject(new MusicIcon());
         AddObject(new SettingIcon());
     }
@@ -37,7 +34,7 @@ internal class MainScene : Scene
 
         public Menu()
         {
-            SetZIndex(1);
+            base.SetZIndex(1);
         }
 
         protected override Drawable GetDrawable() => _menuSprite;
@@ -85,15 +82,23 @@ internal class MainScene : Scene
 
         private bool _isPlaying = true;
 
-        public MusicIcon()
+        public MusicIcon(bool overturn = false)
         {
-            SetZIndex(2);
+            base.SetZIndex(2);
 
             _isPlaying = true;
 
             // Load the settings icon
-            _texture1 = Assets.UI.Load("icons/6.png");
-            _texture2 = Assets.UI.Load("icons/5.png");
+            if (overturn)
+            {
+                _texture1 = Assets.UI.Load("icons/5.png");
+                _texture2 = Assets.UI.Load("icons/6.png");
+            }
+            else
+            {
+                _texture1 = Assets.UI.Load("icons/6.png");
+                _texture2 = Assets.UI.Load("icons/5.png");
+            }
 
             _icon = new Sprite(_texture1)
             {
@@ -161,14 +166,14 @@ internal class MainScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    internal class SettingIcon : RenderObject
+    private class SettingIcon : RenderObject
     {
-        private readonly Sprite _settingsIcon;
         private readonly Sound _clickSound;
+        private readonly Sprite _settingsIcon;
 
         public SettingIcon()
         {
-            SetZIndex(2);
+            base.SetZIndex(2);
 
             // Load the settings icon
             Texture texture = Assets.UI.Load("icons/3.png");
