@@ -112,6 +112,9 @@ internal class MainScene : Scene
             // Load click sound
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _clickSound = new Sound(buffer);
+
+            MusicManager.Play("assets/sounds/0.wav");
+            MusicManager.Pause();
         }
 
         public override void Update(float deltaTime)
@@ -147,14 +150,14 @@ internal class MainScene : Scene
                     if (_isPlaying)
                     {
                         _isPlaying = false;
-                        _icon.Texture = _texture2;
+                        _icon.Texture = _texture1;
 
                         MusicManager.Pause();
                     }
                     else
                     {
                         _isPlaying = true;
-                        _icon.Texture = _texture1;
+                        _icon.Texture = _texture2;
 
                         MusicManager.Resume();
                     }
@@ -190,9 +193,6 @@ internal class MainScene : Scene
             // Load click sound
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _clickSound = new Sound(buffer);
-
-            MusicManager.Play("assets/sounds/0.wav");
-            MusicManager.Pause();
         }
 
         public override void Update(float deltaTime)
@@ -202,6 +202,7 @@ internal class MainScene : Scene
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
                 _clickSound.Play();
+                MusicManager.Stop();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
 
@@ -210,6 +211,7 @@ internal class MainScene : Scene
                 if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     _clickSound.Play();
+                    MusicManager.Stop();
                     SceneManager.ChangeScene(SceneNames.Settings);
                 }
             }

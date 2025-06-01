@@ -46,22 +46,17 @@ internal class LoadingScene : Scene
         }
 
         public override void Update(float deltaTime)
-            => _angle += deltaTime * 200f;
+        {
+            _angle += deltaTime * 200f;
+            _iconSprite.Rotation = _angle;
+        }
 
         public override void Render(RenderTarget target)
         {
             if (!Visible) return;
 
-            Transform transform = Transform.Identity;
-            transform.Rotate(_angle, _iconSprite.Position);
-
-            RenderStates states = new()
-            {
-                Transform = transform
-            };
-
             target.Draw(_background);
-            target.Draw(_iconSprite, states);
+            target.Draw(_iconSprite);
         }
 
         protected override Drawable GetDrawable()
