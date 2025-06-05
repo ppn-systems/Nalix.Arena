@@ -1,4 +1,5 @@
-﻿using Nalix.Graphics;
+﻿using Nalix.Game.Presentation.Objects;
+using Nalix.Graphics;
 using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
@@ -24,6 +25,8 @@ internal class MainScene : Scene
         // Add the icon
         AddObject(new MusicIcon());
         AddObject(new SettingIcon());
+
+        AddObject(new LoadingSpinner());
     }
 
     #region Private Class
