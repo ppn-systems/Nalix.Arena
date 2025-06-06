@@ -1,6 +1,5 @@
 ﻿using Nalix.Game.Presentation.Objects;
 using Nalix.Graphics;
-using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
@@ -14,8 +13,13 @@ namespace Nalix.Game.Presentation.Scenes;
 
 internal class MainScene : Scene
 {
+    private readonly LoadingSpinner _spinner;
+
     public MainScene() : base(SceneNames.Main)
-    { }
+    {
+        _spinner = new LoadingSpinner();
+        _spinner.Conceal();
+    }
 
     protected override void LoadObjects()
     {
@@ -23,10 +27,11 @@ internal class MainScene : Scene
         AddObject(new ParallaxLayer());
 
         // Add the icon
-        AddObject(new MusicIcon());
         AddObject(new SettingIcon());
 
-        AddObject(new LoadingSpinner());
+        AddObject(new ScrollingBanner("Welcome to Nalix!"));
+
+        AddObject(_spinner);
     }
 
     #region Private Class
@@ -76,102 +81,6 @@ internal class MainScene : Scene
     }
 
     [IgnoredLoad("RenderObject")]
-    internal class MusicIcon : RenderObject
-    {
-        private readonly Sprite _icon;
-        private readonly Texture _texture1;
-        private readonly Texture _texture2;
-        private readonly Sound _clickSound;
-
-        private bool _isPlaying = true;
-
-        public MusicIcon(bool overturn = false)
-        {
-            base.SetZIndex(2);
-
-            _isPlaying = true;
-
-            // Load the settings icon
-            if (overturn)
-            {
-                _texture1 = Assets.UI.Load("icons/5.png");
-                _texture2 = Assets.UI.Load("icons/6.png");
-            }
-            else
-            {
-                _texture1 = Assets.UI.Load("icons/6.png");
-                _texture2 = Assets.UI.Load("icons/5.png");
-            }
-
-            _icon = new Sprite(_texture1)
-            {
-                Scale = new Vector2f(2f, 2f),
-                Color = new Color(255, 255, 180),
-            };
-
-            FloatRect bounds = _icon.GetGlobalBounds();
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, 60);
-
-            // Load click sound
-            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-            _clickSound = new Sound(buffer);
-
-            MusicManager.Play("assets/sounds/0.wav");
-            MusicManager.Pause();
-        }
-
-        public override void Update(float deltaTime)
-        {
-            if (!Visible) return;
-
-            if (InputState.IsKeyDown(Keyboard.Key.M))
-            {
-                _clickSound.Play();
-
-                if (_isPlaying)
-                {
-                    _isPlaying = false;
-                    _icon.Texture = _texture2;
-
-                    MusicManager.Pause();
-                }
-                else
-                {
-                    _isPlaying = true;
-                    _icon.Texture = _texture1;
-
-                    MusicManager.Resume();
-                }
-            }
-
-            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
-            {
-                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
-                {
-                    _clickSound.Play();
-
-                    if (_isPlaying)
-                    {
-                        _isPlaying = false;
-                        _icon.Texture = _texture1;
-
-                        MusicManager.Pause();
-                    }
-                    else
-                    {
-                        _isPlaying = true;
-                        _icon.Texture = _texture2;
-
-                        MusicManager.Resume();
-                    }
-                }
-            }
-        }
-
-        protected override Drawable GetDrawable() => _icon;
-    }
-
-    [IgnoredLoad("RenderObject")]
     private class SettingIcon : RenderObject
     {
         private readonly Sound _clickSound;
@@ -205,7 +114,6 @@ internal class MainScene : Scene
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
                 _clickSound.Play();
-                MusicManager.Stop();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
 
@@ -214,7 +122,6 @@ internal class MainScene : Scene
                 if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     _clickSound.Play();
-                    MusicManager.Stop();
                     SceneManager.ChangeScene(SceneNames.Settings);
                 }
             }

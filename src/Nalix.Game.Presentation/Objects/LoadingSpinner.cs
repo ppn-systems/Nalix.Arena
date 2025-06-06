@@ -1,92 +1,148 @@
-﻿using Nalix.Graphics;
+﻿using Nalix.Game.Presentation.Enums;
+using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using SFML.Graphics;
 using SFML.System;
 
 namespace Nalix.Game.Presentation.Objects;
 
+/// <summary>
+/// Một đối tượng có thể hiển thị, thể hiện một vòng quay tải (loading spinner) với nền mờ dần và biểu tượng xoay, thay đổi kích thước.
+/// Vòng quay được căn giữa màn hình và được sử dụng để biểu thị trạng thái đang tải hoặc xử lý trong trò chơi.
+/// </summary>
 [IgnoredLoad("RenderObject")]
-public class LoadingSpinner : RenderObject
+public sealed class LoadingSpinner : RenderObject
 {
-    private float _angle;
+    /// <summary>Độ trong suốt tối đa của nền và biểu tượng (0-255).</summary>
+    private const float MaxAlpha = 255f;
+
+    /// <summary>Tốc độ mờ dần của hiệu ứng trong suốt (alpha mỗi giây).</summary>
+    private const float FadeSpeed = 300f;
+
+    /// <summary>Tốc độ xoay của biểu tượng (độ mỗi giây).</summary>
+    private const float RotationSpeed = 150f;
+
+    /// <summary>Tỷ lệ cơ bản của biểu tượng.</summary>
+    private const float BaseScale = 0.5f;
+
+    /// <summary>Độ dao động của tỷ lệ (biên độ của hiệu ứng thu phóng).</summary>
+    private const float ScaleOscillation = 0.02f;
+
+    /// <summary>Góc xoay hiện tại của biểu tượng (độ).</summary>
+    private float _angle = 0f;
+
+    /// <summary>Độ trong suốt hiện tại của nền và biểu tượng (0-255).</summary>
     private float _alpha = 0f;
+
+    /// <summary>Trạng thái hiệu ứng: true nếu đang mờ dần vào, false nếu đã đạt tối đa.</summary>
     private bool _fadingIn = true;
-    private Color _backgroundColor = new(0, 0, 0, 0);
-    private Color _iconColor = new(255, 255, 255, 255);
 
+    /// <summary>Giá trị alpha hiện tại (được ép kiểu thành byte để áp dụng cho màu).</summary>
+    private byte _currentAlpha = 0;
+
+    /// <summary>Hình chữ nhật làm nền mờ của vòng quay.</summary>
+    private readonly RectangleShape _bg;
+
+    /// <summary>Biểu tượng xoay (sprite) của vòng quay tải.</summary>
     private readonly Sprite _iconSprite;
-    private readonly RectangleShape _background;
 
+    /// <summary>
+    /// Khởi tạo một <see cref="LoadingSpinner"/> mới, đặt nó ở vị trí trung tâm màn hình với nền và biểu tượng.
+    /// </summary>
     public LoadingSpinner()
     {
-        base.SetZIndex(System.Int32.MaxValue);
+        base.SetZIndex(ZIndex.Overlay.ToInt()); // Đặt độ ưu tiên vẽ cao nhất để luôn hiển thị trên cùng
+        base.Reveal(); // Bắt đầu hiển thị vòng quay
 
-        _background = new RectangleShape((Vector2f)GameEngine.ScreenSize)
+        Vector2f screenSize = new(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y); // Kích thước màn hình
+
+        _bg = new RectangleShape(screenSize)
         {
-            FillColor = _backgroundColor, // bắt đầu từ trong suốt
-            Position = new Vector2f(0, 0)
+            FillColor = new Color(0, 0, 0, 0), // Nền đen ban đầu trong suốt
+            Position = default
         };
 
-        // Tải icon
-        Texture iconTexture = Assets.UI.Load("icons/16");
-        iconTexture.Smooth = true;
+        Texture iconTexture = Assets.UI.Load("icons/16"); // Tải texture biểu tượng
+        iconTexture.Smooth = true; // Làm mịn texture
 
         _iconSprite = new Sprite(iconTexture)
         {
-            Origin = new Vector2f(iconTexture.Size.X / 2f, iconTexture.Size.Y / 2f),
-            Position = new Vector2f(GameEngine.ScreenSize.X / 2f, GameEngine.ScreenSize.Y / 2f),
-            Scale = new Vector2f(0.5f, 0.5f) // scale nếu cần
+            Origin = new Vector2f(iconTexture.Size.X * 0.5f, iconTexture.Size.Y * 0.5f), // Đặt gốc ở trung tâm biểu tượng
+            Position = new Vector2f(screenSize.X * 0.5f, screenSize.Y * 0.5f), // Đặt vị trí ở trung tâm màn hình
+            Scale = new Vector2f(BaseScale, BaseScale), // Tỷ lệ ban đầu
+            Color = new Color(255, 255, 255, 0) // Biểu tượng trắng, ban đầu trong suốt
         };
     }
 
+    /// <summary>
+    /// Cập nhật trạng thái của vòng quay, bao gồm hiệu ứng mờ dần, xoay và dao động kích thước.
+    /// </summary>
+    /// <param name="deltaTime">Thời gian trôi qua kể từ khung hình trước (giây).</param>
     public override void Update(float deltaTime)
     {
-        _angle += deltaTime * 150f;
-        if (_angle > 360f) _angle -= 360f;
-        _iconSprite.Rotation = _angle;
+        this.UpdateAlpha(deltaTime); // Cập nhật độ trong suốt
 
-        float scaleValue = 0.5f + (System.MathF.Sin(_angle * 0.01f) * 0.02f);
-        _iconSprite.Scale = new Vector2f(scaleValue, scaleValue);
+        // Cập nhật góc xoay
+        _angle += deltaTime * RotationSpeed;
+        if (_angle >= 360f)
+            _angle -= 360f;
 
-        this.UpdateAlpha(deltaTime);
+        _iconSprite.Rotation = _angle; // Áp dụng góc xoay cho biểu tượng
+
+        // Dao động kích thước (sử dụng sóng sin)
+        float scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
+        _iconSprite.Scale = new Vector2f(scale, scale); // Áp dụng tỷ lệ mới
     }
 
+    /// <summary>
+    /// Vẽ nền và biểu tượng của vòng quay lên mục tiêu hiển thị.
+    /// </summary>
+    /// <param name="target">Mục tiêu hiển thị (RenderTarget) để vẽ.</param>
     public override void Render(RenderTarget target)
     {
         if (!Visible) return;
 
-        target.Draw(_background);
+        target.Draw(_bg);
         target.Draw(_iconSprite);
     }
 
+    /// <summary>
+    /// Ném ngoại lệ vì không hỗ trợ lấy đối tượng Drawable trực tiếp. Sử dụng <see cref="Render(RenderTarget)"/> thay thế.
+    /// </summary>
+    /// <returns>Không trả về giá trị, luôn ném ngoại lệ.</returns>
+    /// <exception cref="System.NotSupportedException">Luôn được ném khi gọi phương thức này.</exception>
     protected override Drawable GetDrawable()
-        => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
+        => throw new System.NotSupportedException("Sử dụng Render() thay vì GetDrawable().");
 
+    /// <summary>
+    /// Cập nhật độ trong suốt của nền và biểu tượng theo thời gian.
+    /// </summary>
+    /// <param name="deltaTime">Thời gian trôi qua kể từ khung hình trước (giây).</param>
     private void UpdateAlpha(float deltaTime)
     {
-        float fadeSpeed = 300f; // tốc độ fade per second
+        if (!_fadingIn) return; // Không cập nhật nếu đã đạt alpha tối đa
 
-        if (_fadingIn)
+        _alpha += deltaTime * FadeSpeed; // Tăng độ trong suốt
+        if (_alpha >= MaxAlpha)
         {
-            _alpha += deltaTime * fadeSpeed;
-            if (_alpha >= 255f)
-            {
-                _alpha = 255f;
-                _fadingIn = false; // tự dừng fade nếu cần
-            }
+            _alpha = MaxAlpha; // Giới hạn alpha tối đa
+            _fadingIn = false; // Dừng hiệu ứng mờ dần
         }
 
-        byte a = (byte)_alpha;
+        byte newAlpha = (byte)_alpha; // Chuyển đổi sang byte
 
-        if (_backgroundColor.A != a)
-        {
-            _backgroundColor.A = a;
-            _background.FillColor = _backgroundColor;
-        }
-        if (_iconColor.A != a)
-        {
-            _iconColor.A = a;
-            _iconSprite.Color = _iconColor;
-        }
+        if (_currentAlpha == newAlpha) return; // Không cập nhật nếu alpha không thay đổi
+
+        _currentAlpha = newAlpha; // Lưu giá trị alpha mới
+
+        // Cập nhật alpha cho màu nền
+        Color bgColor = _bg.FillColor;
+        bgColor.A = newAlpha;
+        _bg.FillColor = bgColor;
+
+        // Cập nhật alpha cho màu biểu tượng
+        Color iconColor = _iconSprite.Color;
+        iconColor.A = newAlpha;
+        _iconSprite.Color = iconColor;
     }
 }
