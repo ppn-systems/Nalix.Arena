@@ -29,9 +29,9 @@ internal class MainScene : Scene
         // Add the icon
         AddObject(new SettingIcon());
 
-        AddObject(new ScrollingBanner("Welcome to Nalix!"));
+        AddObject(new NotificationBox(new Vector2f(20, 20), new Vector2f(400, 200), "Welcome to Nalix!"));
 
-        AddObject(_spinner);
+        AddObject(new ScrollingBanner("Welcome to Nalix!"));
     }
 
     #region Private Class
@@ -59,13 +59,13 @@ internal class MainScene : Scene
 
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
-            _parallax.AddLayer(Assets.Bg.Load("7.png"), 00f, true);
-            _parallax.AddLayer(Assets.Bg.Load("6.png"), 25f, true);
-            _parallax.AddLayer(Assets.Bg.Load("5.png"), 30f, true);
+            _parallax.AddLayer(Assets.Bg.Load("1.png"), 00f, true);
+            _parallax.AddLayer(Assets.Bg.Load("2.png"), 25f, true);
+            _parallax.AddLayer(Assets.Bg.Load("3.png"), 30f, true);
             _parallax.AddLayer(Assets.Bg.Load("4.png"), 35f, true);
-            _parallax.AddLayer(Assets.Bg.Load("3.png"), 40f, true);
-            _parallax.AddLayer(Assets.Bg.Load("2.png"), 45f, true);
-            _parallax.AddLayer(Assets.Bg.Load("1.png"), 50f, true);
+            _parallax.AddLayer(Assets.Bg.Load("5.png"), 40f, true);
+            _parallax.AddLayer(Assets.Bg.Load("6.png"), 45f, true);
+            _parallax.AddLayer(Assets.Bg.Load("7.png"), 50f, true);
         }
 
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);

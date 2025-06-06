@@ -9,5 +9,5 @@ internal static class Assets
     public static readonly SfxLoader Sounds = new("assets/sounds");
 
     public static readonly TextureLoader UI = new("assets/ui");
-    public static readonly TextureLoader Bg = new("assets/background");
+    public static readonly TextureLoader Bg = new("assets/ui/bg");
 }
