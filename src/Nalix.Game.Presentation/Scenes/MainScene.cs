@@ -29,7 +29,7 @@ internal class MainScene : Scene
         // Add the icon
         AddObject(new SettingIcon());
 
-        AddObject(new NotificationBox(new Vector2f(20, 20), new Vector2f(400, 200), "Welcome to Nalix!"));
+        AddObject(new NotificationBox("Welcome to Nalix!"));
 
         AddObject(new ScrollingBanner("Welcome to Nalix!"));
     }

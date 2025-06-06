@@ -15,50 +15,44 @@ public class NotificationBox : RenderObject
     private readonly Sprite _acceptButtonSprite;
     private readonly Sprite _background;
 
-    public NotificationBox(
-        Vector2f position,
-        Vector2f size,
-        string initialMessage = "",
-        Sprite acceptButtonSprite = null)
+    public NotificationBox(string initialMessage = "")
     {
-        base.SetZIndex(ZIndex.Notification.ToInt()); // ưu tiên hiển thị trên cùng
+        base.SetZIndex(ZIndex.Notification.ToInt());
         base.Reveal();
 
         Font font = Assets.Font.Load("1.ttf");
-        Texture bg = Assets.UI.Load("dialog/7.png");
+        Texture bgTexture = Assets.UI.Load("dialog/7.png");
+        Texture acceptButtonTexture = Assets.UI.Load("buttons/3.png");
 
         // Background
-        _background = new Sprite(bg)
+        _background = new Sprite(bgTexture)
         {
-            Position = new Vector2f(position.X + size.X - bg.Size.X - 20, position.Y + size.Y - bg.Size.Y - 20),
+            Position = new Vector2f(
+                (GameEngine.ScreenSize.X - bgTexture.Size.X) / 2f, // canh giữa ngang
+                GameEngine.ScreenSize.Y - bgTexture.Size.Y - 70     // cách đáy 20px
+            )
         };
 
-        // Text thông báo
-        _messageText = new Text(initialMessage, font, 20)
+        Vector2f backgroundSize = new(bgTexture.Size.X, bgTexture.Size.Y);
+
+        // Text
+        float maxTextWidth = bgTexture.Size.X - 40; // padding 20 trái + phải
+
+        _messageText = new Text(
+            WrapText(font, initialMessage, 20, maxTextWidth),
+            font, 20)
         {
-            FillColor = Color.White,
-            Position = new Vector2f(position.X + 20, position.Y + 20),
-            // Giới hạn chiều rộng (có thể tự xử lý wrap nếu cần)
+            FillColor = Color.Black,
+            Position = _background.Position + new Vector2f(55, 45),
         };
 
-        // Nút đồng ý
-        if (acceptButtonSprite != null)
+        // Accept Button
+        _acceptButtonSprite = new Sprite(acceptButtonTexture)
         {
-            _acceptButtonSprite = new Sprite(acceptButtonSprite.Texture)
-            {
-                Position = new Vector2f(position.X + size.X - acceptButtonSprite.Texture.Size.X - 20, position.Y + size.Y - acceptButtonSprite.Texture.Size.Y - 20),
-                Scale = acceptButtonSprite.Scale,
-            };
-        }
-        else
-        {
-            // Nếu không có sprite, tạo nút hình chữ nhật đơn giản
-            _acceptButtonSprite = new Sprite
-            {
-                Texture = CreateSolidTexture((uint)100, (uint)40, new Color(0, 120, 0)),
-                Position = new Vector2f(position.X + size.X - 120, position.Y + size.Y - 60)
-            };
-        }
+            Position = _background.Position + new Vector2f(
+                backgroundSize.X - acceptButtonTexture.Size.X - 20,
+                backgroundSize.Y - acceptButtonTexture.Size.Y - 20),
+        };
     }
 
     /// <summary>
@@ -99,10 +93,29 @@ public class NotificationBox : RenderObject
     protected override Drawable GetDrawable()
         => throw new NotSupportedException("Use Render() instead.");
 
-    // Helper tạo texture đơn sắc cho nút nếu bạn không dùng sprite
-    private static Texture CreateSolidTexture(uint width, uint height, Color color)
+    private static string WrapText(Font font, string text, uint characterSize, float maxWidth)
     {
-        Image img = new(width, height, color);
-        return new Texture(img);
+        string[] words = text.Split(' ');
+        string result = "";
+        string currentLine = "";
+
+        foreach (var word in words)
+        {
+            string testLine = currentLine.Length > 0 ? currentLine + " " + word : word;
+
+            Text tempText = new(testLine, font, characterSize);
+            if (tempText.GetLocalBounds().Width > maxWidth)
+            {
+                result += currentLine + "\n";
+                currentLine = word;
+            }
+            else
+            {
+                currentLine = testLine;
+            }
+        }
+
+        result += currentLine;
+        return result;
     }
 }
