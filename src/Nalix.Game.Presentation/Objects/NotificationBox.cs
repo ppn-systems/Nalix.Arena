@@ -10,74 +10,125 @@ namespace Nalix.Game.Presentation.Objects;
 
 public class NotificationBox : RenderObject
 {
-    private Action _onAcceptClicked;
+    private readonly bool _hasButton;
     private readonly Text _messageText;
-    private readonly Sprite _acceptButtonSprite;
     private readonly Sprite _background;
 
-    public NotificationBox(string initialMessage = "")
+    private readonly Sprite _button;
+    private readonly Text _buttonText;
+
+    private float _hoverTime = 0f;
+    private bool _isHovering = false;
+
+    public NotificationBox(string initialMessage = "", bool button = true, Side side = Side.Bottom)
     {
-        base.SetZIndex(ZIndex.Notification.ToInt());
-        base.Reveal();
+        _hasButton = button;
 
         Font font = Assets.Font.Load("1.ttf");
         Texture bgTexture = Assets.UI.Load("dialog/7.png");
-        Texture acceptButtonTexture = Assets.UI.Load("buttons/3.png");
+
+        float floatY;
 
         // Background
+        if (side == Side.Bottom)
+        {
+            floatY = GameEngine.ScreenSize.Y * 0.6f;
+        }
+        else
+        {
+            // If the notification is at the top, position it accordingly
+            floatY = GameEngine.ScreenSize.Y * 0.1f;
+        }
+
         _background = new Sprite(bgTexture)
         {
-            Position = new Vector2f(
-                (GameEngine.ScreenSize.X - bgTexture.Size.X) / 2f, // canh giữa ngang
-                GameEngine.ScreenSize.Y - bgTexture.Size.Y - 70     // cách đáy 20px
-            )
+            Scale = new Vector2f(0.8f, 0.8f),
+            Position = new Vector2f((GameEngine.ScreenSize.X - (0.8f * bgTexture.Size.X)) / 2f, floatY)
         };
-
-        Vector2f backgroundSize = new(bgTexture.Size.X, bgTexture.Size.Y);
 
         // Text
-        float maxTextWidth = bgTexture.Size.X - 40; // padding 20 trái + phải
-
-        _messageText = new Text(
-            WrapText(font, initialMessage, 20, maxTextWidth),
-            font, 20)
+        _messageText = new Text(WrapText(font, initialMessage, 20, bgTexture.Size.X * 0.7f), font, 20)
         {
             FillColor = Color.Black,
-            Position = _background.Position + new Vector2f(55, 45),
         };
 
-        // Accept Button
-        _acceptButtonSprite = new Sprite(acceptButtonTexture)
+        // Lấy thông tin kích thước của text để căn giữa
+        FloatRect textBounds = _messageText.GetLocalBounds();
+
+        // Đặt gốc về giữa text (cho phép Position là tâm)
+        _messageText.Origin = new Vector2f(
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
+        );
+
+        // Đặt vị trí text vào chính giữa background
+        _messageText.Position = new Vector2f(
+            _background.Position.X + (_background.GetGlobalBounds().Width / 2f),
+            _background.Position.Y + (_background.GetGlobalBounds().Height / 2f)
+        );
+
+        if (_hasButton)
         {
-            Position = _background.Position + new Vector2f(
-                backgroundSize.X - acceptButtonTexture.Size.X - 20,
-                backgroundSize.Y - acceptButtonTexture.Size.Y - 20),
-        };
-    }
+            _button = new Sprite(Assets.UI.Load("button/7.png"))
+            {
+                Scale = new Vector2f(0.5f, 0.5f)
+            };
 
-    /// <summary>
-    /// Hiển thị thông báo mới với nội dung và callback khi nút đồng ý được nhấn.
-    /// </summary>
-    public void Show(string message, Action onAcceptClicked)
-    {
-        _messageText.DisplayedString = message;
-        _onAcceptClicked = onAcceptClicked;
+            float buttonY = _messageText.Position.Y + _messageText.GetLocalBounds().Height + 5f;
+
+            // Center button horizontally below the message text
+            _button.Position = new Vector2f(
+                _background.Position.X +
+                (_background.GetGlobalBounds().Width / 2f) -
+                (_button.GetGlobalBounds().Width / 2f),
+                buttonY
+            );
+
+            _buttonText = new Text("Ok", font, 18)
+            {
+                FillColor = Color.White
+            };
+
+            this.CenterTextOnSprite();
+        }
+
         base.Reveal();
+        base.SetZIndex(ZIndex.Notification.ToInt());
     }
 
     public override void Update(float deltaTime)
     {
         if (!Visible) return;
+        Vector2i mousePos = InputState.GetMousePosition();
+        bool currentlyHovering = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);
 
-        // Kiểm tra input chuột cho nút đồng ý
-        if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
+        if (currentlyHovering)
         {
-            Vector2i mousePos = InputState.GetMousePosition();
-            if (_acceptButtonSprite.GetGlobalBounds().Contains(mousePos.X, mousePos.Y))
+            _hoverTime += deltaTime;
+
+            if (_hoverTime >= 0.1f)
             {
-                _onAcceptClicked?.Invoke();
-                base.Conceal();
+                if (!_isHovering)
+                {
+                    _isHovering = true;
+                    _button.Texture = Assets.UI.Load("button/8.png"); // Change to hover texture
+                }
             }
+        }
+        else
+        {
+            if (_isHovering)
+            {
+                _isHovering = false;
+                _button.Texture = Assets.UI.Load("button/7.png"); // Change back to normal texture
+            }
+            _hoverTime = 0f;
+        }
+
+        // Check click
+        if (InputState.IsMouseButtonPressed(Mouse.Button.Left) && _isHovering)
+        {
+            base.Conceal();
         }
     }
 
@@ -87,7 +138,12 @@ public class NotificationBox : RenderObject
 
         target.Draw(_background);
         target.Draw(_messageText);
-        target.Draw(_acceptButtonSprite);
+
+        if (_hasButton)
+        {
+            target.Draw(_button);
+            target.Draw(_buttonText);
+        }
     }
 
     protected override Drawable GetDrawable()
@@ -117,5 +173,23 @@ public class NotificationBox : RenderObject
 
         result += currentLine;
         return result;
+    }
+
+    private void CenterTextOnSprite()
+    {
+        FloatRect textBounds = _buttonText.GetLocalBounds();
+        FloatRect spriteBounds = _button.GetGlobalBounds();
+
+        // Set the origin of the text to its center
+        _buttonText.Origin = new Vector2f(
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
+        );
+
+        // Position the text at the center of the sprite
+        _buttonText.Position = new Vector2f(
+            spriteBounds.Left + (spriteBounds.Width / 2f),
+            spriteBounds.Top + (spriteBounds.Height / 2f)
+        );
     }
 }
