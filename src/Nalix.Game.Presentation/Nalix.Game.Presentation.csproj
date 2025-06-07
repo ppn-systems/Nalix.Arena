@@ -10,7 +10,7 @@
 		<PackageReference Include="SFML.System" Version="2.6.1" />
 		<PackageReference Include="SFML.Window" Version="2.6.1" />
 		
-		<PackageReference Include="Nalix.Graphics" Version="0.9.51" />
+		<PackageReference Include="Nalix.Graphics" Version="0.9.79" />
 		<ProjectReference Include="..\Nalix.Game.Shared\Nalix.Game.Shared.csproj" />
 	</ItemGroup>
 
