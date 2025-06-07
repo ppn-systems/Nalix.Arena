@@ -13,12 +13,8 @@ namespace Nalix.Game.Presentation.Scenes;
 
 internal class MainScene : Scene
 {
-    private readonly LoadingSpinner _spinner;
-
     public MainScene() : base(SceneNames.Main)
     {
-        _spinner = new LoadingSpinner();
-        _spinner.Conceal();
     }
 
     protected override void LoadObjects()
@@ -29,9 +25,11 @@ internal class MainScene : Scene
         // Add the icon
         AddObject(new SettingIcon());
 
-        AddObject(new NotificationBox("Welcome to Nalix! Welcome to Nalix! Welcome to Nalix! Welcome to Nalix! Welcome to Nalix! Welcome to Nalix! Welcome to Nalix!"));
+        //AddObject(new NotificationBox("Welcome to Nalix!", Enums.Side.Top));
 
         AddObject(new ScrollingBanner("Welcome to Nalix!"));
+
+        AddObject(new LoadingSpinner());
     }
 
     #region Private Class

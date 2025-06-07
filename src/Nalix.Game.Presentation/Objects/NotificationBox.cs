@@ -4,26 +4,30 @@ using Nalix.Graphics.Rendering.Object;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Nalix.Game.Presentation.Objects;
 
+/// <summary>
+/// Đại diện cho một hộp thông báo trong giao diện người dùng của trò chơi.
+/// Hộp thông báo hiển thị một thông điệp văn bản và có thể bao gồm một nút bấm tùy chọn.
+/// </summary>
 public class NotificationBox : RenderObject
 {
-    private readonly bool _hasButton;
-    private readonly Text _messageText;
-    private readonly Sprite _background;
-
     private readonly Sprite _button;
     private readonly Text _buttonText;
+    private readonly Text _messageText;
+    private readonly Sprite _background;
 
     private float _hoverTime = 0f;
     private bool _isHovering = false;
 
-    public NotificationBox(string initialMessage = "", bool button = true, Side side = Side.Bottom)
+    /// <summary>
+    /// Khởi tạo một hộp thông báo với thông điệp ban đầu và vị trí hiển thị.
+    /// </summary>
+    /// <param name="initialMessage">Thông điệp ban đầu hiển thị trong hộp thông báo. Mặc định là chuỗi rỗng.</param>
+    /// <param name="side">Vị trí hiển thị của hộp thông báo (Top hoặc Bottom). Mặc định là Bottom.</param>
+    public NotificationBox(string initialMessage = "", Side side = Side.Bottom)
     {
-        _hasButton = button;
-
         Font font = Assets.Font.Load("1.ttf");
         Texture bgTexture = Assets.UI.Load("dialog/7.png");
 
@@ -36,7 +40,6 @@ public class NotificationBox : RenderObject
         }
         else
         {
-            // If the notification is at the top, position it accordingly
             floatY = GameEngine.ScreenSize.Y * 0.1f;
         }
 
@@ -47,7 +50,8 @@ public class NotificationBox : RenderObject
         };
 
         // Text
-        _messageText = new Text(WrapText(font, initialMessage, 20, bgTexture.Size.X * 0.7f), font, 20)
+        _messageText = new Text(
+            WrapText(font, initialMessage, 20, bgTexture.Size.X * 0.7f), font, 20)
         {
             FillColor = Color.Black,
         };
@@ -67,9 +71,9 @@ public class NotificationBox : RenderObject
             _background.Position.Y + (_background.GetGlobalBounds().Height / 2f)
         );
 
-        if (_hasButton)
+        if (side == Side.Bottom)
         {
-            _button = new Sprite(Assets.UI.Load("button/7.png"))
+            _button = new Sprite(Assets.UI.Load("button/7"))
             {
                 Scale = new Vector2f(0.5f, 0.5f)
             };
@@ -96,13 +100,30 @@ public class NotificationBox : RenderObject
         base.SetZIndex(ZIndex.Notification.ToInt());
     }
 
+    /// <summary>
+    /// Cập nhật trạng thái của hộp thông báo, xử lý tương tác chuột (hover, click).
+    /// </summary>
+    /// <param name="deltaTime">Thời gian trôi qua kể từ lần cập nhật trước (tính bằng giây).</param>
     public override void Update(float deltaTime)
     {
         if (!Visible) return;
-        Vector2i mousePos = InputState.GetMousePosition();
-        bool currentlyHovering = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);
 
-        if (currentlyHovering)
+        if (_button == null)
+        {
+            _hoverTime += deltaTime;
+
+            if (_hoverTime >= 8f)
+            {
+                base.Conceal();
+            }
+
+            return;
+        }
+
+        Vector2i mousePos = InputState.GetMousePosition();
+        bool hover = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);
+
+        if (hover)
         {
             _hoverTime += deltaTime;
 
@@ -111,7 +132,7 @@ public class NotificationBox : RenderObject
                 if (!_isHovering)
                 {
                     _isHovering = true;
-                    _button.Texture = Assets.UI.Load("button/8.png"); // Change to hover texture
+                    _button.Texture = Assets.UI.Load("button/8"); // Change to hover texture
                 }
             }
         }
@@ -120,7 +141,7 @@ public class NotificationBox : RenderObject
             if (_isHovering)
             {
                 _isHovering = false;
-                _button.Texture = Assets.UI.Load("button/7.png"); // Change back to normal texture
+                _button.Texture = Assets.UI.Load("button/7"); // Change back to normal texture
             }
             _hoverTime = 0f;
         }
@@ -132,6 +153,10 @@ public class NotificationBox : RenderObject
         }
     }
 
+    /// <summary>
+    /// Vẽ hộp thông báo lên mục tiêu render.
+    /// </summary>
+    /// <param name="target">Mục tiêu render (thường là cửa sổ trò chơi).</param>
     public override void Render(RenderTarget target)
     {
         if (!Visible) return;
@@ -139,16 +164,29 @@ public class NotificationBox : RenderObject
         target.Draw(_background);
         target.Draw(_messageText);
 
-        if (_hasButton)
+        if (_button != null)
         {
             target.Draw(_button);
             target.Draw(_buttonText);
         }
     }
 
+    /// <summary>
+    /// Lấy đối tượng Drawable (không được hỗ trợ, sử dụng Render() thay thế).
+    /// </summary>
+    /// <returns>Không trả về giá trị, luôn ném ngoại lệ.</returns>
+    /// <exception cref="System.NotSupportedException">Ném ra khi phương thức này được gọi.</exception>
     protected override Drawable GetDrawable()
-        => throw new NotSupportedException("Use Render() instead.");
+        => throw new System.NotSupportedException("Use Render() instead.");
 
+    /// <summary>
+    /// Bọc văn bản để đảm bảo nó vừa với chiều rộng tối đa được chỉ định.
+    /// </summary>
+    /// <param name="font">Font chữ sử dụng cho văn bản.</param>
+    /// <param name="text">Chuỗi văn bản cần bọc.</param>
+    /// <param name="characterSize">Kích thước ký tự của văn bản.</param>
+    /// <param name="maxWidth">Chiều rộng tối đa của văn bản.</param>
+    /// <returns>Chuỗi văn bản đã được bọc dòng.</returns>
     private static string WrapText(Font font, string text, uint characterSize, float maxWidth)
     {
         string[] words = text.Split(' ');
@@ -175,6 +213,9 @@ public class NotificationBox : RenderObject
         return result;
     }
 
+    /// <summary>
+    /// Căn giữa văn bản trên nút bấm.
+    /// </summary>
     private void CenterTextOnSprite()
     {
         FloatRect textBounds = _buttonText.GetLocalBounds();

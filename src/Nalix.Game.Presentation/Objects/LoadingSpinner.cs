@@ -23,7 +23,7 @@ public sealed class LoadingSpinner : RenderObject
     private const float RotationSpeed = 150f;
 
     /// <summary>Tỷ lệ cơ bản của biểu tượng.</summary>
-    private const float BaseScale = 0.5f;
+    private const float BaseScale = 0.6f;
 
     /// <summary>Độ dao động của tỷ lệ (biên độ của hiệu ứng thu phóng).</summary>
     private const float ScaleOscillation = 0.02f;
@@ -62,7 +62,7 @@ public sealed class LoadingSpinner : RenderObject
             Position = default
         };
 
-        Texture iconTexture = Assets.UI.Load("icons/16"); // Tải texture biểu tượng
+        Texture iconTexture = Assets.UI.Load("icons/19"); // Tải texture biểu tượng
         iconTexture.Smooth = true; // Làm mịn texture
 
         _iconSprite = new Sprite(iconTexture)
