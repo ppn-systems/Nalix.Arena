@@ -18,7 +18,7 @@ internal sealed class Terminal
     private static readonly CancellationTokenSource _cTokenSrc = new();
 
     // Sự kiện dùng để báo hiệu thoát chương trình
-    private static readonly ManualResetEventSlim _exitEvent = new(false);
+    public static readonly ManualResetEventSlim ExitEvent = new(false);
 
     // Interface đọc phím, dễ mock cho test
     private readonly IConsoleReader _consoleReader;
@@ -61,11 +61,11 @@ internal sealed class Terminal
         };
 
         // Thiết lập sự kiện thoát và ngoại lệ không bắt được (unhandled)
-        AppDomain.CurrentDomain.ProcessExit += (s, e) => _exitEvent.Set();
+        AppDomain.CurrentDomain.ProcessExit += (s, e) => ExitEvent.Set();
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
             AppConfig.Logger.Error("Unhandled exception: " + e.ExceptionObject);
-            _exitEvent.Set();
+            ExitEvent.Set();
         };
 
         Console.Clear();
@@ -99,7 +99,7 @@ internal sealed class Terminal
                 }
             }
             _cTokenSrc.Cancel();
-            _exitEvent.Set();
+            ExitEvent.Set();
             Environment.Exit(0);
         }, "Exit");
 
@@ -145,7 +145,7 @@ internal sealed class Terminal
     /// <returns>Task bất đồng bộ</returns>
     private async Task EventLoop()
     {
-        while (!_exitEvent.IsSet)
+        while (!ExitEvent.IsSet)
         {
             if (_consoleReader.KeyAvailable)
             {
