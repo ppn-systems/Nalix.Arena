@@ -3,27 +3,31 @@ using Nalix.Game.Presentation.Objects;
 using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
+using Nalix.Logging.Extensions;
 using Nalix.Network.Package;
 using Nalix.Shared.Net;
 using SFML.Graphics;
 
 namespace Nalix.Game.Presentation.Scenes.Main;
 
-public class ConnectionScene : Scene
+public class NetworkScene : Scene
 {
-    public ConnectionScene() : base(SceneNames.Connection)
+    public NetworkScene() : base(SceneNames.Network)
     {
     }
 
     protected override void LoadObjects()
     {
-        AddObject(new LoadingSpinner());
-        AddObject(new ConnectionHandler());
+        base.AddObject(new LoadingSpinner());
+        base.AddObject(new NetworkHandler());
+        base.AddObject(new NotificationBox("Connecting to the server...", Side.Top));
     }
 
     [IgnoredLoad("RenderObject")]
-    private class ConnectionHandler : RenderObject
+    private class NetworkHandler : RenderObject
     {
+        private const float RetryDelay = 2f; // seconds
+
         private enum ConnectState
         {
             Waiting,
@@ -32,15 +36,15 @@ public class ConnectionScene : Scene
             Failed
         }
 
-        private readonly NotificationBox _box = new("Connecting to the server...", Side.Top);
-        private ConnectState _state = ConnectState.Waiting;
-        private int _attempt = 0;
-        private float _timer = 0f;
-        private const float RetryDelay = 2f; // seconds
+        private int _attempt;
+        private float _timer;
+        private ConnectState _state;
 
-        public ConnectionHandler()
+        public NetworkHandler() // Accept NotificationBox in constructor
         {
-            base.Reveal(); // Start the connection process
+            _attempt = 0;
+            _timer = 0f;
+            _state = ConnectState.Waiting;
         }
 
         public override void Update(float deltaTime)
@@ -60,7 +64,9 @@ public class ConnectionScene : Scene
                 case ConnectState.Trying:
                     try
                     {
-                        NetClient<Packet>.Instance.ConnectAsync(10000).ConfigureAwait(false);
+                        NetClient<Packet>.Instance.Connect(20000);
+                        NLogixFx.Info("Network attempt #{0} successful.", _attempt.ToString());
+
                         _state = ConnectState.Success;
                     }
                     catch
@@ -83,10 +89,11 @@ public class ConnectionScene : Scene
                     break;
 
                 case ConnectState.Failed:
-                    _box.UpdateMessage(
-                        "Connection failed after multiple attempts. " +
-                        "Please check your network settings.");
-                    // Chuyển trạng thái để không gọi lại
+                    SceneManager.FindByType<NotificationBox>()
+                                .UpdateMessage(
+                                    "Network failed after multiple attempts. " +
+                                    "Please check your network settings.");
+
                     _state = (ConnectState)(-1); // final state
                     break;
             }
@@ -94,10 +101,7 @@ public class ConnectionScene : Scene
 
         public override void Render(RenderTarget target)
         {
-            if (!Visible) return;
-
-            // Render the notification box
-            _box.Render(target);
+            // No rendering needed for this object
         }
 
         protected override Drawable GetDrawable() => null;

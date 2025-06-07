@@ -25,8 +25,6 @@ internal class MainScene : Scene
 
         // Add the icon
         AddObject(new SettingIcon());
-
-        AddObject(new Menu());
     }
 
     #region Private Class
@@ -44,7 +42,7 @@ internal class MainScene : Scene
             if (!NetClient<Packet>.Instance.IsConnected)
             {
                 // If already connected, go to the main scene
-                SceneManager.ChangeScene(SceneNames.Connection);
+                SceneManager.ChangeScene(SceneNames.Network);
             }
         }
 
@@ -117,6 +115,12 @@ internal class MainScene : Scene
         public override void Update(float deltaTime)
         {
             if (!Visible) return;
+
+            if (!NetClient<Packet>.Instance.IsConnected)
+            {
+                // If already connected, go to the main scene
+                SceneManager.ChangeScene(SceneNames.Network);
+            }
 
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {

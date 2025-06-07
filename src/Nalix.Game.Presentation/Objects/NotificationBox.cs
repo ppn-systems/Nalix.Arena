@@ -11,6 +11,7 @@ namespace Nalix.Game.Presentation.Objects;
 /// Đại diện cho một hộp thông báo trong giao diện người dùng của trò chơi.
 /// Hộp thông báo hiển thị một thông điệp văn bản và có thể bao gồm một nút bấm tùy chọn.
 /// </summary>
+[IgnoredLoad("RenderObject")]
 public class NotificationBox : RenderObject
 {
     private readonly Sprite _button;
@@ -28,8 +29,8 @@ public class NotificationBox : RenderObject
     /// <param name="side">Vị trí hiển thị của hộp thông báo (Top hoặc Bottom). Mặc định là Bottom.</param>
     public NotificationBox(string initialMessage = "", Side side = Side.Bottom)
     {
-        Font font = Assets.Font.Load("1.ttf");
-        Texture bgTexture = Assets.UI.Load("dialog/7.png");
+        Font font = Assets.Font.Load("1");
+        Texture bgTexture = Assets.UI.Load("dialog/7");
 
         float floatY;
 

@@ -2,7 +2,7 @@
 using Nalix.Common.Package.Enums;
 using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Messages;
-using Nalix.Serialization;
+using Nalix.Shared.Serialization;
 using System;
 
 namespace Nalix.Game.Application.Caching;

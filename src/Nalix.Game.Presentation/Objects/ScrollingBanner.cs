@@ -11,6 +11,7 @@ namespace Nalix.Game.Presentation.Objects;
 /// Đại diện cho một banner cuộn liên tục từ phải sang trái trên màn hình.
 /// Khi nội dung cuộn hết sang trái, nó sẽ tự động quay lại từ bên phải.
 /// </summary>
+[IgnoredLoad("RenderObject")]
 public class ScrollingBanner : RenderObject
 {
     private const float TextOffsetY = 4f;
