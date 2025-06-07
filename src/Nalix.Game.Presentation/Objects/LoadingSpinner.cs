@@ -13,37 +13,18 @@ namespace Nalix.Game.Presentation.Objects;
 [IgnoredLoad("RenderObject")]
 public sealed class LoadingSpinner : RenderObject
 {
-    /// <summary>Độ trong suốt tối đa của nền và biểu tượng (0-255).</summary>
     private const float MaxAlpha = 255f;
-
-    /// <summary>Tốc độ mờ dần của hiệu ứng trong suốt (alpha mỗi giây).</summary>
-    private const float FadeSpeed = 300f;
-
-    /// <summary>Tốc độ xoay của biểu tượng (độ mỗi giây).</summary>
-    private const float RotationSpeed = 150f;
-
-    /// <summary>Tỷ lệ cơ bản của biểu tượng.</summary>
     private const float BaseScale = 0.6f;
-
-    /// <summary>Độ dao động của tỷ lệ (biên độ của hiệu ứng thu phóng).</summary>
+    private const float FadeSpeed = 300f;
+    private const float RotationSpeed = 150f;
     private const float ScaleOscillation = 0.02f;
 
-    /// <summary>Góc xoay hiện tại của biểu tượng (độ).</summary>
     private float _angle = 0f;
-
-    /// <summary>Độ trong suốt hiện tại của nền và biểu tượng (0-255).</summary>
     private float _alpha = 0f;
-
-    /// <summary>Trạng thái hiệu ứng: true nếu đang mờ dần vào, false nếu đã đạt tối đa.</summary>
     private bool _fadingIn = true;
-
-    /// <summary>Giá trị alpha hiện tại (được ép kiểu thành byte để áp dụng cho màu).</summary>
     private byte _currentAlpha = 0;
 
-    /// <summary>Hình chữ nhật làm nền mờ của vòng quay.</summary>
     private readonly RectangleShape _bg;
-
-    /// <summary>Biểu tượng xoay (sprite) của vòng quay tải.</summary>
     private readonly Sprite _iconSprite;
 
     /// <summary>

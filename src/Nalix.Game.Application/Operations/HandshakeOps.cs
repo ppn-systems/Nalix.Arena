@@ -9,8 +9,6 @@ using Nalix.Cryptography.Hashing;
 using Nalix.Game.Application.Caching;
 using Nalix.Game.Shared.Commands;
 using Nalix.Logging;
-using System;
-using System.Runtime.CompilerServices;
 
 namespace Nalix.Game.Application.Operations;
 
@@ -35,9 +33,10 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
     [PacketTimeout(Timeouts.Moderate)]
     [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
-    [PacketOpcode((ushort)Command.Handshake)]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Memory<byte> Handshake(IPacket packet, IConnection connection)
+    [PacketOpcode((System.UInt16)Command.Handshake)]
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal static System.Memory<System.Byte> Handshake(IPacket packet, IConnection connection)
     {
         // Nếu đã handshake, không cho phép lặp lại
         if (connection.EncryptionKey is not null)
@@ -70,16 +69,16 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
         }
 
         // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server
-        (byte[] privateKey, byte[] publicKey) = X25519.GenerateKeyPair();
+        (System.Byte[] privateKey, System.Byte[] publicKey) = X25519.GenerateKeyPair();
 
         // Thực hiện trao đổi khóa X25519 để tạo bí mật chung
         // Kết hợp khóa riêng của server và khóa công khai của client để tạo bí mật chung
-        byte[] secret = X25519.ComputeSharedSecret(privateKey, packet.Payload.Span);
+        System.Byte[] secret = X25519.ComputeSharedSecret(privateKey, packet.Payload.Span);
 
         // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
         connection.EncryptionKey = SHA256.HashData(secret);
 
-        Array.Clear(privateKey, 0, privateKey.Length);
+        System.Array.Clear(privateKey, 0, privateKey.Length);
 
         // Nâng cấp quyền truy cập của client lên mức User
         connection.Level = PermissionLevel.User;

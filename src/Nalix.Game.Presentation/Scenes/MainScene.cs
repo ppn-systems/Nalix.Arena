@@ -11,42 +11,50 @@ using SFML.Window;
 
 namespace Nalix.Game.Presentation.Scenes;
 
+/// <summary>
+/// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
+/// Bao gồm nền parallax và nút thiết lập.
+/// </summary>
 internal class MainScene : Scene
 {
     public MainScene() : base(SceneNames.Main)
     {
     }
 
+    /// <summary>
+    /// Tải các đối tượng hiển thị trong cảnh chính.
+    /// </summary>
     protected override void LoadObjects()
     {
-        // Add the parallax object to the scene
-        AddObject(new ParallaxLayer());
-
-        // Add the icon
-        AddObject(new SettingIcon());
+        AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
+        AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
     }
 
     #region Private Class
 
+    /// <summary>
+    /// Đối tượng Menu (hiện tại chưa xử lý gì – placeholder).
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     public class Menu : RenderObject
     {
         public Menu()
         {
-            base.SetZIndex(1);
+            base.SetZIndex(1); // Ưu tiên vẽ sau nền
         }
 
         public override void Update(float deltaTime)
-        {
-        }
+        { }
 
         public override void Render(RenderTarget target)
-        {
-        }
+        { }
 
         protected override Drawable GetDrawable() => null;
     }
 
+    /// <summary>
+    /// Lớp hiệu ứng nền parallax gồm nhiều lớp ảnh cuộn với tốc độ khác nhau.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     private class ParallaxLayer : RenderObject
     {
@@ -58,6 +66,7 @@ internal class MainScene : Scene
 
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
+            // Thêm các lớp nền từ xa đến gần (xa cuộn chậm, gần cuộn nhanh)
             _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 00f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/2"), 25f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/3"), 30f, true);
@@ -70,7 +79,7 @@ internal class MainScene : Scene
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);
 
         protected override Drawable GetDrawable()
-            => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
+            => throw new System.NotSupportedException("Sử dụng phương thức Render() thay vì GetDrawable().");
 
         public override void Render(RenderTarget target)
         {
@@ -79,6 +88,9 @@ internal class MainScene : Scene
         }
     }
 
+    /// <summary>
+    /// Biểu tượng thiết lập cho phép chuyển đến Scene Settings.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     private class SettingIcon : RenderObject
     {
@@ -87,21 +99,22 @@ internal class MainScene : Scene
 
         public SettingIcon()
         {
-            base.SetZIndex(2);
+            base.SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
-            // Load the settings icon
+            // Tải texture biểu tượng thiết lập
             Texture texture = Assets.UiTextures.Load("icons/3.png");
 
             _settingsIcon = new Sprite(texture)
             {
                 Scale = new Vector2f(2f, 2f),
-                Color = new Color(255, 255, 180),
+                Color = new Color(255, 255, 180), // Tông vàng nhẹ
             };
 
+            // Canh phải trên màn hình
             FloatRect bounds = _settingsIcon.GetGlobalBounds();
             _settingsIcon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
-            // Load click sound
+            // Âm thanh khi nhấn
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _clickSound = new Sound(buffer);
         }
@@ -110,18 +123,20 @@ internal class MainScene : Scene
         {
             if (!Visible) return;
 
+            // Nếu mất kết nối → trở về cảnh Network để kết nối lại
             if (!NetClient<Packet>.Instance.IsConnected)
             {
-                // If already connected, go to the main scene
                 SceneManager.ChangeScene(SceneNames.Network);
             }
 
+            // Phím tắt (key S) để vào phần thiết lập
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
                 _clickSound.Play();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
 
+            // Click chuột trái vào biểu tượng thiết lập
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
                 if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
@@ -133,39 +148,6 @@ internal class MainScene : Scene
         }
 
         protected override Drawable GetDrawable() => _settingsIcon;
-    }
-
-    [IgnoredLoad("RenderObject")]
-    private class Logo : RenderObject
-    {
-        private readonly Sprite _logoSprite;
-
-        public Logo()
-        {
-            base.SetZIndex(3);
-            // Load the logo texture
-            Texture logoTexture = Assets.UiTextures.Load("logo.png");
-            _logoSprite = new Sprite(logoTexture)
-            {
-                Scale = new Vector2f(2f, 2f),
-                Position = new Vector2f(
-                    (GameEngine.ScreenSize.X / 2) - logoTexture.Size.X,
-                    (GameEngine.ScreenSize.Y / 2) - logoTexture.Size.Y),
-            };
-        }
-
-        public override void Update(float deltaTime)
-        {
-            // No specific update logic for the logo
-        }
-
-        public override void Render(RenderTarget target)
-        {
-            if (!Visible) return;
-            target.Draw(_logoSprite);
-        }
-
-        protected override Drawable GetDrawable() => _logoSprite;
     }
 
     #endregion Private Class

@@ -1,4 +1,6 @@
-﻿namespace Nalix.Game.Host;
+﻿using Nalix.Game.Host.Terminals;
+
+namespace Nalix.Game.Host;
 
 internal class Program
 {

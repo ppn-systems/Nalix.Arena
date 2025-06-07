@@ -10,24 +10,39 @@ using SFML.Graphics;
 
 namespace Nalix.Game.Presentation.Scenes.Systems;
 
+/// <summary>
+/// Cảnh chịu trách nhiệm xử lý quá trình kết nối mạng trước khi vào trò chơi chính.
+/// </summary>
 public class NetworkScene : Scene
 {
+    /// <summary>
+    /// Khởi tạo một cảnh mạng với tên được xác định trong <see cref="SceneNames.Network"/>.
+    /// </summary>
     public NetworkScene() : base(SceneNames.Network)
     {
     }
 
+    /// <summary>
+    /// Tải các đối tượng cần thiết cho cảnh mạng, bao gồm hiệu ứng tải, trình xử lý kết nối và thông báo kết nối.
+    /// </summary>
     protected override void LoadObjects()
     {
-        AddObject(new LoadingSpinner());
-        AddObject(new NetworkHandler());
-        AddObject(new NotificationBox("Connecting to the server...", Side.Top));
+        base.AddObject(new LoadingSpinner());
+        base.AddObject(new NetworkHandler());
+        base.AddObject(new NotificationBox("Connecting to the server...", Side.Top));
     }
 
+    /// <summary>
+    /// Đối tượng xử lý logic kết nối mạng, bao gồm thử lại và thông báo lỗi.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     private class NetworkHandler : RenderObject
     {
-        private const float RetryDelay = 3f; // seconds
+        private const float RetryDelay = 3f; // thời gian chờ giữa các lần thử
 
+        /// <summary>
+        /// Trạng thái hiện tại của quá trình kết nối.
+        /// </summary>
         private enum ConnectState
         {
             Waiting,
@@ -40,13 +55,21 @@ public class NetworkScene : Scene
         private float _timer;
         private ConnectState _state;
 
-        public NetworkHandler() // Accept NotificationBox in constructor
+        /// <summary>
+        /// Khởi tạo đối tượng xử lý mạng với trạng thái ban đầu là chờ kết nối.
+        /// </summary>
+        public NetworkHandler()
         {
-            _attempt = 0;
             _timer = 0f;
+            _attempt = 0;
+
             _state = ConnectState.Waiting;
         }
 
+        /// <summary>
+        /// Cập nhật trạng thái kết nối theo thời gian. Gồm các bước chờ, thử kết nối, thành công hoặc thất bại.
+        /// </summary>
+        /// <param name="deltaTime">Thời gian trôi qua từ lần cập nhật trước (giây).</param>
         public override void Update(float deltaTime)
         {
             _timer += deltaTime;
@@ -91,20 +114,25 @@ public class NetworkScene : Scene
 
                 case ConnectState.Failed:
                     SceneManager.FindByType<NotificationBox>()
-                                .UpdateMessage(
-                                    "Network failed after multiple attempts. " +
-                                    "Please check your network settings.");
+                                .UpdateMessage("Lost connection to the server...");
 
-                    _state = (ConnectState)(-1); // final state
+                    _state = (ConnectState)(-1); // trạng thái kết thúc
                     break;
             }
         }
 
+        /// <summary>
+        /// Không cần vẽ gì trong đối tượng này vì nó chỉ xử lý logic.
+        /// </summary>
+        /// <param name="target">Đối tượng đích để render.</param>
         public override void Render(RenderTarget target)
         {
-            // No rendering needed for this object
+            // Không cần vẽ gì cho đối tượng này
         }
 
+        /// <summary>
+        /// Trả về Drawable null vì đối tượng này không có thành phần hiển thị.
+        /// </summary>
         protected override Drawable GetDrawable() => null;
     }
 }

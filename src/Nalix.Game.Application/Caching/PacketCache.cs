@@ -3,32 +3,31 @@ using Nalix.Common.Package.Enums;
 using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Messages;
 using Nalix.Shared.Serialization;
-using System;
 
 namespace Nalix.Game.Application.Caching;
 
 public static class PacketCache<TPacket>
     where TPacket : IPacket, IPacketFactory<TPacket>
 {
-    public static readonly Memory<byte> HandshakeAlreadyDone;
-    public static readonly Memory<byte> HandshakeInvalidType;
-    public static readonly Memory<byte> HandshakeInvalidKeyLength;
+    public static readonly System.Memory<System.Byte> HandshakeAlreadyDone;
+    public static readonly System.Memory<System.Byte> HandshakeInvalidType;
+    public static readonly System.Memory<System.Byte> HandshakeInvalidKeyLength;
 
-    public static readonly Memory<byte> DuplicateUsername;
-    public static readonly Memory<byte> RegisterSuccess;
-    public static readonly Memory<byte> RegisterInternalError;
+    public static readonly System.Memory<System.Byte> DuplicateUsername;
+    public static readonly System.Memory<System.Byte> RegisterSuccess;
+    public static readonly System.Memory<System.Byte> RegisterInternalError;
 
-    public static readonly Memory<byte> LoginUserNotExist;
-    public static readonly Memory<byte> LoginAccountLocked;
-    public static readonly Memory<byte> LoginIncorrectPassword;
-    public static readonly Memory<byte> LoginAccountDisabled;
-    public static readonly Memory<byte> LoginSuccess;
-    public static readonly Memory<byte> LoginInternalError;
+    public static readonly System.Memory<System.Byte> LoginUserNotExist;
+    public static readonly System.Memory<System.Byte> LoginAccountLocked;
+    public static readonly System.Memory<System.Byte> LoginIncorrectPassword;
+    public static readonly System.Memory<System.Byte> LoginAccountDisabled;
+    public static readonly System.Memory<System.Byte> LoginSuccess;
+    public static readonly System.Memory<System.Byte> LoginInternalError;
 
-    public static readonly Memory<byte> LogoutInvalidSession;
-    public static readonly Memory<byte> LogoutUserNotExist;
-    public static readonly Memory<byte> LogoutUpdateFailed;
-    public static readonly Memory<byte> LogoutSuccess;
+    public static readonly System.Memory<System.Byte> LogoutInvalidSession;
+    public static readonly System.Memory<System.Byte> LogoutUserNotExist;
+    public static readonly System.Memory<System.Byte> LogoutUpdateFailed;
+    public static readonly System.Memory<System.Byte> LogoutSuccess;
 
     static PacketCache()
     {

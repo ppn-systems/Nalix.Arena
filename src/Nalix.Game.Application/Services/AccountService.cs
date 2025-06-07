@@ -11,8 +11,6 @@ using Nalix.Game.Shared.Security;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Serialization;
-using System;
-using System.Threading.Tasks;
 
 namespace Nalix.Game.Application.Services;
 
@@ -29,9 +27,10 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     /// <param name="packet">Gói tin chứa thông tin đăng ký (tên người dùng, mật khẩu).</param>
     /// <param name="connection">Thông tin kết nối của client.</param>
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng ký.</returns>
-    [PacketOpcode((ushort)Command.Register)]
+    [PacketOpcode((System.UInt16)Command.Register)]
     [PacketPermission(PermissionLevel.Guest)]
-    internal async Task<Memory<byte>> RegisterAsync(IPacket packet, IConnection connection)
+    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> RegisterAsync(
+        IPacket packet, IConnection connection)
     {
         Credentials credentials = new();
         BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
@@ -56,7 +55,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
                 Salt = salt,
                 Hash = hash,
                 Role = PermissionLevel.User,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = System.DateTime.UtcNow
             };
 
             // Thêm tài khoản mới vào cơ sở dữ liệu và lưu thay đổi
@@ -68,7 +67,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
 
             return PacketCache<TPacket>.RegisterSuccess;
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             // Ghi log lỗi nếu quá trình đăng ký thất bại
             NLogix.Host.Instance.Error(
@@ -87,9 +86,10 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     /// <param name="packet">Gói tin chứa thông tin đăng nhập (tên người dùng, mật khẩu).</param>
     /// <param name="connection">Thông tin kết nối của client.</param>
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng nhập.</returns>
-    [PacketOpcode((ushort)Command.Login)]
+    [PacketOpcode((System.UInt16)Command.Login)]
     [PacketPermission(PermissionLevel.Guest)]
-    public async Task<Memory<byte>> LoginAsync(IPacket packet, IConnection connection)
+    public async System.Threading.Tasks.Task<System.Memory<System.Byte>> LoginAsync(
+        IPacket packet, IConnection connection)
     {
         Credentials credentials = new();
         BitSerializer.Deserialize(packet.Payload.Span, ref credentials);
@@ -107,7 +107,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
 
         // Kiểm tra nếu tài khoản bị khóa do quá nhiều lần đăng nhập thất bại
         if (account.FailedLoginCount >= 5 && account.LastFailedLoginAt.HasValue &&
-            DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
+            System.DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
         {
             NLogix.Host.Instance.Warn(
                 "Account {0} locked due to too many failed attempts from connection {1}",
@@ -121,7 +121,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
         {
             // Tăng số lần đăng nhập thất bại và cập nhật thời gian thất bại
             account.FailedLoginCount++;
-            account.LastFailedLoginAt = DateTime.UtcNow;
+            account.LastFailedLoginAt = System.DateTime.UtcNow;
 
             await _accounts.SaveChangesAsync();
             NLogix.Host.Instance.Warn(
@@ -157,7 +157,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
 
             return PacketCache<TPacket>.LoginSuccess;
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             // Ghi log lỗi nếu quá trình đăng nhập thất bại
             NLogix.Host.Instance.Error(
@@ -175,9 +175,10 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     /// <param name="_">Gói tin (không sử dụng).</param>
     /// <param name="connection">Thông tin kết nối của client.</param>
     /// <returns>Chuỗi thông báo kết quả của quá trình đăng xuất.</returns>
-    [PacketOpcode((ushort)Command.Logout)]
+    [PacketOpcode((System.UInt16)Command.Logout)]
     [PacketPermission(PermissionLevel.User)]
-    internal async Task<Memory<byte>> LogoutAsync(IPacket _, IConnection connection)
+    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> LogoutAsync(
+        IPacket _, IConnection connection)
     {
         // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
         string username = ConnectionHub.Instance.GetUsername(connection.Id);
@@ -208,7 +209,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
             account.IsActive = false;
             await _accounts.SaveChangesAsync();
         }
-        catch (Exception)
+        catch (System.Exception)
         {
             // Ghi log lỗi nhưng vẫn tiếp tục đăng xuất
             NLogix.Host.Instance.Info("User {0} logged out from connection {1}", username, connection.RemoteEndPoint);
@@ -236,9 +237,10 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
     /// <param name="packet">Gói tin chứa thông tin mật khẩu cũ và mới.</param>
     /// <param name="connection">Thông tin kết nối của client.</param>
     /// <returns>Chuỗi thông báo kết quả của quá trình thay đổi mật khẩu.</returns>
-    [PacketOpcode((ushort)Command.ChangePassword)]
+    [PacketOpcode((System.UInt16)Command.ChangePassword)]
     [PacketPermission(PermissionLevel.User)]
-    internal async Task<string> ChangePasswordAsync(IPacket packet, IConnection connection)
+    internal async System.Threading.Tasks.Task<System.String> ChangePasswordAsync(
+        IPacket packet, IConnection connection)
     {
         // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
         string username = ConnectionHub.Instance.GetUsername(connection.Id);
@@ -258,16 +260,24 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
         // Tìm tài khoản trong cơ sở dữ liệu
         Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username);
         if (account == null)
+        {
             return "Account does not exist.";
+        }
 
         // Xác thực mật khẩu cũ
         if (!SecureCredentials.VerifyCredentialHash(request.OldPassword, account.Salt, account.Hash))
+        {
             return "Old password is incorrect.";
+        }
 
         try
         {
             // Tạo hash và salt mới cho mật khẩu
-            SecureCredentials.GenerateCredentialHash(request.NewPassword, out byte[] salt, out byte[] hash);
+            SecureCredentials.GenerateCredentialHash(
+                request.NewPassword,
+                out System.Byte[] salt,
+                out System.Byte[] hash);
+
             account.Salt = salt;
             account.Hash = hash;
             await _accounts.SaveChangesAsync();
@@ -279,7 +289,7 @@ public class AccountService<TPacket>(GameDbContext context) where TPacket : IPac
 
             return "Password changed successfully.";
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             // Ghi log lỗi nếu quá trình thay đổi mật khẩu thất bại
             NLogix.Host.Instance.Error(

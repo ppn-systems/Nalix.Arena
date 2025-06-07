@@ -9,29 +9,41 @@ using SFML.Window;
 
 namespace Nalix.Game.Presentation.Scenes.Systems;
 
+/// <summary>
+/// Cảnh thiết lập trò chơi, nơi người dùng có thể thực hiện các tùy chỉnh.
+/// </summary>
 public class SettingsScene : Scene
 {
+    /// <summary>
+    /// Khởi tạo cảnh thiết lập với tên từ <see cref="SceneNames.Settings"/>.
+    /// </summary>
     public SettingsScene() : base(SceneNames.Settings)
     {
     }
 
+    /// <summary>
+    /// Tải các đối tượng của cảnh thiết lập như nền và biểu tượng đóng.
+    /// </summary>
     protected override void LoadObjects()
     {
-        // Load the background
-        AddObject(new Background());
-
-        // Load the control
-        AddObject(new CloseIcon());
+        base.AddObject(new Background());
+        base.AddObject(new CloseIcon());
     }
 
+    /// <summary>
+    /// Hiển thị nền mờ cho cảnh thiết lập.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     private class Background : RenderObject
     {
         private readonly Sprite _background;
 
+        /// <summary>
+        /// Khởi tạo đối tượng nền với kích thước và độ mờ thích hợp.
+        /// </summary>
         public Background()
         {
-            SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
+            SetZIndex(0); // Hiển thị phía sau
 
             Texture bg = Assets.UiTextures.Load("bg/0");
 
@@ -42,48 +54,63 @@ public class SettingsScene : Scene
             {
                 Position = new Vector2f(0, 0),
                 Scale = new Vector2f(scaleX, scaleY),
-                Color = new Color(255, 255, 255, 180) // Màu trắng với alpha = 180 (mờ nhẹ)
+                Color = new Color(255, 255, 255, 180) // Mờ nhẹ
             };
         }
 
+        /// <summary>
+        /// Vẽ nền lên màn hình.
+        /// </summary>
         public override void Render(RenderTarget target)
         {
             if (!Visible) return;
-
-            // Render nền
             target.Draw(_background);
         }
 
+        /// <summary>
+        /// Không hỗ trợ sử dụng GetDrawable() cho lớp này.
+        /// </summary>
         protected override Drawable GetDrawable()
             => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
     }
 
+    /// <summary>
+    /// Banner trung tâm hiển thị trên màn hình thiết lập.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     private class Banner : RenderObject
     {
         private readonly Sprite _banner;
 
+        /// <summary>
+        /// Lấy vị trí hiển thị của panel.
+        /// </summary>
         public Vector2f PanelPosition => _banner.Position;
 
+        /// <summary>
+        /// Lấy kích thước hiển thị của panel sau khi scale.
+        /// </summary>
         public Vector2f PanelSize => new(
             _banner.Texture.Size.X * _banner.Scale.X,
             _banner.Texture.Size.Y * _banner.Scale.Y
         );
 
+        /// <summary>
+        /// Khởi tạo banner với tỷ lệ và vị trí phù hợp màn hình.
+        /// </summary>
         public Banner()
         {
             SetZIndex(2);
 
-            // Banner setup
             Texture panel = Assets.UiTextures.Load("tiles/7.png");
 
-            // Calculate the scale based on the screen size and the panel's original size
-            float scaleFactor = System.Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
+            float scaleFactor = System.Math.Min(
+                GameEngine.ScreenSize.X / panel.Size.X,
+                GameEngine.ScreenSize.Y / panel.Size.Y
+            );
 
-            // Scale the panel to fit within the screen while maintaining the aspect ratio
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
-            // Center the panel on the screen
             float posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
             float posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
@@ -94,59 +121,74 @@ public class SettingsScene : Scene
             };
         }
 
+        /// <summary>
+        /// Trả về sprite của banner để vẽ.
+        /// </summary>
         protected override Drawable GetDrawable() => _banner;
     }
 
+    /// <summary>
+    /// Biểu tượng đóng (nút) ở góc màn hình, cho phép người chơi quay lại màn hình chính.
+    /// </summary>
     [IgnoredLoad("RenderObject")]
     internal class CloseIcon : RenderObject
     {
-        private readonly Sound _clickSound;
-        private readonly Sprite _closeIcon;
+        private readonly Sound _sound;
+        private readonly Sprite _icon;
 
+        /// <summary>
+        /// Khởi tạo nút đóng với hình ảnh và âm thanh tương ứng.
+        /// </summary>
         public CloseIcon()
         {
             SetZIndex(2);
 
-            // Load the settings icon
             Texture texture = Assets.UiTextures.Load("icons/1.png");
 
-            _closeIcon = new Sprite(texture)
+            _icon = new Sprite(texture)
             {
                 Scale = new Vector2f(2f, 2f),
                 Color = new Color(255, 255, 180),
             };
 
-            FloatRect bounds = _closeIcon.GetGlobalBounds();
-            _closeIcon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+            FloatRect bounds = _icon.GetGlobalBounds();
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
-            // Load click sound
+            // Âm thanh click
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-            _clickSound = new Sound(buffer);
+            _sound = new Sound(buffer);
 
+            // Nhạc nền (tạm dừng)
             MusicManager.Play("assets/sounds/0.wav");
             MusicManager.Pause();
         }
 
+        /// <summary>
+        /// Xử lý sự kiện phím và chuột để điều hướng trở về màn hình chính.
+        /// </summary>
         public override void Update(float deltaTime)
         {
             if (!Visible) return;
 
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
-                _clickSound.Play();
+                _sound.Play();
                 SceneManager.ChangeScene(SceneNames.Main);
             }
 
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                if (_closeIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
+                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
-                    _clickSound.Play();
+                    _sound.Play();
                     SceneManager.ChangeScene(SceneNames.Main);
                 }
             }
         }
 
-        protected override Drawable GetDrawable() => _closeIcon;
+        /// <summary>
+        /// Trả về sprite của nút đóng để vẽ.
+        /// </summary>
+        protected override Drawable GetDrawable() => _icon;
     }
 }
