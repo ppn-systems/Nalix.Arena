@@ -30,7 +30,7 @@ public class NotificationBox : RenderObject
     public NotificationBox(string initialMessage = "", Side side = Side.Bottom)
     {
         Font font = Assets.Font.Load("1");
-        Texture bgTexture = Assets.UI.Load("dialog/7");
+        Texture bgTexture = Assets.UiTextures.Load("dialog/7");
 
         float floatY;
 
@@ -74,7 +74,7 @@ public class NotificationBox : RenderObject
 
         if (side == Side.Bottom)
         {
-            _button = new Sprite(Assets.UI.Load("button/7"))
+            _button = new Sprite(Assets.UiTextures.Load("button/7"))
             {
                 Scale = new Vector2f(0.5f, 0.5f)
             };
@@ -146,7 +146,7 @@ public class NotificationBox : RenderObject
                 if (!_isHovering)
                 {
                     _isHovering = true;
-                    _button.Texture = Assets.UI.Load("button/8"); // Change to hover texture
+                    _button.Texture = Assets.UiTextures.Load("button/8"); // Change to hover texture
                 }
             }
         }
@@ -155,7 +155,7 @@ public class NotificationBox : RenderObject
             if (_isHovering)
             {
                 _isHovering = false;
-                _button.Texture = Assets.UI.Load("button/7"); // Change back to normal texture
+                _button.Texture = Assets.UiTextures.Load("button/7"); // Change back to normal texture
             }
             _hoverTime = 0f;
         }

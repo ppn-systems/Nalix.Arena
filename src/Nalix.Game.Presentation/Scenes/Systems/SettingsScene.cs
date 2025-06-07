@@ -33,7 +33,7 @@ public class SettingsScene : Scene
         {
             SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
 
-            Texture bg = Assets.Bg.Load("0.png");
+            Texture bg = Assets.UiTextures.Load("bg/0");
 
             float scaleX = (float)GameEngine.ScreenSize.X / bg.Size.X;
             float scaleY = (float)GameEngine.ScreenSize.Y / bg.Size.Y;
@@ -75,7 +75,7 @@ public class SettingsScene : Scene
             SetZIndex(2);
 
             // Banner setup
-            Texture panel = Assets.UI.Load("tiles/7.png");
+            Texture panel = Assets.UiTextures.Load("tiles/7.png");
 
             // Calculate the scale based on the screen size and the panel's original size
             float scaleFactor = System.Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
@@ -108,7 +108,7 @@ public class SettingsScene : Scene
             SetZIndex(2);
 
             // Load the settings icon
-            Texture texture = Assets.UI.Load("icons/1.png");
+            Texture texture = Assets.UiTextures.Load("icons/1.png");
 
             _closeIcon = new Sprite(texture)
             {

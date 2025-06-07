@@ -64,13 +64,13 @@ internal class MainScene : Scene
 
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
-            _parallax.AddLayer(Assets.Bg.Load("1.png"), 00f, true);
-            _parallax.AddLayer(Assets.Bg.Load("2.png"), 25f, true);
-            _parallax.AddLayer(Assets.Bg.Load("3.png"), 30f, true);
-            _parallax.AddLayer(Assets.Bg.Load("4.png"), 35f, true);
-            _parallax.AddLayer(Assets.Bg.Load("5.png"), 40f, true);
-            _parallax.AddLayer(Assets.Bg.Load("6.png"), 45f, true);
-            _parallax.AddLayer(Assets.Bg.Load("7.png"), 50f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 00f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/2"), 25f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/3"), 30f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/4"), 35f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/5"), 40f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/6"), 45f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/7"), 50f, true);
         }
 
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);
@@ -96,7 +96,7 @@ internal class MainScene : Scene
             base.SetZIndex(2);
 
             // Load the settings icon
-            Texture texture = Assets.UI.Load("icons/3.png");
+            Texture texture = Assets.UiTextures.Load("icons/3.png");
 
             _settingsIcon = new Sprite(texture)
             {
@@ -139,6 +139,37 @@ internal class MainScene : Scene
         }
 
         protected override Drawable GetDrawable() => _settingsIcon;
+    }
+
+    [IgnoredLoad("RenderObject")]
+    private class Logo : RenderObject
+    {
+        private readonly Sprite _logoSprite;
+
+        public Logo()
+        {
+            base.SetZIndex(3);
+            // Load the logo texture
+            Texture logoTexture = Assets.UiTextures.Load("logo.png");
+            _logoSprite = new Sprite(logoTexture)
+            {
+                Scale = new Vector2f(2f, 2f),
+                Position = new Vector2f((GameEngine.ScreenSize.X / 2) - logoTexture.Size.X, (GameEngine.ScreenSize.Y / 2) - logoTexture.Size.Y),
+            };
+        }
+
+        public override void Update(float deltaTime)
+        {
+            // No specific update logic for the logo
+        }
+
+        public override void Render(RenderTarget target)
+        {
+            if (!Visible) return;
+            target.Draw(_logoSprite);
+        }
+
+        protected override Drawable GetDrawable() => _logoSprite;
     }
 
     #endregion Private Class
