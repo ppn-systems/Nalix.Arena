@@ -8,7 +8,6 @@ using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Nalix.Game.Presentation.Scenes;
 
@@ -39,11 +38,6 @@ internal class MainScene : Scene
 
         public override void Update(float deltaTime)
         {
-            if (!NetClient<Packet>.Instance.IsConnected)
-            {
-                // If already connected, go to the main scene
-                SceneManager.ChangeScene(SceneNames.Network);
-            }
         }
 
         public override void Render(RenderTarget target)
@@ -76,7 +70,7 @@ internal class MainScene : Scene
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);
 
         protected override Drawable GetDrawable()
-            => throw new NotSupportedException("Use Render() instead of GetDrawable().");
+            => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
 
         public override void Render(RenderTarget target)
         {
@@ -154,7 +148,9 @@ internal class MainScene : Scene
             _logoSprite = new Sprite(logoTexture)
             {
                 Scale = new Vector2f(2f, 2f),
-                Position = new Vector2f((GameEngine.ScreenSize.X / 2) - logoTexture.Size.X, (GameEngine.ScreenSize.Y / 2) - logoTexture.Size.Y),
+                Position = new Vector2f(
+                    (GameEngine.ScreenSize.X / 2) - logoTexture.Size.X,
+                    (GameEngine.ScreenSize.Y / 2) - logoTexture.Size.Y),
             };
         }
 
