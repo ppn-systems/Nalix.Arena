@@ -8,7 +8,7 @@ using Nalix.Network.Package;
 using Nalix.Shared.Net;
 using SFML.Graphics;
 
-namespace Nalix.Game.Presentation.Scenes.Main;
+namespace Nalix.Game.Presentation.Scenes.Systems;
 
 public class NetworkScene : Scene
 {
@@ -18,9 +18,9 @@ public class NetworkScene : Scene
 
     protected override void LoadObjects()
     {
-        base.AddObject(new LoadingSpinner());
-        base.AddObject(new NetworkHandler());
-        base.AddObject(new NotificationBox("Connecting to the server...", Side.Top));
+        AddObject(new LoadingSpinner());
+        AddObject(new NetworkHandler());
+        AddObject(new NotificationBox("Connecting to the server...", Side.Top));
     }
 
     [IgnoredLoad("RenderObject")]
@@ -65,7 +65,7 @@ public class NetworkScene : Scene
                     try
                     {
                         NetClient<Packet>.Instance.Connect(20000);
-                        NLogixFx.Info("Network attempt #{0} successful.", _attempt.ToString());
+                        "Network attempt #{0} successful.".Info(_attempt.ToString());
 
                         _state = ConnectState.Success;
                     }

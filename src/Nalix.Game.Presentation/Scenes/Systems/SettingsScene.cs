@@ -6,9 +6,8 @@ using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
-namespace Nalix.Game.Presentation.Scenes.Main;
+namespace Nalix.Game.Presentation.Scenes.Systems;
 
 public class SettingsScene : Scene
 {
@@ -56,7 +55,7 @@ public class SettingsScene : Scene
         }
 
         protected override Drawable GetDrawable()
-            => throw new NotSupportedException("Use Render() instead of GetDrawable().");
+            => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
     }
 
     [IgnoredLoad("RenderObject")]
@@ -79,7 +78,7 @@ public class SettingsScene : Scene
             Texture panel = Assets.UI.Load("tiles/7.png");
 
             // Calculate the scale based on the screen size and the panel's original size
-            float scaleFactor = Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
+            float scaleFactor = System.Math.Min(GameEngine.ScreenSize.X / panel.Size.X, GameEngine.ScreenSize.Y / panel.Size.Y);
 
             // Scale the panel to fit within the screen while maintaining the aspect ratio
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);

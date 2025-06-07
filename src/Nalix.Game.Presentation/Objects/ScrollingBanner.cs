@@ -3,7 +3,6 @@ using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using SFML.Graphics;
 using SFML.System;
-using System;
 
 namespace Nalix.Game.Presentation.Objects;
 
@@ -103,7 +102,7 @@ public class ScrollingBanner : RenderObject
     /// Không hỗ trợ phương thức này. Vui lòng sử dụng <see cref="Render(RenderTarget)"/> để vẽ banner.
     /// </summary>
     /// <returns>Không có giá trị trả về - luôn ném lỗi.</returns>
-    /// <exception cref="NotSupportedException">Luôn ném lỗi vì không hỗ trợ.</exception>
+    /// <exception cref="System.NotSupportedException">Luôn ném lỗi vì không hỗ trợ.</exception>
     protected override Drawable GetDrawable()
-        => throw new NotSupportedException("Please use Render() instead of GetDrawable().");
+        => throw new System.NotSupportedException("Please use Render() instead of GetDrawable().");
 }
