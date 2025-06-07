@@ -101,24 +101,37 @@ public class NotificationBox : RenderObject
     }
 
     /// <summary>
+    /// Cập nhật thông điệp hiển thị trong hộp thông báo.
+    /// </summary>
+    /// <param name="newMessage">Thông điệp mới cần hiển thị.</param>
+    public void UpdateMessage(string newMessage)
+    {
+        string wrappedText = WrapText(
+            _messageText.Font, newMessage, _messageText.CharacterSize, _background.Texture.Size.X * 0.7f);
+
+        _messageText.DisplayedString = wrappedText;
+
+        // Cập nhật lại căn giữa sau khi thay đổi text
+        FloatRect textBounds = _messageText.GetLocalBounds();
+
+        _messageText.Origin = new Vector2f(
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
+        );
+
+        _messageText.Position = new Vector2f(
+            _background.Position.X + (_background.GetGlobalBounds().Width / 2f),
+            _background.Position.Y + (_background.GetGlobalBounds().Height / 2f)
+        );
+    }
+
+    /// <summary>
     /// Cập nhật trạng thái của hộp thông báo, xử lý tương tác chuột (hover, click).
     /// </summary>
     /// <param name="deltaTime">Thời gian trôi qua kể từ lần cập nhật trước (tính bằng giây).</param>
     public override void Update(float deltaTime)
     {
-        if (!Visible) return;
-
-        if (_button == null)
-        {
-            _hoverTime += deltaTime;
-
-            if (_hoverTime >= 8f)
-            {
-                base.Conceal();
-            }
-
-            return;
-        }
+        if (!Visible || _button is null) return;
 
         Vector2i mousePos = InputState.GetMousePosition();
         bool hover = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);

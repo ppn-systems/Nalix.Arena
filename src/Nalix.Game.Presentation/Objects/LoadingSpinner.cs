@@ -62,7 +62,7 @@ public sealed class LoadingSpinner : RenderObject
             Position = default
         };
 
-        Texture iconTexture = Assets.UI.Load("icons/19"); // Tải texture biểu tượng
+        Texture iconTexture = Assets.UI.Load("icons/15"); // Tải texture biểu tượng
         iconTexture.Smooth = true; // Làm mịn texture
 
         _iconSprite = new Sprite(iconTexture)

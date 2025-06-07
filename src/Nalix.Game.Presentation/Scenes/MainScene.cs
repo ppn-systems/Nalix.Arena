@@ -1,8 +1,9 @@
-﻿using Nalix.Game.Presentation.Objects;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
+using Nalix.Network.Package;
+using Nalix.Shared.Net;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -25,25 +26,33 @@ internal class MainScene : Scene
         // Add the icon
         AddObject(new SettingIcon());
 
-        //AddObject(new NotificationBox("Welcome to Nalix!", Enums.Side.Top));
-
-        AddObject(new ScrollingBanner("Welcome to Nalix!"));
-
-        AddObject(new LoadingSpinner());
+        AddObject(new Menu());
     }
 
     #region Private Class
 
+    [IgnoredLoad("RenderObject")]
     public class Menu : RenderObject
     {
-        private readonly Sprite _menuSprite;
-
         public Menu()
         {
             base.SetZIndex(1);
         }
 
-        protected override Drawable GetDrawable() => _menuSprite;
+        public override void Update(float deltaTime)
+        {
+            if (!NetClient<Packet>.Instance.IsConnected)
+            {
+                // If already connected, go to the main scene
+                SceneManager.ChangeScene(SceneNames.Connection);
+            }
+        }
+
+        public override void Render(RenderTarget target)
+        {
+        }
+
+        protected override Drawable GetDrawable() => null;
     }
 
     [IgnoredLoad("RenderObject")]

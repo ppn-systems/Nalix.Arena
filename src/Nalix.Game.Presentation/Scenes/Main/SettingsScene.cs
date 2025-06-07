@@ -8,7 +8,7 @@ using SFML.System;
 using SFML.Window;
 using System;
 
-namespace Nalix.Game.Presentation.Scenes;
+namespace Nalix.Game.Presentation.Scenes.Main;
 
 public class SettingsScene : Scene
 {
@@ -19,10 +19,10 @@ public class SettingsScene : Scene
     protected override void LoadObjects()
     {
         // Load the background
-        base.AddObject(new Background());
+        AddObject(new Background());
 
         // Load the control
-        base.AddObject(new CloseIcon());
+        AddObject(new CloseIcon());
     }
 
     [IgnoredLoad("RenderObject")]
@@ -32,7 +32,7 @@ public class SettingsScene : Scene
 
         public Background()
         {
-            base.SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
+            SetZIndex(0); // Đặt ZIndex thấp hơn để nền được render trước.
 
             Texture bg = Assets.Bg.Load("0.png");
 
@@ -106,7 +106,7 @@ public class SettingsScene : Scene
 
         public CloseIcon()
         {
-            base.SetZIndex(2);
+            SetZIndex(2);
 
             // Load the settings icon
             Texture texture = Assets.UI.Load("icons/1.png");
