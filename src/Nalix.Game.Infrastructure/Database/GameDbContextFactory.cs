@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Nalix.Environment;
 using Nalix.Logging;
+using Nalix.Shared.Environment;
 using Npgsql;
 using System;
 using System.IO;

@@ -1,5 +1,5 @@
-﻿using Nalix.Common.Logging;
-using Nalix.Environment.Assemblies;
+﻿using Nalix.Assemblies;
+using Nalix.Common.Logging;
 using Nalix.Game.Infrastructure.Database;
 using Nalix.Game.Infrastructure.Network;
 using Nalix.Logging;

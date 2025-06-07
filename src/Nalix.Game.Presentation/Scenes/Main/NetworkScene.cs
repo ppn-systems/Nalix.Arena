@@ -26,7 +26,7 @@ public class NetworkScene : Scene
     [IgnoredLoad("RenderObject")]
     private class NetworkHandler : RenderObject
     {
-        private const float RetryDelay = 2f; // seconds
+        private const float RetryDelay = 3f; // seconds
 
         private enum ConnectState
         {
@@ -85,6 +85,7 @@ public class NetworkScene : Scene
                     break;
 
                 case ConnectState.Success:
+                    SceneManager.QueueDestroy(this);
                     SceneManager.ChangeScene(SceneNames.Main);
                     break;
 

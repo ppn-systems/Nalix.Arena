@@ -10,7 +10,7 @@ using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Security;
 using Nalix.Logging;
 using Nalix.Network.Connection;
-using Nalix.Serialization;
+using Nalix.Shared.Serialization;
 using System;
 using System.Threading.Tasks;
 
