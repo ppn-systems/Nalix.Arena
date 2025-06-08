@@ -26,8 +26,8 @@ internal class MainScene : Scene
     /// </summary>
     protected override void LoadObjects()
     {
-        AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
-        AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
+        base.AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
+        base.AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
     }
 
     #region Private Class
@@ -79,7 +79,7 @@ internal class MainScene : Scene
         public override void Update(float deltaTime) => _parallax.Update(deltaTime);
 
         protected override Drawable GetDrawable()
-            => throw new System.NotSupportedException("Sử dụng phương thức Render() thay vì GetDrawable().");
+            => throw new System.NotSupportedException("Use the Render() method instead of GetDrawable().");
 
         public override void Render(RenderTarget target)
         {
@@ -102,7 +102,7 @@ internal class MainScene : Scene
             base.SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
             // Tải texture biểu tượng thiết lập
-            Texture texture = Assets.UiTextures.Load("icons/3.png");
+            Texture texture = Assets.UiTextures.Load("icons/3");
 
             _settingsIcon = new Sprite(texture)
             {

@@ -18,7 +18,7 @@ internal sealed class Terminal
     private static readonly CancellationTokenSource _cTokenSrc = new();
 
     // Sự kiện dùng để báo hiệu thoát chương trình
-    public static readonly ManualResetEventSlim ExitEvent = new(false);
+    public readonly ManualResetEventSlim ExitEvent = new(false);
 
     // Interface đọc phím, dễ mock cho test
     private readonly IConsoleReader _consoleReader;
@@ -46,7 +46,7 @@ internal sealed class Terminal
     /// <summary>
     /// Thiết lập các thuộc tính và sự kiện mặc định cho Console
     /// </summary>
-    private static void InitializeConsole()
+    private void InitializeConsole()
     {
         Console.CursorVisible = false;       // Ẩn con trỏ chuột
         Console.TreatControlCAsInput = false; // Ctrl+C không bị dừng chương trình

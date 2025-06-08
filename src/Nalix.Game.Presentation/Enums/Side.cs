@@ -6,7 +6,7 @@
 /// được sử dụng để chỉ định vị trí, căn chỉnh hoặc hướng cho các thành phần trò chơi
 /// như giao diện người dùng, đối tượng trò chơi hoặc ranh giới.
 /// </summary>
-public enum Side
+public enum Side : System.Int32
 {
     /// <summary>
     /// Cạnh trên của một thành phần trò chơi hoặc ranh giới.

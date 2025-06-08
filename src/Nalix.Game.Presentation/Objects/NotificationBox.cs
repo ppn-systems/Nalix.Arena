@@ -203,9 +203,9 @@ public class NotificationBox : RenderObject
     /// <returns>Chuỗi văn bản đã được bọc dòng.</returns>
     private static string WrapText(Font font, string text, uint characterSize, float maxWidth)
     {
-        string[] words = text.Split(' ');
         string result = "";
         string currentLine = "";
+        string[] words = text.Split(' ');
 
         foreach (var word in words)
         {

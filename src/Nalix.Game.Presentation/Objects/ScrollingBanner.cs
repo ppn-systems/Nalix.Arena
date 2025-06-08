@@ -19,8 +19,8 @@ public class ScrollingBanner : RenderObject
     private static readonly Vector2f ScrollDir = new(-1f, 0f);
 
     private readonly Text _text;
-    private readonly RectangleShape _background;
     private readonly float _speed;
+    private readonly RectangleShape _background;
 
     private float _textWidth;
 
@@ -35,7 +35,7 @@ public class ScrollingBanner : RenderObject
         base.Reveal();
 
         _speed = speed;
-        Font font = Assets.Font.Load("1.ttf");
+        Font font = Assets.Font.Load("1");
 
         _text = new Text(message, font, 18)
         {
