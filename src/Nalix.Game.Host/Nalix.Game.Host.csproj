@@ -6,8 +6,7 @@
 		<TargetFramework>net9.0</TargetFramework>
 
 		<PublishSingleFile>true</PublishSingleFile>
-
-		<AssemblyName>Nalix.Host</AssemblyName>
+		<StartupObject>Nalix.Game.Host.Program</StartupObject>
 	</PropertyGroup>
 
 

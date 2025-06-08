@@ -1,9 +1,8 @@
-﻿using Nalix.Graphics;
+﻿using Nalix.Game.Presentation.Objects;
+using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
-using Nalix.Network.Package;
-using Nalix.Shared.Net;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -28,6 +27,7 @@ internal class MainScene : Scene
     {
         base.AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
         base.AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
+        base.AddObject(new Menu());
     }
 
     #region Private Class
@@ -38,16 +38,31 @@ internal class MainScene : Scene
     [IgnoredLoad("RenderObject")]
     public class Menu : RenderObject
     {
+        private readonly StretchableButton _login;
+
         public Menu()
         {
             base.SetZIndex(1); // Ưu tiên vẽ sau nền
+
+            _login = new StretchableButton("Login");
+
+            var screenSize = GameEngine.ScreenSize; // Vector2u
+            var bounds = _login.GetGlobalBounds();
+
+            float posX = (screenSize.X - bounds.Width) / 2f;
+            float posY = (screenSize.Y - bounds.Height) / 2f;
+
+            _login.SetPosition(new Vector2f(posX, posY - 40));
         }
 
         public override void Update(float deltaTime)
-        { }
+        {
+        }
 
         public override void Render(RenderTarget target)
-        { }
+        {
+            _login.Render(target);
+        }
 
         protected override Drawable GetDrawable() => null;
     }
@@ -68,6 +83,7 @@ internal class MainScene : Scene
 
             // Thêm các lớp nền từ xa đến gần (xa cuộn chậm, gần cuộn nhanh)
             _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 00f, true);
+            _parallax.AddLayer(Assets.UiTextures.Load("bg/8"), 15f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/2"), 25f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/3"), 30f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/4"), 35f, true);
@@ -94,8 +110,8 @@ internal class MainScene : Scene
     [IgnoredLoad("RenderObject")]
     private class SettingIcon : RenderObject
     {
-        private readonly Sound _clickSound;
-        private readonly Sprite _settingsIcon;
+        private readonly Sound _sound;
+        private readonly Sprite _icon;
 
         public SettingIcon()
         {
@@ -104,19 +120,19 @@ internal class MainScene : Scene
             // Tải texture biểu tượng thiết lập
             Texture texture = Assets.UiTextures.Load("icons/3");
 
-            _settingsIcon = new Sprite(texture)
+            _icon = new Sprite(texture)
             {
                 Scale = new Vector2f(2f, 2f),
                 Color = new Color(255, 255, 180), // Tông vàng nhẹ
             };
 
             // Canh phải trên màn hình
-            FloatRect bounds = _settingsIcon.GetGlobalBounds();
-            _settingsIcon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+            FloatRect bounds = _icon.GetGlobalBounds();
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
             // Âm thanh khi nhấn
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-            _clickSound = new Sound(buffer);
+            _sound = new Sound(buffer);
         }
 
         public override void Update(float deltaTime)
@@ -124,30 +140,30 @@ internal class MainScene : Scene
             if (!Visible) return;
 
             // Nếu mất kết nối → trở về cảnh Network để kết nối lại
-            if (!NetClient<Packet>.Instance.IsConnected)
-            {
-                SceneManager.ChangeScene(SceneNames.Network);
-            }
+            //if (!NetClient<Packet>.Instance.IsConnected)
+            //{
+            //    SceneManager.ChangeScene(SceneNames.Network);
+            //}
 
             // Phím tắt (key S) để vào phần thiết lập
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {
-                _clickSound.Play();
+                _sound.Play();
                 SceneManager.ChangeScene(SceneNames.Settings);
             }
 
             // Click chuột trái vào biểu tượng thiết lập
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
-                if (_settingsIcon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
+                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
-                    _clickSound.Play();
+                    _sound.Play();
                     SceneManager.ChangeScene(SceneNames.Settings);
                 }
             }
         }
 
-        protected override Drawable GetDrawable() => _settingsIcon;
+        protected override Drawable GetDrawable() => _icon;
     }
 
     #endregion Private Class
