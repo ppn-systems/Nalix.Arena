@@ -3,6 +3,8 @@ using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
+using Nalix.Network.Package;
+using Nalix.Shared.Net;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -140,10 +142,10 @@ internal class MainScene : Scene
             if (!Visible) return;
 
             // Nếu mất kết nối → trở về cảnh Network để kết nối lại
-            //if (!NetClient<Packet>.Instance.IsConnected)
-            //{
-            //    SceneManager.ChangeScene(SceneNames.Network);
-            //}
+            if (!NetClient<Packet>.Instance.IsConnected)
+            {
+                SceneManager.ChangeScene(SceneNames.Network);
+            }
 
             // Phím tắt (key S) để vào phần thiết lập
             if (InputState.IsKeyDown(Keyboard.Key.S))
