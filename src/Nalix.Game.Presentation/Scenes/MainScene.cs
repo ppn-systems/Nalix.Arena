@@ -48,8 +48,8 @@ internal class MainScene : Scene
 
             _login = new StretchableButton("Login");
 
-            var screenSize = GameEngine.ScreenSize; // Vector2u
-            var bounds = _login.GetGlobalBounds();
+            Vector2u screenSize = GameEngine.ScreenSize; // Vector2u
+            FloatRect bounds = _login.GetGlobalBounds();
 
             float posX = (screenSize.X - bounds.Width) / 2f;
             float posY = (screenSize.Y - bounds.Height) / 2f;
@@ -128,12 +128,13 @@ internal class MainScene : Scene
                 Color = new Color(255, 255, 180), // Tông vàng nhẹ
             };
 
-            // Canh phải trên màn hình
             FloatRect bounds = _icon.GetGlobalBounds();
+            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
+
+            // Canh phải trên màn hình
             _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
 
             // Âm thanh khi nhấn
-            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _sound = new Sound(buffer);
         }
 
