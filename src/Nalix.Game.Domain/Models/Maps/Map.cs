@@ -80,8 +80,10 @@ public class Map : NamedEntity<uint>, IMap
     /// <param name="id">Mã định danh của bản đồ.</param>
     /// <param name="tileMap">Bản đồ ô (tile map) của bản đồ.</param>
     /// <exception cref="ArgumentNullException">Ném ra nếu <paramref name="tileMap"/> là null.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>")]
     public Map(uint id, TileMap tileMap)
     {
         Id = id;

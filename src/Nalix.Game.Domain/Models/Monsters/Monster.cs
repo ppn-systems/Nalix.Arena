@@ -9,7 +9,8 @@ using System.Collections.Generic;
 namespace Nalix.Game.Domain.Models.Monsters;
 
 /// <summary>
-/// Lớp trừu tượng đại diện cho một quái vật trong game, kế thừa từ <see cref="NamedEntity{TId}"/> và triển khai giao diện <see cref="IMonster"/>.
+/// Lớp trừu tượng đại diện cho một quái vật trong game, kế thừa từ <see cref="NamedEntity{TId}"/> và
+/// triển khai giao diện <see cref="IMonster"/>.
 /// </summary>
 public abstract class Monster : NamedEntity<uint>, IMonster
 {
