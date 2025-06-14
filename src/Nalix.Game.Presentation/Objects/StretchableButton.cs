@@ -8,89 +8,62 @@ using System;
 namespace Nalix.Game.Presentation.Objects;
 
 /// <summary>
-/// Lớp nút bấm có thể co giãn theo nội dung, gồm ba phần texture: trái, giữa và phải.
-/// Phần giữa có thể mở rộng theo chiều rộng của nút.
+/// A stretchable button composed of three textures: left, center, and right.
+/// The center texture stretches to fit the desired width.
 /// </summary>
 public class StretchableButton : RenderObject
 {
-    private static readonly float ButtonHeight = 50f; // Chiều cao mặc định của nút
-    private static readonly float ButtonWidth = 320f; // Chiều rộng mặc định của nút
+    private static readonly float DefaultHeight = 50f;
+    private static readonly float DefaultWidth = 320f;
 
-    // Các thành phần đồ họa của nút
-    private readonly Text _buttonText; // Văn bản hiển thị trên nút
+    private ButtonVisual _normalVisual;
+    private ButtonVisual _hoverVisual;
+    private readonly Text _label;
 
-    private readonly Sprite _leftPart; // Phần trái của nút
-    private readonly Sprite _middlePart; // Phần giữa của nút (co giãn)
-    private readonly Sprite _rightPart; // Phần phải của nút
-    private readonly Sprite _leftPartHover; // Phần trái khi di chuột vào
-    private readonly Sprite _middlePartHover; // Phần giữa khi di chuột vào
-    private readonly Sprite _rightPartHover; // Phần phải khi di chuột vào
+    private bool _isHovered = false;
+    private bool _isPressed = false;
+    private bool _wasMousePressed = false;
 
-    private bool _isHovered = false; // Trạng thái hover (di chuột vào)
-    private bool _isPressed = false; // Trạng thái nhấn chuột
-    private bool _wasMousePressed = false; // Trạng thái chuột đã nhấn trước đó
+    private float _buttonWidth;
+    private FloatRect _totalBounds;
+    private Vector2f _position = new(0, 0);
 
-    private event Action _onClick; // Sự kiện được gọi khi nút được nhấn
-    private FloatRect _totalBounds; // Tổng vùng chứa của nút
+    private event Action OnClick;
 
-    private Vector2f _position = new(0, 0); // Vị trí của nút
-
-    private float _buttonWidth; // Chiều rộng tổng của nút (cả 3 phần)
-
-    /// <summary>
-    /// Khởi tạo một nút co giãn với nội dung văn bản và chiều rộng tùy chỉnh.
-    /// </summary>
-    /// <param name="text">Nội dung của nút.</param>
-    /// <param name="buttonWidth">Chiều rộng mong muốn của nút.</param>
-    public StretchableButton(string text, float buttonWidth = 240f)
+    public StretchableButton(string text, float width = 240f)
     {
-        // Load các texture cho các phần của nút
-        Texture left = Assets.UiTextures.Load("button/1");
-        Texture midd = Assets.UiTextures.Load("button/2");
-        Texture right = Assets.UiTextures.Load("button/3");
+        _normalVisual = LoadVisual("button/1", "button/2", "button/3");
+        _hoverVisual = LoadVisual("button/4", "button/5", "button/6");
 
-        // Load texture khi di chuột vào
-        Texture leftHover = Assets.UiTextures.Load("button/4");
-        Texture middHover = Assets.UiTextures.Load("button/5");
-        Texture rightHover = Assets.UiTextures.Load("button/6");
-
-        // Kích hoạt chế độ làm mịn cho texture
-        left.Smooth = midd.Smooth = right.Smooth = true;
-        leftHover.Smooth = middHover.Smooth = rightHover.Smooth = true;
-
-        // Khởi tạo sprite cho nút bình thường
-        _leftPart = new Sprite(left) { Scale = new Vector2f(0.5f, 0.5f) };
-        _middlePart = new Sprite(midd) { Scale = new Vector2f(0.5f, 0.5f) };
-        _rightPart = new Sprite(right) { Scale = new Vector2f(0.5f, 0.5f) };
-
-        // Khởi tạo sprite cho trạng thái hover
-        _leftPartHover = new Sprite(leftHover) { Scale = new Vector2f(0.5f, 0.5f) };
-        _middlePartHover = new Sprite(middHover) { Scale = new Vector2f(0.5f, 0.5f) };
-        _rightPartHover = new Sprite(rightHover) { Scale = new Vector2f(0.5f, 0.5f) };
-
-        // Khởi tạo văn bản hiển thị trên nút
         Font font = Assets.Font.Load("1");
-        _buttonText = new Text(text, font, 20) { FillColor = Color.White };
+        _label = new Text(text, font, 20) { FillColor = Color.White };
 
-        // Thiết lập chiều rộng tổng của nút
-        _buttonWidth = Math.Max(ButtonWidth, buttonWidth);
-
-        // Cập nhật kích thước của nút
-        UpdateButtonSize();
+        _buttonWidth = Math.Max(DefaultWidth, width);
+        this.UpdateLayout();
     }
 
-    /// <summary>
-    /// Đặt chiều rộng của nút, cập nhật lại kích thước nếu cần.
-    /// </summary>
-    public void SetButtonWidth(float width)
+    public void SetWidth(float width)
     {
         _buttonWidth = width;
-        UpdateButtonSize();
+        this.UpdateLayout();
     }
 
-    /// <summary>
-    /// Cập nhật trạng thái của nút mỗi khung hình.
-    /// </summary>
+    public void SetText(string text)
+    {
+        _label.DisplayedString = text;
+        UpdateLayout();
+    }
+
+    public void SetPosition(Vector2f position)
+    {
+        _position = position;
+        UpdateLayout();
+    }
+
+    public void RegisterClickHandler(Action handler) => OnClick += handler;
+
+    public void UnregisterClickHandler(Action handler) => OnClick -= handler;
+
     public override void Update(float deltaTime)
     {
         if (!Visible) return;
@@ -107,7 +80,7 @@ public class StretchableButton : RenderObject
         }
         else if (_isPressed && !isMousePressed && isMouseOver)
         {
-            _onClick?.Invoke();
+            OnClick?.Invoke();
             _isPressed = false;
         }
         else if (!isMousePressed)
@@ -118,128 +91,92 @@ public class StretchableButton : RenderObject
         _wasMousePressed = isMousePressed;
     }
 
-    /// <summary>
-    /// Vẽ nút lên màn hình, hiển thị đúng trạng thái (thường hoặc hover).
-    /// </summary>
     public override void Render(RenderTarget target)
     {
         if (!Visible) return;
 
-        if (!_isHovered)
-        {
-            target.Draw(_leftPart);
-            target.Draw(_middlePart);
-            target.Draw(_rightPart);
-        }
-        else
-        {
-            target.Draw(_leftPartHover);
-            target.Draw(_middlePartHover);
-            target.Draw(_rightPartHover);
-        }
-
-        target.Draw(_buttonText);
+        ref ButtonVisual visual = ref (_isHovered ? ref _hoverVisual : ref _normalVisual);
+        target.Draw(visual.Left);
+        target.Draw(visual.Center);
+        target.Draw(visual.Right);
+        target.Draw(_label);
     }
 
-    /// <summary>
-    /// Đăng ký sự kiện khi nhấn nút.
-    /// </summary>
-    public void RegisterClickHandler(Action handler)
-    {
-        _onClick += handler;
-    }
-
-    /// <summary>
-    /// Hủy đăng ký sự kiện khi nhấn nút.
-    /// </summary>
-    public void UnregisterClickHandler(Action handler)
-    {
-        _onClick -= handler;
-    }
-
-    /// <summary>
-    /// Đặt nội dung mới cho nút, cập nhật kích thước nếu cần.
-    /// </summary>
-    public void SetText(string newText)
-    {
-        _buttonText.DisplayedString = newText;
-        UpdateButtonSize();
-    }
-
-    /// <summary>
-    /// Đặt vị trí của nút trên màn hình.
-    /// </summary>
-    public void SetPosition(Vector2f position)
-    {
-        _position = position;
-        UpdateButtonSize();
-    }
-
-    /// <summary>
-    /// Lấy kích thước toàn bộ của nút.
-    /// </summary>
     public FloatRect GetGlobalBounds() => _totalBounds;
 
-    /// <summary>
-    /// Cập nhật lại kích thước của nút để phù hợp với nội dung và vị trí.
-    /// </summary>
-    private void UpdateButtonSize()
+    protected override Drawable GetDrawable() =>
+        throw new NotSupportedException("Use Render() instead.");
+
+    private void UpdateLayout()
     {
-        // Scale chiều cao cho cả 3 phần
-        float leftScaleY = ButtonHeight / _leftPart.Texture.Size.Y;
-        float middleScaleY = ButtonHeight / _middlePart.Texture.Size.Y;
-        float rightScaleY = ButtonHeight / _rightPart.Texture.Size.Y;
+        float leftWidth = _normalVisual.Left.TextureRect.Width;
+        float rightWidth = _normalVisual.Right.TextureRect.Width;
 
-        _leftPart.Scale = new Vector2f(1f, leftScaleY);
-        _middlePart.Scale = new Vector2f(1f, middleScaleY);
-        _rightPart.Scale = new Vector2f(1f, rightScaleY);
+        float minTextWidth = _label.GetLocalBounds().Width + 32;
+        float totalWidth = Math.Max(_buttonWidth, minTextWidth + leftWidth + rightWidth);
 
-        // Scale cho hover sprites
-        _leftPartHover.Scale = _leftPart.Scale;
-        _middlePartHover.Scale = _middlePart.Scale;
-        _rightPartHover.Scale = _rightPart.Scale;
+        float middleWidth = totalWidth - leftWidth - rightWidth;
 
-        // Tính chiều rộng thực tế của trái/phải (sau khi scale)
-        float leftW = _leftPart.GetGlobalBounds().Width;
-        float rightW = _rightPart.GetGlobalBounds().Width;
+        // Set all sprites
+        ConfigureVisual(ref _normalVisual, middleWidth, DefaultHeight, _position);
+        ConfigureVisual(ref _hoverVisual, middleWidth, DefaultHeight, _position);
 
-        // Đảm bảo button đủ rộng cho text
-        float minWidth = _buttonText.GetLocalBounds().Width + 32 + leftW + rightW;
-        float totalWidth = Math.Max(_buttonWidth, minWidth);
-
-        // Tính chiều rộng phần giữa (middle)
-        float middleWidth = totalWidth - leftW - rightW;
-        float middleScaleX = middleWidth / _middlePart.Texture.Size.X;
-        _middlePart.Scale = new Vector2f(middleScaleX, middleScaleY);
-        _middlePartHover.Scale = _middlePart.Scale;
-
-        // Đặt vị trí các phần
-        _leftPart.Position = _position;
-        _middlePart.Position = new Vector2f(_position.X + leftW, _position.Y);
-        _rightPart.Position = new Vector2f(_middlePart.Position.X + _middlePart.GetGlobalBounds().Width, _position.Y);
-
-        _leftPartHover.Position = _leftPart.Position;
-        _middlePartHover.Position = _middlePart.Position;
-        _rightPartHover.Position = _rightPart.Position;
-
-        // Tổng bounds
         _totalBounds = new FloatRect(
-            _position.X, _position.Y,
-            leftW + _middlePart.GetGlobalBounds().Width + rightW,
-            ButtonHeight);
+            _position.X,
+            _position.Y,
+            totalWidth,
+            DefaultHeight
+        );
 
-        // Căn giữa chữ
-        float buttonWidth = _totalBounds.Width;
-        float textX = _position.X + ((buttonWidth - _buttonText.GetLocalBounds().Width) / 2f) - _buttonText.GetLocalBounds().Left;
-        float textY = _position.Y + ((ButtonHeight - _buttonText.GetLocalBounds().Height) / 2f) - _buttonText.GetLocalBounds().Top;
-        _buttonText.Position = new Vector2f(textX, textY);
+        CenterLabel(totalWidth);
     }
 
-    /// <summary>
-    /// Lấy đối tượng Drawable (không được hỗ trợ, sử dụng Render() thay thế).
-    /// </summary>
-    /// <returns>Không trả về giá trị, luôn ném ngoại lệ.</returns>
-    /// <exception cref="System.NotSupportedException">Ném ra khi phương thức này được gọi.</exception>
-    protected override Drawable GetDrawable()
-        => throw new System.NotSupportedException("Use Render() instead.");
+    private static void ConfigureVisual(ref ButtonVisual visual, float middleWidth, float height, Vector2f position)
+    {
+        float leftScaleY = height / visual.Left.Texture.Size.Y;
+        float rightScaleY = height / visual.Right.Texture.Size.Y;
+        float centerScaleY = height / visual.Center.Texture.Size.Y;
+        float centerScaleX = middleWidth / visual.Center.Texture.Size.X;
+
+        visual.Left.Scale = new Vector2f(1f, leftScaleY);
+        visual.Center.Scale = new Vector2f(centerScaleX, centerScaleY);
+        visual.Right.Scale = new Vector2f(1f, rightScaleY);
+
+        float leftW = visual.Left.GetGlobalBounds().Width;
+
+        visual.Left.Position = position;
+        visual.Center.Position = new Vector2f(position.X + leftW, position.Y);
+        visual.Right.Position = new Vector2f(visual.Center.Position.X + visual.Center.GetGlobalBounds().Width, position.Y);
+    }
+
+    private void CenterLabel(float totalWidth)
+    {
+        FloatRect textBounds = _label.GetLocalBounds();
+        float x = _position.X + ((totalWidth - textBounds.Width) / 2f) - textBounds.Left;
+        float y = _position.Y + ((DefaultHeight - textBounds.Height) / 2f) - textBounds.Top;
+        _label.Position = new Vector2f(x, y);
+    }
+
+    private static ButtonVisual LoadVisual(string left, string middle, string right)
+    {
+        Texture l = Assets.UiTextures.Load(left);
+        Texture m = Assets.UiTextures.Load(middle);
+        Texture r = Assets.UiTextures.Load(right);
+
+        l.Smooth = m.Smooth = r.Smooth = true;
+
+        return new ButtonVisual
+        {
+            Left = new Sprite(l),
+            Center = new Sprite(m),
+            Right = new Sprite(r),
+        };
+    }
+
+    private struct ButtonVisual
+    {
+        public Sprite Left;
+        public Sprite Center;
+        public Sprite Right;
+    }
 }

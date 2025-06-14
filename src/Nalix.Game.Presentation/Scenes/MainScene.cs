@@ -3,8 +3,6 @@ using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
-using Nalix.Network.Package;
-using Nalix.Shared.Net;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -46,19 +44,40 @@ internal class MainScene : Scene
         {
             base.SetZIndex(1); // Ưu tiên vẽ sau nền
 
-            _login = new StretchableButton("Login");
+            _login = new StretchableButton("Login", 240f);
 
-            Vector2u screenSize = GameEngine.ScreenSize; // Vector2u
-            FloatRect bounds = _login.GetGlobalBounds();
+            // Đặt vị trí tạm để force update layout (rất quan trọng)
+            _login.SetPosition(new Vector2f(0, 0));
 
+            // Gọi lại UpdateButtonSize nếu cần (không cần nếu SetPosition đã làm rồi)
+            // _login.ForceUpdateSize();
+
+            FloatRect bounds = _login.GetGlobalBounds(); // Bây giờ mới chính xác!
+
+            Vector2u screenSize = GameEngine.ScreenSize;
             float posX = (screenSize.X - bounds.Width) / 2f;
             float posY = (screenSize.Y - bounds.Height) / 2f;
 
-            _login.SetPosition(new Vector2f(posX, posY - 40));
+            _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
+
+            _login.RegisterClickHandler(() => System.Console.WriteLine("Button clicked!"));
+
+            // Log lại đúng kích thước
+            bounds = _login.GetGlobalBounds();
+            System.Console.WriteLine(
+                $"Bounds [FloatRect] Left({bounds.Left}) Top({bounds.Top}) Width({bounds.Width}) Height({bounds.Height})");
+            System.Console.WriteLine($"nameof(Menu) initialized at position: {posX}, {posY}");
         }
 
         public override void Update(float deltaTime)
         {
+            if (!Visible) return;
+
+            // Nếu mất kết nối → trở về cảnh Network để kết nối lại
+            //if (!NetClient<Packet>.Instance.IsConnected)
+            //{
+            //    SceneManager.ChangeScene(SceneNames.Network);
+            //}
         }
 
         public override void Render(RenderTarget target)
@@ -141,12 +160,6 @@ internal class MainScene : Scene
         public override void Update(float deltaTime)
         {
             if (!Visible) return;
-
-            // Nếu mất kết nối → trở về cảnh Network để kết nối lại
-            if (!NetClient<Packet>.Instance.IsConnected)
-            {
-                SceneManager.ChangeScene(SceneNames.Network);
-            }
 
             // Phím tắt (key S) để vào phần thiết lập
             if (InputState.IsKeyDown(Keyboard.Key.S))
