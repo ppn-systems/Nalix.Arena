@@ -3,7 +3,6 @@ using Nalix.Graphics.Rendering.Object;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Nalix.Game.Presentation.Objects;
 
@@ -28,17 +27,17 @@ public class StretchableButton : RenderObject
     private FloatRect _totalBounds;
     private Vector2f _position = new(0, 0);
 
-    private event Action OnClick;
+    private event System.Action OnClick;
 
     public StretchableButton(string text, float width = 240f)
     {
-        _normalVisual = LoadVisual("button/1", "button/2", "button/3");
         _hoverVisual = LoadVisual("button/4", "button/5", "button/6");
+        _normalVisual = LoadVisual("button/1", "button/2", "button/3");
 
         Font font = Assets.Font.Load("1");
         _label = new Text(text, font, 20) { FillColor = Color.White };
+        _buttonWidth = System.Math.Max(DefaultWidth, width);
 
-        _buttonWidth = Math.Max(DefaultWidth, width);
         this.UpdateLayout();
     }
 
@@ -51,18 +50,18 @@ public class StretchableButton : RenderObject
     public void SetText(string text)
     {
         _label.DisplayedString = text;
-        UpdateLayout();
+        this.UpdateLayout();
     }
 
     public void SetPosition(Vector2f position)
     {
         _position = position;
-        UpdateLayout();
+        this.UpdateLayout();
     }
 
-    public void RegisterClickHandler(Action handler) => OnClick += handler;
+    public void RegisterClickHandler(System.Action handler) => this.OnClick += handler;
 
-    public void UnregisterClickHandler(Action handler) => OnClick -= handler;
+    public void UnregisterClickHandler(System.Action handler) => this.OnClick -= handler;
 
     public override void Update(float deltaTime)
     {
@@ -80,7 +79,7 @@ public class StretchableButton : RenderObject
         }
         else if (_isPressed && !isMousePressed && isMouseOver)
         {
-            OnClick?.Invoke();
+            this.OnClick?.Invoke();
             _isPressed = false;
         }
         else if (!isMousePressed)
@@ -105,7 +104,7 @@ public class StretchableButton : RenderObject
     public FloatRect GetGlobalBounds() => _totalBounds;
 
     protected override Drawable GetDrawable() =>
-        throw new NotSupportedException("Use Render() instead.");
+        throw new System.NotSupportedException("Use Render() instead.");
 
     private void UpdateLayout()
     {
@@ -113,7 +112,7 @@ public class StretchableButton : RenderObject
         float rightWidth = _normalVisual.Right.TextureRect.Width;
 
         float minTextWidth = _label.GetLocalBounds().Width + 32;
-        float totalWidth = Math.Max(_buttonWidth, minTextWidth + leftWidth + rightWidth);
+        float totalWidth = System.Math.Max(_buttonWidth, minTextWidth + leftWidth + rightWidth);
 
         float middleWidth = totalWidth - leftWidth - rightWidth;
 
@@ -128,7 +127,15 @@ public class StretchableButton : RenderObject
             DefaultHeight
         );
 
-        CenterLabel(totalWidth);
+        this.CenterLabel(totalWidth);
+    }
+
+    private void CenterLabel(float totalWidth)
+    {
+        FloatRect textBounds = _label.GetLocalBounds();
+        float x = _position.X + ((totalWidth - textBounds.Width) / 2f) - textBounds.Left;
+        float y = _position.Y + ((DefaultHeight - textBounds.Height) / 2f) - textBounds.Top;
+        _label.Position = new Vector2f(x, y);
     }
 
     private static void ConfigureVisual(ref ButtonVisual visual, float middleWidth, float height, Vector2f position)
@@ -147,14 +154,6 @@ public class StretchableButton : RenderObject
         visual.Left.Position = position;
         visual.Center.Position = new Vector2f(position.X + leftW, position.Y);
         visual.Right.Position = new Vector2f(visual.Center.Position.X + visual.Center.GetGlobalBounds().Width, position.Y);
-    }
-
-    private void CenterLabel(float totalWidth)
-    {
-        FloatRect textBounds = _label.GetLocalBounds();
-        float x = _position.X + ((totalWidth - textBounds.Width) / 2f) - textBounds.Left;
-        float y = _position.Y + ((DefaultHeight - textBounds.Height) / 2f) - textBounds.Top;
-        _label.Position = new Vector2f(x, y);
     }
 
     private static ButtonVisual LoadVisual(string left, string middle, string right)
