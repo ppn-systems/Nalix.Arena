@@ -15,9 +15,9 @@ public class StretchableButton : RenderObject
     private static readonly float DefaultHeight = 50f;
     private static readonly float DefaultWidth = 320f;
 
+    private readonly Text _label;
     private ButtonVisual _normalVisual;
     private ButtonVisual _hoverVisual;
-    private readonly Text _label;
 
     private bool _isHovered = false;
     private bool _isPressed = false;
