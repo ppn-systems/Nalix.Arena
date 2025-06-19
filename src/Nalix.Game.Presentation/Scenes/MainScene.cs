@@ -58,7 +58,7 @@ internal class MainScene : Scene
             float posX = (screenSize.X - bounds.Width) / 2f;
             float posY = (screenSize.Y - bounds.Height) / 2f;
 
-            _login.SetPosition(new Vector2f(posX, posY - 30)); // Vị trí chính thức
+            _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
 
             _login.RegisterClickHandler(() => System.Console.WriteLine("Button clicked!"));
 
