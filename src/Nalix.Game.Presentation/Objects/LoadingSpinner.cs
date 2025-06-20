@@ -35,16 +35,21 @@ public sealed class LoadingSpinner : RenderObject
         base.SetZIndex(ZIndex.Overlay.ToInt()); // Đặt độ ưu tiên vẽ cao nhất để luôn hiển thị trên cùng
         base.Reveal(); // Bắt đầu hiển thị vòng quay
 
-        Vector2f screenSize = new(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y); // Kích thước màn hình
+        // Kích thước màn hình
+        Vector2f screenSize = new(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y);
 
         _bg = new RectangleShape(screenSize)
         {
-            FillColor = new Color(0, 0, 0, 0), // Nền đen ban đầu trong suốt
+            // Nền đen ban đầu trong suốt
+            FillColor = new Color(0, 0, 0, 0),
             Position = default
         };
 
-        Texture iconTexture = Assets.UiTextures.Load("icons/15"); // Tải texture biểu tượng
-        iconTexture.Smooth = true; // Làm mịn texture
+        // Tải texture biểu tượng
+        Texture iconTexture = Assets.UiTextures.Load("icons/15");
+
+        // Làm mịn texture
+        iconTexture.Smooth = true;
 
         _iconSprite = new Sprite(iconTexture)
         {
