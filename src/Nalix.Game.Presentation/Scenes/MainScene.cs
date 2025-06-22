@@ -44,29 +44,29 @@ internal class MainScene : Scene
         {
             base.SetZIndex(1); // Ưu tiên vẽ sau nền
 
-            //_login = new StretchableButton("Login", 240f);
+            _login = new StretchableButton("Login", 240f);
 
-            //// Đặt vị trí tạm để force update layout (rất quan trọng)
-            //_login.SetPosition(new Vector2f(0, 0));
+            // Đặt vị trí tạm để force update layout (rất quan trọng)
+            _login.SetPosition(new Vector2f(0, 0));
 
-            //// Gọi lại UpdateButtonSize nếu cần (không cần nếu SetPosition đã làm rồi)
-            //// _login.ForceUpdateSize();
+            // Gọi lại UpdateButtonSize nếu cần (không cần nếu SetPosition đã làm rồi)
+            // _login.ForceUpdateSize();
 
-            //FloatRect bounds = _login.GetGlobalBounds(); // Bây giờ mới chính xác!
+            FloatRect bounds = _login.GetGlobalBounds(); // Bây giờ mới chính xác!
 
-            //Vector2u screenSize = GameEngine.ScreenSize;
-            //float posX = (screenSize.X - bounds.Width) / 2f;
-            //float posY = (screenSize.Y - bounds.Height) / 2f;
+            Vector2u screenSize = GameEngine.ScreenSize;
+            float posX = (screenSize.X - bounds.Width) / 2f;
+            float posY = (screenSize.Y - bounds.Height) / 2f;
 
-            //_login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
+            _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
 
-            //_login.RegisterClickHandler(() => System.Console.WriteLine("Button clicked!"));
+            _login.RegisterClickHandler(() => System.Console.WriteLine("Button clicked!"));
 
-            //// Log lại đúng kích thước
-            //bounds = _login.GetGlobalBounds();
-            //System.Console.WriteLine(
-            //    $"Bounds [FloatRect] Left({bounds.Left}) Top({bounds.Top}) Width({bounds.Width}) Height({bounds.Height})");
-            //System.Console.WriteLine($"nameof(Menu) initialized at position: {posX}, {posY}");
+            // Log lại đúng kích thước
+            bounds = _login.GetGlobalBounds();
+            System.Console.WriteLine(
+                $"Bounds [FloatRect] Left({bounds.Left}) Top({bounds.Top}) Width({bounds.Width}) Height({bounds.Height})");
+            System.Console.WriteLine($"nameof(Menu) initialized at position: {posX}, {posY}");
         }
 
         public override void Update(float deltaTime)
