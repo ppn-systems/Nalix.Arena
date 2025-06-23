@@ -27,6 +27,7 @@ internal class MainScene : Scene
     {
         base.AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
         base.AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
+        base.AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
         base.AddObject(new Menu());
     }
 
@@ -182,5 +183,33 @@ internal class MainScene : Scene
         protected override Drawable GetDrawable() => _icon;
     }
 
+    private class TwelveIcon : RenderObject
+    {
+        private readonly Sprite _icon;
+
+        public TwelveIcon()
+        {
+            base.SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
+
+            // Tải texture biểu tượng 12+
+            Texture texture = Assets.UiTextures.Load("icons/12+");
+
+            _icon = new Sprite(texture)
+            {
+                Scale = new Vector2f(2f, 2f),
+                //Color = new Color(255, 255, 180), // Tông vàng nhẹ
+            };
+
+            FloatRect bounds = _icon.GetGlobalBounds();
+
+            // Canh phải trên màn hình
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X + 20, -10);
+
+        }
+
+        protected override Drawable GetDrawable() => _icon;
+    }
+        
+
     #endregion Private Class
-}
+    }
