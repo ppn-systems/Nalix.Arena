@@ -196,20 +196,14 @@ internal class MainScene : Scene
 
             _icon = new Sprite(texture)
             {
-                Scale = new Vector2f(2f, 2f),
-                //Color = new Color(255, 255, 180), // Tông vàng nhẹ
+                Scale = new Vector2f(0.8f, 0.8f),
+                // Canh phải trên màn hình
+                Position = new Vector2f(0, 0)
             };
-
-            FloatRect bounds = _icon.GetGlobalBounds();
-
-            // Canh phải trên màn hình
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X + 20, -10);
-
         }
 
         protected override Drawable GetDrawable() => _icon;
     }
-        
 
     #endregion Private Class
-    }
+}
