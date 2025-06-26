@@ -14,29 +14,47 @@ namespace Nalix.Game.Host;
 
 internal static class AppConfig
 {
-    public static ServerListener Server;
-    public static GameDbContext DbContext;
+    private static ServerListener? _server;
+    private static GameDbContext? _context;
 
-    public static readonly bool IsDebug = Debugger.IsAttached;
     public static readonly ILogger Logger = NLogix.Host.Instance;
 
     public static string VersionInfo =>
-        $"Version {AssemblyInspector.GetAssemblyInformationalVersion()} | {(IsDebug ? "Debug" : "Release")}";
+        $"Version {AssemblyInspector.GetAssemblyInformationalVersion()} | {(Debugger.IsAttached ? "Debug" : "Release")}";
 
-    static AppConfig()
+    /// <summary>
+    /// Server được khởi tạo khi gọi lần đầu
+    /// </summary>
+    public static ServerListener Server
     {
-        //if (InitializeDatabase(out GameDbContext? context))
-        //{
-        //    DbContext = context;
-        //    Server = InitializeServer(context);
-        //}
-        //else
-        //{
-        //    Logger.Error("Failed to initialize database.");
-        //    System.Environment.Exit(1);
-        //}
+        get
+        {
+            if (_server == null)
+            {
+                Logger.Warn("Lazy-initializing Server...");
+                _server = InitializeServer();
+            }
+            return _server;
+        }
+    }
 
-        Server = InitializeServer();
+    /// <summary>
+    /// Database context được khởi tạo khi gọi lần đầu
+    /// </summary>
+    public static GameDbContext DbContext
+    {
+        get
+        {
+            if (_context == null)
+            {
+                if (!InitializeDatabase(out _context))
+                {
+                    Logger.Error("Database failed to initialize.");
+                    Environment.Exit(1); // or throw
+                }
+            }
+            return _context;
+        }
     }
 
     public static bool InitializeDatabase([NotNullWhen(true)] out GameDbContext? context)

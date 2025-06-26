@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nalix.IO;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,10 @@ namespace Nalix.Game.Host.Terminals;
 /// </summary>
 internal sealed class Terminal
 {
+    private readonly ConsoleWriter _writer;
+    private readonly Action<string> _rawWrite;
+    private readonly ConsoleContext _consoleContext = new();
+
     // Khóa để đảm bảo đọc phím an toàn khi nhiều luồng truy cập
     private static readonly Lock _keyReadLock = new();
 
@@ -36,11 +41,16 @@ internal sealed class Terminal
         _consoleReader = consoleReader ?? throw new ArgumentNullException(nameof(consoleReader));
         _shortcutManager = shortcutManager ?? throw new ArgumentNullException(nameof(shortcutManager));
 
-        InitializeConsole();
-        RegisterDefaultShortcuts();
+        _consoleContext.WaitPrefix = "> ";
+        _consoleContext.InputHistoryEnabled = true;
+        _rawWrite = Console.Out.Write;
+        _writer = new ConsoleWriter(_consoleContext, Console.Out);
+
+        this.InitializeConsole();
+        this.RegisterDefaultShortcuts();
 
         // Khởi chạy vòng lặp sự kiện xử lý phím không đồng bộ
-        Task.Run(EventLoop);
+        Task.Run(this.EventLoop);
     }
 
     /// <summary>
@@ -145,6 +155,20 @@ internal sealed class Terminal
     /// <returns>Task bất đồng bộ</returns>
     private async Task EventLoop()
     {
+        _ = Task.Run(async () =>
+        {
+            while (!ExitEvent.IsSet)
+            {
+                string input = _consoleContext.BufferedReadLine(
+                    _rawWrite,             // ✅ NOT Console.Write
+                    _writer.WriteLine,     // ✅ NOT Console.WriteLine
+                    Console.ReadKey
+                );
+                HandleCommand(input); // xử lý lệnh từ admin
+                await Task.Delay(10);
+            }
+        });
+
         while (!ExitEvent.IsSet)
         {
             if (_consoleReader.KeyAvailable)
@@ -183,4 +207,40 @@ internal sealed class Terminal
     /// <param name="description">Mô tả chức năng phím tắt</param>
     public void SetShortcut(ConsoleKey key, Action action, string description)
         => _shortcutManager.AddOrUpdateShortcut(key, action, description);
+
+    private void HandleCommand(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return;
+
+        string command = input.Trim().ToLowerInvariant();
+
+        switch (command)
+        {
+            case "exit":
+            case "quit":
+                AppConfig.Logger.Info("Command received: exit");
+                _cTokenSrc.Cancel();
+                ExitEvent.Set();
+                Environment.Exit(0);
+                break;
+
+            case "status":
+                AppConfig.Logger.Info("Command: status");
+                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.S);
+                break;
+
+            case "run":
+                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.R);
+                break;
+
+            case "stop":
+                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.P);
+                break;
+
+            default:
+                AppConfig.Logger.Warn($"Unknown command: {command}");
+                break;
+        }
+    }
 }
