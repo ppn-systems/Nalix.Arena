@@ -3,7 +3,7 @@
 /// <summary>
 /// Danh mục các loại ô (tile) trên bản đồ trong game.
 /// </summary>
-public enum TileType : ushort
+public enum TileType : System.UInt16
 {
     /// <summary>
     /// Không có loại ô (mặc định hoặc trống).

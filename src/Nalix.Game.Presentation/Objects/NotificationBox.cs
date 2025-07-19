@@ -19,30 +19,22 @@ public class NotificationBox : RenderObject
     private readonly Text _messageText;
     private readonly Sprite _background;
 
-    private float _hoverTime = 0f;
-    private bool _isHovering = false;
+    private System.Single _hoverTime = 0f;
+    private System.Boolean _isHovering = false;
 
     /// <summary>
     /// Khởi tạo một hộp thông báo với thông điệp ban đầu và vị trí hiển thị.
     /// </summary>
     /// <param name="initialMessage">Thông điệp ban đầu hiển thị trong hộp thông báo. Mặc định là chuỗi rỗng.</param>
     /// <param name="side">Vị trí hiển thị của hộp thông báo (Top hoặc Bottom). Mặc định là Bottom.</param>
-    public NotificationBox(string initialMessage = "", Side side = Side.Bottom)
+    public NotificationBox(System.String initialMessage = "", Side side = Side.Bottom)
     {
         Font font = Assets.Font.Load("1");
         Texture bgTexture = Assets.UiTextures.Load("dialog/7");
 
-        float floatY;
+        System.Single floatY = side == Side.Bottom ? GameEngine.ScreenSize.Y * 0.6f : GameEngine.ScreenSize.Y * 0.1f;
 
         // Background
-        if (side == Side.Bottom)
-        {
-            floatY = GameEngine.ScreenSize.Y * 0.6f;
-        }
-        else
-        {
-            floatY = GameEngine.ScreenSize.Y * 0.1f;
-        }
 
         _background = new Sprite(bgTexture)
         {
@@ -79,7 +71,7 @@ public class NotificationBox : RenderObject
                 Scale = new Vector2f(0.5f, 0.5f)
             };
 
-            float buttonY = _messageText.Position.Y + _messageText.GetLocalBounds().Height + 5f;
+            System.Single buttonY = _messageText.Position.Y + _messageText.GetLocalBounds().Height + 5f;
 
             // Center button horizontally below the message text
             _button.Position = new Vector2f(
@@ -105,9 +97,9 @@ public class NotificationBox : RenderObject
     /// Cập nhật thông điệp hiển thị trong hộp thông báo.
     /// </summary>
     /// <param name="newMessage">Thông điệp mới cần hiển thị.</param>
-    public void UpdateMessage(string newMessage)
+    public void UpdateMessage(System.String newMessage)
     {
-        string wrappedText = WrapText(
+        System.String wrappedText = WrapText(
             _messageText.Font, newMessage, _messageText.CharacterSize, _background.Texture.Size.X * 0.7f);
 
         _messageText.DisplayedString = wrappedText;
@@ -130,12 +122,15 @@ public class NotificationBox : RenderObject
     /// Cập nhật trạng thái của hộp thông báo, xử lý tương tác chuột (hover, click).
     /// </summary>
     /// <param name="deltaTime">Thời gian trôi qua kể từ lần cập nhật trước (tính bằng giây).</param>
-    public override void Update(float deltaTime)
+    public override void Update(System.Single deltaTime)
     {
-        if (!Visible || _button is null) return;
+        if (!Visible || _button is null)
+        {
+            return;
+        }
 
         Vector2i mousePos = InputState.GetMousePosition();
-        bool hover = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);
+        System.Boolean hover = _button.GetGlobalBounds().Contains(mousePos.X, mousePos.Y);
 
         if (hover)
         {
@@ -173,7 +168,10 @@ public class NotificationBox : RenderObject
     /// <param name="target">Mục tiêu render (thường là cửa sổ trò chơi).</param>
     public override void Render(RenderTarget target)
     {
-        if (!Visible) return;
+        if (!Visible)
+        {
+            return;
+        }
 
         target.Draw(_background);
         target.Draw(_messageText);
@@ -201,15 +199,15 @@ public class NotificationBox : RenderObject
     /// <param name="characterSize">Kích thước ký tự của văn bản.</param>
     /// <param name="maxWidth">Chiều rộng tối đa của văn bản.</param>
     /// <returns>Chuỗi văn bản đã được bọc dòng.</returns>
-    private static string WrapText(Font font, string text, uint characterSize, float maxWidth)
+    private static System.String WrapText(Font font, System.String text, System.UInt32 characterSize, System.Single maxWidth)
     {
-        string result = "";
-        string currentLine = "";
-        string[] words = text.Split(' ');
+        System.String result = "";
+        System.String currentLine = "";
+        System.String[] words = text.Split(' ');
 
         foreach (var word in words)
         {
-            string testLine = currentLine.Length > 0 ? currentLine + " " + word : word;
+            System.String testLine = currentLine.Length > 0 ? currentLine + " " + word : word;
 
             Text tempText = new(testLine, font, characterSize);
             if (tempText.GetLocalBounds().Width > maxWidth)

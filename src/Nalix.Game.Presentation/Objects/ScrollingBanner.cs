@@ -13,23 +13,23 @@ namespace Nalix.Game.Presentation.Objects;
 [IgnoredLoad("RenderObject")]
 public class ScrollingBanner : RenderObject
 {
-    private const float TextOffsetY = 4f;
-    private const float BannerHeight = 32f;
+    private const System.Single TextOffsetY = 4f;
+    private const System.Single BannerHeight = 32f;
 
     private static readonly Vector2f ScrollDir = new(-1f, 0f);
 
     private readonly Text _text;
-    private readonly float _speed;
+    private readonly System.Single _speed;
     private readonly RectangleShape _background;
 
-    private float _textWidth;
+    private System.Single _textWidth;
 
     /// <summary>
     /// Khởi tạo một thể hiện mới của <see cref="ScrollingBanner"/> với thông điệp và tốc độ cuộn được chỉ định.
     /// </summary>
     /// <param name="message">Thông điệp văn bản sẽ hiển thị trong banner.</param>
     /// <param name="speed">Tốc độ cuộn tính bằng pixel mỗi giây.</param>
-    public ScrollingBanner(string message, float speed = 100f)
+    public ScrollingBanner(System.String message, System.Single speed = 100f)
     {
         base.SetZIndex(ZIndex.Banner.ToInt());
         base.Reveal();
@@ -62,7 +62,7 @@ public class ScrollingBanner : RenderObject
     /// Cập nhật thông điệp được hiển thị trong banner và đặt lại vị trí cuộn.
     /// </summary>
     /// <param name="message">Thông điệp mới cần hiển thị.</param>
-    public void SetMessage(string message)
+    public void SetMessage(System.String message)
     {
         _text.DisplayedString = message;
         _textWidth = _text.GetGlobalBounds().Width;
@@ -74,9 +74,12 @@ public class ScrollingBanner : RenderObject
     /// Khi văn bản cuộn hết bên trái màn hình, nó sẽ quay lại bên phải.
     /// </summary>
     /// <param name="deltaTime">Thời gian đã trôi qua kể từ lần cập nhật trước (tính bằng giây).</param>
-    public override void Update(float deltaTime)
+    public override void Update(System.Single deltaTime)
     {
-        if (!Visible) return;
+        if (!Visible)
+        {
+            return;
+        }
 
         _text.Position += ScrollDir * (_speed * deltaTime);
 
@@ -92,7 +95,10 @@ public class ScrollingBanner : RenderObject
     /// <param name="target">Đối tượng render (ví dụ: cửa sổ chính) nơi banner sẽ được vẽ lên.</param>
     public override void Render(RenderTarget target)
     {
-        if (!Visible) return;
+        if (!Visible)
+        {
+            return;
+        }
 
         target.Draw(_background);
         target.Draw(_text);

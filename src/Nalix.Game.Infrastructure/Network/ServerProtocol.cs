@@ -2,7 +2,7 @@
 using Nalix.Common.Package.Metadata;
 using Nalix.Logging;
 using Nalix.Network.Connection;
-using Nalix.Network.Dispatch;
+using Nalix.Network.Dispatch.Core;
 using Nalix.Network.Package;
 using Nalix.Network.Protocols;
 using System;
@@ -24,7 +24,7 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
     /// <summary>
     /// Xác định xem kết nối có được giữ mở liên tục hay không.
     /// </summary>
-    public override bool KeepConnectionOpen => true;
+    public override Boolean KeepConnectionOpen => true;
 
     /// <summary>
     /// Xử lý sự kiện khi chấp nhận một kết nối mới.
@@ -36,14 +36,14 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
         base.OnAccept(connection, cancellationToken);
 
         // Thêm kết nối vào danh sách quản lý
-        ConnectionHub.Instance.RegisterConnection(connection);
+        _ = ConnectionHub.Instance.RegisterConnection(connection);
 
         NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
     }
 
-    public override void ProcessMessage(ReadOnlySpan<byte> bytes)
+    public override void ProcessMessage(ReadOnlySpan<Byte> bytes)
     {
-        IConnection connection = ConnectionHub.Instance.GetConnection(bytes[PacketSize.Header..sizeof(uint)]);
+        IConnection connection = ConnectionHub.Instance.GetConnection(bytes[PacketSize.Header..sizeof(UInt32)]);
 
         try
         {
@@ -63,7 +63,7 @@ public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : P
     /// </summary>
     /// <param name="sender">Nguồn gửi tin nhắn.</param>
     /// <param name="args">Thông tin sự kiện kết nối.</param>
-    public override void ProcessMessage(object sender, IConnectEventArgs args)
+    public override void ProcessMessage(Object sender, IConnectEventArgs args)
     {
         try
         {

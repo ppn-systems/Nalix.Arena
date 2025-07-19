@@ -8,10 +8,10 @@ public class ActionItem
     /// <summary>
     /// Lấy hoặc đặt khóa xác định loại hành động.
     /// </summary>
-    public short Key { get; set; }
+    public System.Int16 Key { get; set; }
 
     /// <summary>
     /// Lấy hoặc đặt giá trị mô tả hoặc thông tin liên quan đến hành động.
     /// </summary>
-    public int Value { get; set; }
+    public System.Int32 Value { get; set; }
 }

@@ -47,8 +47,8 @@ public class SettingsScene : Scene
 
             Texture bg = Assets.UiTextures.Load("bg/0");
 
-            float scaleX = (float)GameEngine.ScreenSize.X / bg.Size.X;
-            float scaleY = (float)GameEngine.ScreenSize.Y / bg.Size.Y;
+            System.Single scaleX = (System.Single)GameEngine.ScreenSize.X / bg.Size.X;
+            System.Single scaleY = (System.Single)GameEngine.ScreenSize.Y / bg.Size.Y;
 
             _background = new Sprite(bg)
             {
@@ -63,7 +63,11 @@ public class SettingsScene : Scene
         /// </summary>
         public override void Render(RenderTarget target)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             target.Draw(_background);
         }
 
@@ -104,15 +108,15 @@ public class SettingsScene : Scene
 
             Texture panel = Assets.UiTextures.Load("tiles/7.png");
 
-            float scaleFactor = System.Math.Min(
+            System.Single scaleFactor = System.Math.Min(
                 GameEngine.ScreenSize.X / panel.Size.X,
                 GameEngine.ScreenSize.Y / panel.Size.Y
             );
 
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
-            float posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
-            float posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
             _banner = new Sprite(panel)
             {
@@ -166,9 +170,12 @@ public class SettingsScene : Scene
         /// <summary>
         /// Xử lý sự kiện phím và chuột để điều hướng trở về màn hình chính.
         /// </summary>
-        public override void Update(float deltaTime)
+        public override void Update(System.Single deltaTime)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             if (InputState.IsKeyDown(Keyboard.Key.S))
             {

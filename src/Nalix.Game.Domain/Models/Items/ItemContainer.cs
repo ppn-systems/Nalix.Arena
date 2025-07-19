@@ -9,7 +9,7 @@ public sealed class ItemContainer
     private readonly List<Item> _items = [];
 
     // Maximum number of items allowed in the chest.
-    public uint MaxCapacity { get; set; } = 100;
+    public System.UInt32 MaxCapacity { get; set; } = 100;
 
     /// <summary>
     /// Lấy danh sách tất cả các vật phẩm trong rương đồ.
@@ -22,7 +22,7 @@ public sealed class ItemContainer
     /// </summary>
     /// <param name="item">Vật phẩm cần thêm vào.</param>
     /// <returns>True nếu thêm thành công, False nếu vượt quá giới hạn.</returns>
-    public bool AddItem(Item item)
+    public System.Boolean AddItem(Item item)
     {
         // Kiểm tra nếu thêm vật phẩm sẽ vượt quá dung lượng tối đa của rương đồ.
         if (_items.Count >= MaxCapacity)
@@ -51,7 +51,7 @@ public sealed class ItemContainer
     /// <param name="itemId">Mã vật phẩm cần loại bỏ.</param>
     /// <param name="quantity">Số lượng cần loại bỏ.</param>
     /// <returns>True nếu loại bỏ thành công, False nếu không thể loại bỏ (ví dụ: số lượng không đủ).</returns>
-    public bool RemoveItem(ushort itemId, uint quantity)
+    public System.Boolean RemoveItem(System.UInt16 itemId, System.UInt32 quantity)
     {
         var item = _items.FirstOrDefault(i => i.Id == itemId);
         if (item == null || item.Quantity < quantity)
@@ -62,7 +62,7 @@ public sealed class ItemContainer
         item.Quantity -= quantity;  // Giảm số lượng vật phẩm.
         if (item.Quantity == 0)
         {
-            _items.Remove(item);  // Xóa vật phẩm nếu số lượng là 0.
+            _ = _items.Remove(item);  // Xóa vật phẩm nếu số lượng là 0.
         }
 
         return true;  // Loại bỏ thành công.
@@ -73,12 +73,12 @@ public sealed class ItemContainer
     /// </summary>
     /// <param name="itemId">Mã định danh của vật phẩm.</param>
     /// <returns>Vật phẩm nếu tìm thấy, null nếu không tìm thấy.</returns>
-    public Item GetItem(ushort itemId) => _items.FirstOrDefault(i => i.Id == itemId);
+    public Item GetItem(System.UInt16 itemId) => _items.FirstOrDefault(i => i.Id == itemId);
 
     /// <summary>
     /// Kiểm tra xem rương đồ có chứa vật phẩm với mã định danh cụ thể hay không.
     /// </summary>
     /// <param name="itemId">Mã định danh của vật phẩm cần kiểm tra.</param>
     /// <returns>True nếu vật phẩm có trong rương đồ, False nếu không có.</returns>
-    public bool ContainsItem(ushort itemId) => _items.Any(i => i.Id == itemId);
+    public System.Boolean ContainsItem(System.UInt16 itemId) => _items.Any(i => i.Id == itemId);
 }

@@ -10,12 +10,12 @@ public sealed class Player
     /// <summary>
     /// ID duy nhất của người chơi.
     /// </summary>
-    public int Id { get; set; }
+    public System.Int32 Id { get; set; }
 
     /// <summary>
     /// Tên của người chơi.
     /// </summary>
-    public string Name { get; set; }
+    public System.String Name { get; set; }
 
     /// <summary>
     /// Nhân vật mà người chơi điều khiển.

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Nalix.Common.Environment;
 using Nalix.Logging;
-using Nalix.Shared.Environment;
 using Npgsql;
 using System;
 using System.IO;
@@ -12,7 +12,7 @@ namespace Nalix.Game.Infrastructure.Database;
 
 public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
 {
-    public GameDbContext CreateDbContext(string[] args)
+    public GameDbContext CreateDbContext(String[] args)
     {
         NLogix.Host.Instance.Info("Starting initialization of AutoDbContext.");
 
@@ -35,8 +35,8 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
         }
 
         // Đọc loại database và connection string
-        string dbType = configuration["DatabaseType"] ?? "PostgreSQL";
-        string connectionString = configuration.GetConnectionString("DefaultConnection");
+        String dbType = configuration["DatabaseType"] ?? "PostgreSQL";
+        String connectionString = configuration.GetConnectionString("DefaultConnection");
 
         // Kiểm tra kết nối đến database
         if (!dbType.Equals("SQLite", StringComparison.OrdinalIgnoreCase) &&
@@ -52,13 +52,13 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
         {
             if (dbType.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
             {
-                optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
+                _ = optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>
                 {
-                    npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(30), null);
-                    npgsqlOptions.CommandTimeout(60);
-                    npgsqlOptions.MigrationsHistoryTable("__MigrationsHistory", "public");
-                    npgsqlOptions.UseRelationalNulls();
-                    npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                    _ = npgsqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(30), null);
+                    _ = npgsqlOptions.CommandTimeout(60);
+                    _ = npgsqlOptions.MigrationsHistoryTable("__MigrationsHistory", "public");
+                    _ = npgsqlOptions.UseRelationalNulls();
+                    _ = npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
                 })
                 .EnableSensitiveDataLogging(false)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
@@ -69,12 +69,12 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
             }
             else if (dbType.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
             {
-                optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
+                _ = optionsBuilder.UseSqlServer(connectionString, sqlOptions =>
                 {
-                    sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(30), null);
-                    sqlOptions.CommandTimeout(60);
-                    sqlOptions.MigrationsHistoryTable("__MigrationsHistory", "dbo");
-                    sqlOptions.UseRelationalNulls();
+                    _ = sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(30), null);
+                    _ = sqlOptions.CommandTimeout(60);
+                    _ = sqlOptions.MigrationsHistoryTable("__MigrationsHistory", "dbo");
+                    _ = sqlOptions.UseRelationalNulls();
                 })
                 .EnableThreadSafetyChecks()
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
@@ -83,12 +83,12 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
             }
             else if (dbType.Equals("SQLite", StringComparison.OrdinalIgnoreCase))
             {
-                optionsBuilder.UseSqlite(
+                _ = optionsBuilder.UseSqlite(
                     $"Data Source={Directories.DatabasePath}\\Auto.db",
                     sqliteOptions =>
                     {
-                        sqliteOptions.CommandTimeout(60);
-                        sqliteOptions.MigrationsHistoryTable("__MigrationsHistory");
+                        _ = sqliteOptions.CommandTimeout(60);
+                        _ = sqliteOptions.MigrationsHistoryTable("__MigrationsHistory");
                     })
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
                 .EnableServiceProviderCaching();
@@ -113,13 +113,13 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
         return dbContext;
     }
 
-    private static bool CanConnectToDatabase(string connectionString)
+    private static Boolean CanConnectToDatabase(String connectionString)
     {
         try
         {
             var builder = new NpgsqlConnectionStringBuilder(connectionString);
-            string host = builder.Host;
-            int port = builder.Port;
+            String host = builder.Host;
+            Int32 port = builder.Port;
 
             NLogix.Host.Instance.Info($"Pinging database server {host}:{port}...");
 

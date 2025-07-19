@@ -8,15 +8,15 @@ public class MonsterStats
     /// <summary>
     /// Cấp độ của quái vật.
     /// </summary>
-    public uint Level { get; set; }
+    public System.UInt32 Level { get; set; }
 
     /// <summary>
     /// Sức khỏe tối đa của quái vật.
     /// </summary>
-    public uint MaxHealth { get; set; }
+    public System.UInt32 MaxHealth { get; set; }
 
     /// <summary>
     /// Lượng kinh nghiệm rơi ra khi bị tiêu diệt.
     /// </summary>
-    public uint Experience { get; set; }
+    public System.UInt32 Experience { get; set; }
 }

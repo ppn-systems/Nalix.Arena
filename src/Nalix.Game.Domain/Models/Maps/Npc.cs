@@ -7,12 +7,12 @@ namespace Nalix.Game.Domain.Models.Maps;
 /// <summary>
 /// Đại diện cho một NPC trong trò chơi.
 /// </summary>
-public class Npc : NamedEntity<ushort>
+public class Npc : NamedEntity<System.UInt16>
 {
     /// <summary>
     /// ID của avatar hoặc sprite của NPC.
     /// </summary>
-    public ushort AvatarId { get; set; }
+    public System.UInt16 AvatarId { get; set; }
 
     /// <summary>
     /// Loại của NPC (Thương nhân, Người giao nhiệm vụ, v.v.).
@@ -32,10 +32,10 @@ public class Npc : NamedEntity<ushort>
     /// <summary>
     /// Xác định liệu người chơi có thể tương tác với NPC hay không.
     /// </summary>
-    public bool IsInteractive { get; set; }
+    public System.Boolean IsInteractive { get; set; }
 
     /// <summary>
     /// Các đoạn hội thoại mà NPC có thể nói.
     /// </summary>
-    public string[] Dialogues { get; set; } = [];
+    public System.String[] Dialogues { get; set; } = [];
 }

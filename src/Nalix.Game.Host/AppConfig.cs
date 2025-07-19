@@ -1,11 +1,10 @@
-﻿using Nalix.Assemblies;
-using Nalix.Common.Logging;
+﻿using Nalix.Common.Logging;
 using Nalix.Game.Infrastructure.Database;
 using Nalix.Game.Infrastructure.Network;
 using Nalix.Logging;
 using Nalix.Network.Dispatch;
 using Nalix.Network.Package;
-using Nalix.Shared.Memory.Buffers;
+using Nalix.Shared.Memory.Pooling;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +18,7 @@ internal static class AppConfig
 
     public static readonly ILogger Logger = NLogix.Host.Instance;
 
-    public static string VersionInfo =>
+    public static String VersionInfo =>
         $"Version {AssemblyInspector.GetAssemblyInformationalVersion()} | {(Debugger.IsAttached ? "Debug" : "Release")}";
 
     /// <summary>
@@ -57,12 +56,12 @@ internal static class AppConfig
         }
     }
 
-    public static bool InitializeDatabase([NotNullWhen(true)] out GameDbContext? context)
+    public static Boolean InitializeDatabase([NotNullWhen(true)] out GameDbContext? context)
     {
         try
         {
             context = new AutoDbContextFactory().CreateDbContext([]);
-            context.Database.EnsureCreated();
+            _ = context.Database.EnsureCreated();
             Logger.Info("Database initialized successfully.");
             return true;
         }
@@ -82,6 +81,6 @@ internal static class AppConfig
                    .WithErrorHandling((exception, command) =>
                         Logger.Error($"Error handling command: {command}", exception))
         //.WithHandler(() => new AccountService(context))
-        )), new BufferAllocator(), Logger);
+        )), new BufferPoolManager(), Logger);
     }
 }

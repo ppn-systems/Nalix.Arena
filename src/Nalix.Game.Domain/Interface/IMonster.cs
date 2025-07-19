@@ -13,17 +13,17 @@ public interface IMonster : ICombatant
     /// <summary>
     /// Mã định danh duy nhất của quái vật.
     /// </summary>
-    uint Id { get; set; }
+    System.UInt32 Id { get; set; }
 
     /// <summary>
     /// Tên của quái vật.
     /// </summary>
-    string Name { get; set; }
+    System.String Name { get; set; }
 
     /// <summary>
     /// Thời điểm tấn công tiếp theo của quái vật (dựa trên Unix milliseconds).
     /// </summary>
-    long TimeAttack { get; set; }
+    System.Int64 TimeAttack { get; set; }
 
     /// <summary>
     /// Vị trí hiện tại của quái vật trên bản đồ.

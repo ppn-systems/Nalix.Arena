@@ -10,7 +10,7 @@ public class BackgroundItem
     /// <summary>
     /// Mã định danh của vật phẩm nền.
     /// </summary>
-    public short ItemId { get; set; }
+    public System.Int16 ItemId { get; set; }
 
     /// <summary>
     /// Vị trí của vật phẩm nền trên bản đồ.

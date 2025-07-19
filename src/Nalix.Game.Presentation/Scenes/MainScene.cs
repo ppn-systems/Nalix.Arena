@@ -56,8 +56,8 @@ internal class MainScene : Scene
             FloatRect bounds = _login.GetGlobalBounds(); // Bây giờ mới chính xác!
 
             Vector2u screenSize = GameEngine.ScreenSize;
-            float posX = (screenSize.X - bounds.Width) / 2f;
-            float posY = (screenSize.Y - bounds.Height) / 2f;
+            System.Single posX = (screenSize.X - bounds.Width) / 2f;
+            System.Single posY = (screenSize.Y - bounds.Height) / 2f;
 
             _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
 
@@ -70,9 +70,12 @@ internal class MainScene : Scene
             System.Console.WriteLine($"nameof(Menu) initialized at position: {posX}, {posY}");
         }
 
-        public override void Update(float deltaTime)
+        public override void Update(System.Single deltaTime)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             // Nếu mất kết nối → trở về cảnh Network để kết nối lại
             //if (!NetClient<Packet>.Instance.IsConnected)
@@ -81,10 +84,7 @@ internal class MainScene : Scene
             //}
         }
 
-        public override void Render(RenderTarget target)
-        {
-            _login.Render(target);
-        }
+        public override void Render(RenderTarget target) => _login.Render(target);
 
         protected override Drawable GetDrawable() => null;
     }
@@ -114,14 +114,18 @@ internal class MainScene : Scene
             _parallax.AddLayer(Assets.UiTextures.Load("bg/7"), 50f, true);
         }
 
-        public override void Update(float deltaTime) => _parallax.Update(deltaTime);
+        public override void Update(System.Single deltaTime) => _parallax.Update(deltaTime);
 
         protected override Drawable GetDrawable()
             => throw new System.NotSupportedException("Use the Render() method instead of GetDrawable().");
 
         public override void Render(RenderTarget target)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
+
             _parallax.Draw(target);
         }
     }
@@ -158,9 +162,12 @@ internal class MainScene : Scene
             _sound = new Sound(buffer);
         }
 
-        public override void Update(float deltaTime)
+        public override void Update(System.Single deltaTime)
         {
-            if (!Visible) return;
+            if (!Visible)
+            {
+                return;
+            }
 
             // Phím tắt (key S) để vào phần thiết lập
             if (InputState.IsKeyDown(Keyboard.Key.S))

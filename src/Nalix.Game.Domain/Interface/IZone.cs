@@ -13,7 +13,7 @@ public interface IZone
     /// <summary>
     /// ID duy nhất của khu vực.
     /// </summary>
-    uint Id { get; }
+    System.UInt32 Id { get; }
 
     /// <summary>
     /// Bản đồ mà khu vực thuộc về.
@@ -28,10 +28,10 @@ public interface IZone
     /// <summary>
     /// Từ điển chứa các vật phẩm có trên bản đồ trong khu vực.
     /// </summary>
-    ConcurrentDictionary<int, ItemMap> ItemMaps { get; }
+    ConcurrentDictionary<System.Int32, ItemMap> ItemMaps { get; }
 
     /// <summary>
     /// Từ điển chứa các nhân vật hiện diện trong khu vực.
     /// </summary>
-    ConcurrentDictionary<int, Character> Characters { get; }
+    ConcurrentDictionary<System.Int32, Character> Characters { get; }
 }

@@ -13,16 +13,16 @@ namespace Nalix.Game.Presentation.Objects;
 [IgnoredLoad("RenderObject")]
 public sealed class LoadingSpinner : RenderObject
 {
-    private const float MaxAlpha = 255f;
-    private const float BaseScale = 0.6f;
-    private const float FadeSpeed = 300f;
-    private const float RotationSpeed = 150f;
-    private const float ScaleOscillation = 0.02f;
+    private const System.Single MaxAlpha = 255f;
+    private const System.Single BaseScale = 0.6f;
+    private const System.Single FadeSpeed = 300f;
+    private const System.Single RotationSpeed = 150f;
+    private const System.Single ScaleOscillation = 0.02f;
 
-    private float _angle = 0f;
-    private float _alpha = 0f;
-    private bool _fadingIn = true;
-    private byte _currentAlpha = 0;
+    private System.Single _angle = 0f;
+    private System.Single _alpha = 0f;
+    private System.Boolean _fadingIn = true;
+    private System.Byte _currentAlpha = 0;
 
     private readonly RectangleShape _bg;
     private readonly Sprite _iconSprite;
@@ -64,19 +64,21 @@ public sealed class LoadingSpinner : RenderObject
     /// Cập nhật trạng thái của vòng quay, bao gồm hiệu ứng mờ dần, xoay và dao động kích thước.
     /// </summary>
     /// <param name="deltaTime">Thời gian trôi qua kể từ khung hình trước (giây).</param>
-    public override void Update(float deltaTime)
+    public override void Update(System.Single deltaTime)
     {
         this.UpdateAlpha(deltaTime); // Cập nhật độ trong suốt
 
         // Cập nhật góc xoay
         _angle += deltaTime * RotationSpeed;
         if (_angle >= 360f)
+        {
             _angle -= 360f;
+        }
 
         _iconSprite.Rotation = _angle; // Áp dụng góc xoay cho biểu tượng
 
         // Dao động kích thước (sử dụng sóng sin)
-        float scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
+        System.Single scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
         _iconSprite.Scale = new Vector2f(scale, scale); // Áp dụng tỷ lệ mới
     }
 
@@ -86,7 +88,10 @@ public sealed class LoadingSpinner : RenderObject
     /// <param name="target">Mục tiêu hiển thị (RenderTarget) để vẽ.</param>
     public override void Render(RenderTarget target)
     {
-        if (!Visible) return;
+        if (!Visible)
+        {
+            return;
+        }
 
         target.Draw(_bg);
         target.Draw(_iconSprite);
@@ -104,9 +109,12 @@ public sealed class LoadingSpinner : RenderObject
     /// Cập nhật độ trong suốt của nền và biểu tượng theo thời gian.
     /// </summary>
     /// <param name="deltaTime">Thời gian trôi qua kể từ khung hình trước (giây).</param>
-    private void UpdateAlpha(float deltaTime)
+    private void UpdateAlpha(System.Single deltaTime)
     {
-        if (!_fadingIn) return; // Không cập nhật nếu đã đạt alpha tối đa
+        if (!_fadingIn)
+        {
+            return; // Không cập nhật nếu đã đạt alpha tối đa
+        }
 
         _alpha += deltaTime * FadeSpeed; // Tăng độ trong suốt
         if (_alpha >= MaxAlpha)
@@ -115,9 +123,12 @@ public sealed class LoadingSpinner : RenderObject
             _fadingIn = false; // Dừng hiệu ứng mờ dần
         }
 
-        byte newAlpha = (byte)_alpha; // Chuyển đổi sang byte
+        System.Byte newAlpha = (System.Byte)_alpha; // Chuyển đổi sang byte
 
-        if (_currentAlpha == newAlpha) return; // Không cập nhật nếu alpha không thay đổi
+        if (_currentAlpha == newAlpha)
+        {
+            return; // Không cập nhật nếu alpha không thay đổi
+        }
 
         _currentAlpha = newAlpha; // Lưu giá trị alpha mới
 

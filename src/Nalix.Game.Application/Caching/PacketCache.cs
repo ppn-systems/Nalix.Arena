@@ -39,7 +39,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InternalError,
                 Message = "Handshake already completed.",
@@ -56,7 +56,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InvalidType,
                 Message = "Invalid packet type",
@@ -73,7 +73,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InvalidLength,
                 Message = "Invalid public key length",
@@ -94,7 +94,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Duplicate,
                 Message = "Username already existed.",
@@ -111,7 +111,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Success,
                 Message = "Account registered successfully.",
@@ -128,7 +128,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InternalError,
                 Message = "Failed to register account due to an internal error.",
@@ -148,7 +148,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.NotFound,
                 Message = "Username does not exist.",
@@ -165,7 +165,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Forbidden,
                 Message = "Account locked due to too many failed attempts.",
@@ -182,7 +182,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InvalidPassword,
                 Message = "Incorrect password.",
@@ -199,7 +199,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Forbidden,
                 Message = "Account is disabled.",
@@ -216,7 +216,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Success,
                 Message = "Login successful.",
@@ -233,7 +233,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InternalError,
                 Message = "Failed to login due to an internal error.",
@@ -254,7 +254,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InvalidSession,
                 Message = "Invalid session. Please login again.",
@@ -271,7 +271,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.NotFound,
                 Message = "Username does not exist.",
@@ -288,7 +288,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.InternalError,
                 Message = "Failed to update account status.",
@@ -305,7 +305,7 @@ public static class PacketCache<TPacket>
             PacketType.Object,
             PacketFlags.None,
             PacketPriority.Low,
-            BitSerializer.Serialize(new PacketResponse<byte>
+            LiteSerializer.Serialize(new PacketResponse<System.Byte>
             {
                 Code = ResponseCode.Success,
                 Message = "Logout successful.",

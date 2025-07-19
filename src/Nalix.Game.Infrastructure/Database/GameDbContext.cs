@@ -9,7 +9,7 @@ public class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(GameDbContext).Assembly);
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(GameDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
 
         ConfigureAccount(modelBuilder);
@@ -17,18 +17,18 @@ public class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(
 
     private static void ConfigureAccount(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Credentials>(entity =>
+        _ = modelBuilder.Entity<Credentials>(entity =>
         {
-            entity.HasKey(a => a.Id);
+            _ = entity.HasKey(a => a.Id);
 
-            entity.HasIndex(a => a.Username).IsUnique();
+            _ = entity.HasIndex(a => a.Username).IsUnique();
 
-            entity.Property(a => a.Username)
+            _ = entity.Property(a => a.Username)
                 .HasMaxLength(Credentials.UsernameMaxLength)
                 .IsRequired();
 
-            entity.Property(a => a.Role)
-                .HasConversion<byte>()
+            _ = entity.Property(a => a.Role)
+                .HasConversion<System.Byte>()
                 .IsRequired();
         });
     }

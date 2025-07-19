@@ -3,7 +3,7 @@
 // Concrete implementation using System.Console
 public class ConsoleReader : IConsoleReader
 {
-    public bool KeyAvailable => System.Console.KeyAvailable;
+    public System.Boolean KeyAvailable => System.Console.KeyAvailable;
 
-    public System.ConsoleKeyInfo ReadKey(bool intercept) => System.Console.ReadKey(intercept);
+    public System.ConsoleKeyInfo ReadKey(System.Boolean intercept) => System.Console.ReadKey(intercept);
 }

@@ -53,9 +53,9 @@ public enum ZIndex : System.Int32
 public static class ZIndexExtensions
 {
     /// <summary>
-    /// Chuyển đổi giá trị của <see cref="ZIndex"/> thành kiểu <see cref="int"/>.
+    /// Chuyển đổi giá trị của <see cref="ZIndex"/> thành kiểu <see cref="System.Int32"/>.
     /// </summary>
     /// <param name="zIndex">Giá trị <see cref="ZIndex"/> cần chuyển đổi.</param>
     /// <returns>Giá trị số nguyên tương ứng với <see cref="ZIndex"/>.</returns>
-    public static int ToInt(this ZIndex zIndex) => (int)zIndex;
+    public static System.Int32 ToInt(this ZIndex zIndex) => (System.Int32)zIndex;
 }

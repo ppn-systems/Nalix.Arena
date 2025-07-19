@@ -3,7 +3,7 @@
 /// <summary>
 /// Danh mục các loại tùy chọn trong game.
 /// </summary>
-public enum OptionCategory : byte
+public enum OptionCategory : System.Byte
 {
     /// <summary>
     /// Không xác định.

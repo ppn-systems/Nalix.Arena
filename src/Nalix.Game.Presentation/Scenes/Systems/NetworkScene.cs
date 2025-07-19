@@ -5,7 +5,6 @@ using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using Nalix.Logging.Extensions;
 using Nalix.Network.Package;
-using Nalix.Shared.Net;
 using SFML.Graphics;
 
 namespace Nalix.Game.Presentation.Scenes.Systems;
@@ -38,7 +37,7 @@ public class NetworkScene : Scene
     [IgnoredLoad("RenderObject")]
     private class NetworkHandler : RenderObject
     {
-        private const float RetryDelay = 3f; // thời gian chờ giữa các lần thử
+        private const System.Single RetryDelay = 3f; // thời gian chờ giữa các lần thử
 
         /// <summary>
         /// Trạng thái hiện tại của quá trình kết nối.
@@ -51,8 +50,8 @@ public class NetworkScene : Scene
             Failed
         }
 
-        private int _attempt;
-        private float _timer;
+        private System.Int32 _attempt;
+        private System.Single _timer;
         private ConnectState _state;
 
         /// <summary>
@@ -70,7 +69,7 @@ public class NetworkScene : Scene
         /// Cập nhật trạng thái kết nối theo thời gian. Gồm các bước chờ, thử kết nối, thành công hoặc thất bại.
         /// </summary>
         /// <param name="deltaTime">Thời gian trôi qua từ lần cập nhật trước (giây).</param>
-        public override void Update(float deltaTime)
+        public override void Update(System.Single deltaTime)
         {
             _timer += deltaTime;
 

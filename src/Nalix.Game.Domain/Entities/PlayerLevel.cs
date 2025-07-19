@@ -8,10 +8,10 @@ public sealed class PlayerLevel
     /// <summary>
     /// Cấp độ hiện tại của người chơi.
     /// </summary>
-    public uint Level { get; set; }
+    public System.UInt32 Level { get; set; }
 
     /// <summary>
     /// Lượng kinh nghiệm hiện tại của người chơi.
     /// </summary>
-    public ulong Experience { get; set; }
+    public System.UInt64 Experience { get; set; }
 }

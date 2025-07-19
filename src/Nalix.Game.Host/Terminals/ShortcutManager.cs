@@ -9,10 +9,10 @@ public class ShortcutManager
 {
     private readonly ConcurrentDictionary<ConsoleKey, Shortcut> _shortcuts = new();
 
-    public void AddOrUpdateShortcut(ConsoleKey key, Action action, string description)
+    public void AddOrUpdateShortcut(ConsoleKey key, Action action, String description)
         => _shortcuts[key] = new Shortcut(action, description);
 
-    public bool TryExecuteShortcut(ConsoleModifiers modifiers, ConsoleKey key)
+    public Boolean TryExecuteShortcut(ConsoleModifiers modifiers, ConsoleKey key)
     {
         if (modifiers.HasFlag(ConsoleModifiers.Control) && _shortcuts.TryGetValue(key, out var shortcut))
         {
@@ -22,9 +22,11 @@ public class ShortcutManager
         return false;
     }
 
-    public IEnumerable<(ConsoleKey Key, string Description)> GetAllShortcuts()
+    public IEnumerable<(ConsoleKey Key, String Description)> GetAllShortcuts()
     {
         foreach (var kvp in _shortcuts)
+        {
             yield return (kvp.Key, kvp.Value.Description);
+        }
     }
 }

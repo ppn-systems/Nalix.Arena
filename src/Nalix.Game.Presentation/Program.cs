@@ -13,8 +13,5 @@ internal class Program
     /// <param name="args">Các đối số dòng lệnh (chưa được sử dụng).</param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-    public static void Main(string[] args)
-    {
-        GameEngine.OpenWindow();
-    }
+    public static void Main(System.String[] args) => GameEngine.OpenWindow();
 }

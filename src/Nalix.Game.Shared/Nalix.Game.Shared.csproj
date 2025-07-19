@@ -6,10 +6,10 @@
 
 	<ItemGroup>
 		
-		<PackageReference Include="Nalix.Common" Version="0.9.83" />
-		<PackageReference Include="Nalix.Logging" Version="0.9.83" />
-		<PackageReference Include="Nalix.Cryptography" Version="0.9.83" />
-		<PackageReference Include="Nalix.Network.Package" Version="0.9.83" />
+		<PackageReference Include="Nalix.Common" Version="2.1.7" />
+		<PackageReference Include="Nalix.Logging" Version="2.1.7" />
+		<PackageReference Include="Nalix.Cryptography" Version="2.1.7" />
+		<PackageReference Include="Nalix.Network.Package" Version="2.1.7" />
 	</ItemGroup>
 
 </Project>

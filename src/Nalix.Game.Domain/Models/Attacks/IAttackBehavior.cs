@@ -1,11 +1,10 @@
 ﻿using Nalix.Game.Domain.Models.Combat;
 
-namespace Nalix.Game.Domain.Models.Attacks
-{
-    public interface IAttackBehavior
-    {
-        AttackType Type { get; }
+namespace Nalix.Game.Domain.Models.Attacks;
 
-        void Execute(ICombatant attacker, ICombatant target);
-    }
+public interface IAttackBehavior
+{
+    AttackType Type { get; }
+
+    void Execute(ICombatant attacker, ICombatant target);
 }

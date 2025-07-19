@@ -1,5 +1,4 @@
-﻿using Nalix.IO;
-using System;
+﻿using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +11,6 @@ namespace Nalix.Game.Host.Terminals;
 /// </summary>
 internal sealed class Terminal
 {
-    private readonly ConsoleWriter _writer;
-    private readonly Action<string> _rawWrite;
-    private readonly ConsoleContext _consoleContext = new();
-
     // Khóa để đảm bảo đọc phím an toàn khi nhiều luồng truy cập
     private static readonly Lock _keyReadLock = new();
 
@@ -41,16 +36,11 @@ internal sealed class Terminal
         _consoleReader = consoleReader ?? throw new ArgumentNullException(nameof(consoleReader));
         _shortcutManager = shortcutManager ?? throw new ArgumentNullException(nameof(shortcutManager));
 
-        _consoleContext.WaitPrefix = "> ";
-        _consoleContext.InputHistoryEnabled = true;
-        _rawWrite = Console.Out.Write;
-        _writer = new ConsoleWriter(_consoleContext, Console.Out);
-
-        this.InitializeConsole();
-        this.RegisterDefaultShortcuts();
+        InitializeConsole();
+        RegisterDefaultShortcuts();
 
         // Khởi chạy vòng lặp sự kiện xử lý phím không đồng bộ
-        Task.Run(this.EventLoop);
+        _ = Task.Run(EventLoop);
     }
 
     /// <summary>
@@ -120,7 +110,7 @@ internal sealed class Terminal
                 AppConfig.Logger.Warn("Server is not initialized.");
                 return;
             }
-            ThreadPool.QueueUserWorkItem(_ => AppConfig.Server.StartListeningAsync(_cTokenSrc.Token));
+            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Server.StartListeningAsync(_cTokenSrc.Token));
         }, "Run server");
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.P, () =>
@@ -130,7 +120,7 @@ internal sealed class Terminal
                 AppConfig.Logger.Warn("Server is not initialized.");
                 return;
             }
-            Task.Run(() => AppConfig.Server.StopListening());
+            _ = Task.Run(() => AppConfig.Server.StopListening());
         }, "Stop server");
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.S, () =>
@@ -143,8 +133,7 @@ internal sealed class Terminal
             var snapshot = AppConfig.Server.GetSnapshot();
             AppConfig.Logger.Info(
                 $"Server status: {(snapshot.IsListening ? "Running" : "Stopped")}" +
-                $"\nAddress: {snapshot.Address} - Port: {snapshot.Port} - Dispose: {snapshot.IsDisposed}" +
-                $"\nSocketStatus: {snapshot.ListenerSocketStatus}");
+                $"\nAddress: {snapshot.Address} - Port: {snapshot.Port} - Dispose: {snapshot.IsDisposed}");
         }, "Show server status");
     }
 
@@ -155,20 +144,6 @@ internal sealed class Terminal
     /// <returns>Task bất đồng bộ</returns>
     private async Task EventLoop()
     {
-        _ = Task.Run(async () =>
-        {
-            while (!ExitEvent.IsSet)
-            {
-                string input = _consoleContext.BufferedReadLine(
-                    _rawWrite,             // ✅ NOT Console.Write
-                    _writer.WriteLine,     // ✅ NOT Console.WriteLine
-                    Console.ReadKey
-                );
-                HandleCommand(input); // xử lý lệnh từ admin
-                await Task.Delay(10);
-            }
-        });
-
         while (!ExitEvent.IsSet)
         {
             if (_consoleReader.KeyAvailable)
@@ -177,7 +152,7 @@ internal sealed class Terminal
                 lock (_keyReadLock) // tránh đọc đồng thời gây lỗi
                 {
                     keyInfo = _consoleReader.ReadKey(true);
-                    _shortcutManager.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
+                    _ = _shortcutManager.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
                 }
             }
             await Task.Delay(10);
@@ -189,12 +164,12 @@ internal sealed class Terminal
     /// </summary>
     private void ShowShortcuts()
     {
-        string indent = new(' ', 10);
+        String indent = new(' ', 10);
         StringBuilder builder = new();
-        builder.AppendLine("Available shortcuts:");
+        _ = builder.AppendLine("Available shortcuts:");
         foreach (var (key, description) in _shortcutManager.GetAllShortcuts())
         {
-            builder.AppendLine($"{indent}Ctrl+{key}".PadRight(15) + $"→ {description}");
+            _ = builder.AppendLine($"{indent}Ctrl+{key}".PadRight(15) + $"→ {description}");
         }
         AppConfig.Logger.Info(builder.ToString());
     }
@@ -205,42 +180,6 @@ internal sealed class Terminal
     /// <param name="key">Phím console (ConsoleKey)</param>
     /// <param name="action">Hành động thực thi khi nhấn phím</param>
     /// <param name="description">Mô tả chức năng phím tắt</param>
-    public void SetShortcut(ConsoleKey key, Action action, string description)
+    public void SetShortcut(ConsoleKey key, Action action, String description)
         => _shortcutManager.AddOrUpdateShortcut(key, action, description);
-
-    private void HandleCommand(string input)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return;
-
-        string command = input.Trim().ToLowerInvariant();
-
-        switch (command)
-        {
-            case "exit":
-            case "quit":
-                AppConfig.Logger.Info("Command received: exit");
-                _cTokenSrc.Cancel();
-                ExitEvent.Set();
-                Environment.Exit(0);
-                break;
-
-            case "status":
-                AppConfig.Logger.Info("Command: status");
-                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.S);
-                break;
-
-            case "run":
-                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.R);
-                break;
-
-            case "stop":
-                _shortcutManager.TryExecuteShortcut(ConsoleModifiers.Control, ConsoleKey.P);
-                break;
-
-            default:
-                AppConfig.Logger.Warn($"Unknown command: {command}");
-                break;
-        }
-    }
 }

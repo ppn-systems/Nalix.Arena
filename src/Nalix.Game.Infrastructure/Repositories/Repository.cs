@@ -24,39 +24,44 @@ public class Repository<T>(GameDbContext context) : IRepository<T>, IRepositoryA
     // Synchronous Methods
     // ================================
 
-    public IEnumerable<T> GetAll(int pageNumber = 1, int pageSize = 10)
+    public IEnumerable<T> GetAll(Int32 pageNumber = 1, Int32 pageSize = 10)
         => [.. _dbSet.AsNoTracking()
                  .Skip((pageNumber - 1) * pageSize)
                  .Take(pageSize)];
 
-    public int Count() => _dbSet.Count();
+    public Int32 Count() => _dbSet.Count();
 
-    public bool Exists(int id) => _dbSet.Find(id) != null;
+    public Boolean Exists(Int32 id) => _dbSet.Find(id) != null;
 
-    public T GetFirstOrDefault(Expression<Func<T, bool>> predicate) => _dbSet.FirstOrDefault(predicate);
+    public T GetFirstOrDefault(Expression<Func<T, Boolean>> predicate) => _dbSet.FirstOrDefault(predicate);
 
-    public bool Any(Expression<Func<T, bool>> predicate) => _dbSet.Any(predicate);
+    public Boolean Any(Expression<Func<T, Boolean>> predicate) => _dbSet.Any(predicate);
 
-    public T GetById(int id) => _dbSet.Find(id);
+    public T GetById(Int32 id) => _dbSet.Find(id);
 
     public IEnumerable<T> Find(
-        Expression<Func<T, bool>> predicate,
-        int pageNumber = 1, int pageSize = 10)
+        Expression<Func<T, Boolean>> predicate,
+        Int32 pageNumber = 1, Int32 pageSize = 10)
         => [.. _dbSet.AsNoTracking()
                  .Where(predicate)
                  .Skip((pageNumber - 1) * pageSize)
                  .Take(pageSize)];
 
-    public IEnumerable<T> Get(Expression<Func<T, bool>> filter = null,
+    public IEnumerable<T> Get(Expression<Func<T, Boolean>> filter = null,
                               Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                              string includeProperties = "",
-                              int pageNumber = 1, int pageSize = 10)
+                              String includeProperties = "",
+                              Int32 pageNumber = 1, Int32 pageSize = 10)
     {
         var query = _dbSet.AsQueryable();
-        if (filter is not null) query = query.Where(filter);
+        if (filter is not null)
+        {
+            query = query.Where(filter);
+        }
 
         foreach (var prop in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
             query = query.Include(prop.Trim());
+        }
 
         query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
         return orderBy is not null ? [.. orderBy(query)] : query.ToList();
@@ -70,7 +75,7 @@ public class Repository<T>(GameDbContext context) : IRepository<T>, IRepositoryA
 
     public void UpdateRange(IEnumerable<T> entities) => _dbSet.UpdateRange(entities);
 
-    public void Delete(int id) => _dbSet.Remove(_dbSet.Find(id)!);
+    public void Delete(Int32 id) => _dbSet.Remove(_dbSet.Find(id)!);
 
     public void Delete(T entity) => _dbSet.Remove(entity);
 
@@ -80,45 +85,50 @@ public class Repository<T>(GameDbContext context) : IRepository<T>, IRepositoryA
 
     public IQueryable<T> AsQueryable() => _dbSet.AsQueryable();
 
-    public int SaveChanges() => _context.SaveChanges();
+    public Int32 SaveChanges() => _context.SaveChanges();
 
     // ================================
     // Asynchronous Methods
     // ================================
 
-    public async Task<IEnumerable<T>> GetAllAsync(int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> GetAllAsync(Int32 pageNumber = 1, Int32 pageSize = 10, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking()
                        .Skip((pageNumber - 1) * pageSize)
                        .Take(pageSize)
                        .ToListAsync(cancellationToken);
 
-    public async Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public async Task<Int32> CountAsync(CancellationToken cancellationToken = default)
         => await _dbSet.CountAsync(cancellationToken);
 
-    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+    public async Task<Boolean> AnyAsync(Expression<Func<T, Boolean>> predicate, CancellationToken cancellationToken = default)
         => await _dbSet.AnyAsync(predicate, cancellationToken);
 
-    public async Task<T> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<T> GetByIdAsync(Int32 id, CancellationToken cancellationToken = default)
         => await _dbSet.FindAsync([id], cancellationToken);
 
-    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, int pageNumber = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, Boolean>> predicate, Int32 pageNumber = 1, Int32 pageSize = 10, CancellationToken cancellationToken = default)
         => await _dbSet.AsNoTracking()
                        .Where(predicate)
                        .Skip((pageNumber - 1) * pageSize)
                        .Take(pageSize)
                        .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, bool>> filter = null,
+    public async Task<IEnumerable<T>> GetAsync(Expression<Func<T, Boolean>> filter = null,
                                                Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-                                               string includeProperties = "",
-                                               int pageNumber = 1, int pageSize = 10,
+                                               String includeProperties = "",
+                                               Int32 pageNumber = 1, Int32 pageSize = 10,
                                                CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsQueryable();
-        if (filter is not null) query = query.Where(filter);
+        if (filter is not null)
+        {
+            query = query.Where(filter);
+        }
 
         foreach (var prop in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
             query = query.Include(prop.Trim());
+        }
 
         query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
         return orderBy is not null ? await orderBy(query).ToListAsync(cancellationToken)
@@ -131,17 +141,17 @@ public class Repository<T>(GameDbContext context) : IRepository<T>, IRepositoryA
     public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         => await _dbSet.AddRangeAsync(entities, cancellationToken);
 
-    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(Int32 id, CancellationToken cancellationToken = default)
         => _dbSet.Remove(await _dbSet.FindAsync([id], cancellationToken)!);
 
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default)
         => await _context.SaveChangesAsync(cancellationToken);
 
-    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Boolean> ExistsAsync(Int32 id, CancellationToken cancellationToken = default)
         => await _dbSet.FindAsync([id], cancellationToken) != null;
 
     public async Task<T> GetFirstOrDefaultAsync(
-        Expression<Func<T, bool>> predicate,
+        Expression<Func<T, Boolean>> predicate,
         CancellationToken cancellationToken = default)
         => await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
 }

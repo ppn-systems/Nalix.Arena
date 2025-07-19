@@ -8,27 +8,27 @@ namespace Nalix.Game.Domain.Models.Items;
 /// <summary>
 /// Đại diện cho một vật phẩm trong trò chơi, bao gồm thông tin giá cả, số lượng và các tùy chọn bổ sung.
 /// </summary>
-public sealed class Item : NamedEntity<ushort>
+public sealed class Item : NamedEntity<System.UInt16>
 {
     /// <summary>
     /// Lấy hoặc đặt chỉ số giao diện người dùng (UI) của vật phẩm.
     /// </summary>
-    public int IndexUI { get; set; }
+    public System.Int32 IndexUI { get; set; }
 
     /// <summary>
     /// Lấy hoặc đặt giá mua vật phẩm bằng vàng.
     /// </summary>
-    public uint Buy { get; set; } = 0;
+    public System.UInt32 Buy { get; set; } = 0;
 
     /// <summary>
     /// Lấy hoặc đặt giá bán vật phẩm bằng vàng.
     /// </summary>
-    public uint Sale { get; set; } = 1;
+    public System.UInt32 Sale { get; set; } = 1;
 
     /// <summary>
     /// Lấy hoặc đặt số lượng vật phẩm.
     /// </summary>
-    public uint Quantity { get; set; } = 1;
+    public System.UInt32 Quantity { get; set; } = 1;
 
     /// <summary>
     /// Lấy hoặc đặt danh sách các tùy chọn bổ sung của vật phẩm.
@@ -44,7 +44,7 @@ public sealed class Item : NamedEntity<ushort>
     /// <example>
     /// Ví dụ: Nếu <paramref name="id"/> là 1 và tùy chọn có <see cref="OptionItem.Param"/> là 10, hàm trả về 10.
     /// </example>
-    public int GetParamOption(int id) =>
+    public System.Int32 GetParamOption(System.Int32 id) =>
         Options.FirstOrDefault(op => op.Id == id)?.Param ?? 0;
 
     /// <summary>
@@ -55,6 +55,6 @@ public sealed class Item : NamedEntity<ushort>
     /// <example>
     /// Ví dụ: Trả về true nếu vật phẩm có tùy chọn với <paramref name="id"/> là 1.
     /// </example>
-    public bool IsHaveOption(int id)
+    public System.Boolean IsHaveOption(System.Int32 id)
         => Options.FirstOrDefault(op => op.Id == id) != null;
 }

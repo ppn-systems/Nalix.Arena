@@ -6,9 +6,9 @@
 /// </summary>
 internal static class CommandOpcodes
 {
-    public const ushort Handshake /**/ = (ushort)Command.Handshake;
-    public const ushort Login /*    */ = (ushort)Command.Login;
-    public const ushort Logout /*   */ = (ushort)Command.Logout;
-    public const ushort Register /* */ = (ushort)Command.Register;
-    public const ushort ChangePassword = (ushort)Command.ChangePassword;
+    public const System.UInt16 Handshake /**/ = (System.UInt16)Command.Handshake;
+    public const System.UInt16 Login /*    */ = (System.UInt16)Command.Login;
+    public const System.UInt16 Logout /*   */ = (System.UInt16)Command.Logout;
+    public const System.UInt16 Register /* */ = (System.UInt16)Command.Register;
+    public const System.UInt16 ChangePassword = (System.UInt16)Command.ChangePassword;
 }

@@ -17,12 +17,12 @@ public class PasswordChange
     /// Thuộc tính này được khởi tạo mặc định là chuỗi rỗng để tránh giá trị null.
     /// Chỉ có thể được thiết lập thông qua setter private để đảm bảo tính đóng gói.
     /// </summary>
-    public string OldPassword { get; private set; } = string.Empty;
+    public System.String OldPassword { get; private set; } = System.String.Empty;
 
     /// <summary>
     /// Mật khẩu mới mà người dùng muốn thiết lập.
     /// Thuộc tính này được khởi tạo mặc định là chuỗi rỗng để tránh giá trị null.
     /// Chỉ có thể được thiết lập thông qua setter private để đảm bảo tính đóng gói.
     /// </summary>
-    public string NewPassword { get; private set; } = string.Empty;
+    public System.String NewPassword { get; private set; } = System.String.Empty;
 }

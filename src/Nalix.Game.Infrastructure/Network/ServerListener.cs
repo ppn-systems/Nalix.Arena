@@ -27,7 +27,7 @@ public sealed class ServerListener : Listener
     /// Cập nhật thời gian hệ thống dựa trên số mili-giây đã trôi qua.
     /// </summary>
     /// <param name="milliseconds">Số mili-giây cần cập nhật.</param>
-    public override void SynchronizeTime(long milliseconds)
+    public override void SynchronizeTime(System.Int64 milliseconds)
     {
     }
 }

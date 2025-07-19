@@ -1,5 +1,4 @@
 ﻿using Nalix.Game.Domain.Entities;
-using Nalix.Shared.Time;
 
 namespace Nalix.Game.Domain.Models.Items;
 
@@ -11,27 +10,27 @@ public sealed class ItemMap
     /// <summary>
     /// ID duy nhất của vật phẩm trên bản đồ.
     /// </summary>
-    public int Id { get; set; }
+    public System.Int32 Id { get; set; }
 
     /// <summary>
     /// ID của người chơi sở hữu vật phẩm.
     /// </summary>
-    public int PlayerId { get; set; }
+    public System.Int32 PlayerId { get; set; }
 
     /// <summary>
     /// Bán kính tương tác của vật phẩm.
     /// </summary>
-    public byte Radius { get; set; }
+    public System.Byte Radius { get; set; }
 
     /// <summary>
     /// Thời gian còn lại trước khi vật phẩm biến mất.
     /// </summary>
-    public long LeftTime { get; set; }
+    public System.Int64 LeftTime { get; set; }
 
     /// <summary>
     /// Kiểm tra xem vật phẩm đã hết hạn hay chưa.
     /// </summary>
-    public bool IsExpired => Clock.UnixMillisecondsNow() > LeftTime;
+    public System.Boolean IsExpired => Clock.UnixMillisecondsNow() > LeftTime;
 
     /// <summary>
     /// Thông tin của vật phẩm.

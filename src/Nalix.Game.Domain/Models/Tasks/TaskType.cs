@@ -3,7 +3,7 @@
 /// <summary>
 /// Phân loại các loại nhiệm vụ trong game.
 /// </summary>
-public enum TaskType : byte
+public enum TaskType : System.Byte
 {
     /// <summary>
     /// Giết một hoặc nhiều quái vật cụ thể.

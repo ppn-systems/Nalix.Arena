@@ -12,27 +12,27 @@ namespace Nalix.Game.Domain.Models.Maps;
 /// <summary>
 /// Lớp đại diện cho một bản đồ trong game, triển khai giao diện <see cref="IMap"/>.
 /// </summary>
-public class Map : NamedEntity<uint>, IMap
+public class Map : NamedEntity<UInt32>, IMap
 {
     /// <summary>
     /// Thời gian liên quan đến bản đồ (có thể là thời gian tạo hoặc cập nhật, tính bằng Unix milliseconds).
     /// </summary>
-    public long TimeMap { get; set; }
+    public Int64 TimeMap { get; set; }
 
     /// <summary>
     /// Trạng thái hoạt động của bản đồ (đang chạy hay không).
     /// </summary>
-    public bool IsRunning { get; set; }
+    public Boolean IsRunning { get; set; }
 
     /// <summary>
     /// Số lượng vùng (zone) trong bản đồ.
     /// </summary>
-    public byte ZoneCount { get; set; }
+    public Byte ZoneCount { get; set; }
 
     /// <summary>
     /// Số lượng người chơi tối đa được phép trên bản đồ.
     /// </summary>
-    public byte MaxPlayers { get; set; }
+    public Byte MaxPlayers { get; set; }
 
     /// <summary>
     /// Tác vụ xử lý các vùng trong bản đồ.
@@ -84,7 +84,7 @@ public class Map : NamedEntity<uint>, IMap
         "Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>")]
-    public Map(uint id, TileMap tileMap)
+    public Map(UInt32 id, TileMap tileMap)
     {
         Id = id;
         Zones = [];
@@ -98,7 +98,7 @@ public class Map : NamedEntity<uint>, IMap
     /// </summary>
     public void SetZone()
     {
-        for (uint i = 0; i < ZoneCount; i++)
+        for (UInt32 i = 0; i < ZoneCount; i++)
         {
             Zones.Add(new Zone(i, this));
         }
@@ -108,7 +108,7 @@ public class Map : NamedEntity<uint>, IMap
     /// Cập nhật trạng thái của bản đồ dựa trên thời gian hiện tại.
     /// </summary>
     /// <param name="time">Thời gian hiện tại (tính bằng Unix milliseconds).</param>
-    public virtual void Update(long time)
+    public virtual void Update(Int64 time)
     {
     }
 

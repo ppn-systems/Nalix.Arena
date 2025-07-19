@@ -12,5 +12,5 @@ public abstract class NamedEntity<TId>
     /// <summary>
     /// Tên của thực thể.
     /// </summary>
-    public string Name { get; set; }
+    public System.String Name { get; set; }
 }

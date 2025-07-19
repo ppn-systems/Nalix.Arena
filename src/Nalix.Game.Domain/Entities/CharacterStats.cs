@@ -8,25 +8,25 @@ public sealed class CharacterStats
     /// <summary>
     /// Sức tấn công (Damage).
     /// </summary>
-    public long Attack { get; set; }
+    public System.Int64 Attack { get; set; }
 
     /// <summary>
     /// Máu tối đa (HP).
     /// </summary>
-    public long Health { get; set; }
+    public System.Int64 Health { get; set; }
 
     /// <summary>
     /// Năng lượng tối đa (Energy).
     /// </summary>
-    public long Energy { get; set; }
+    public System.Int64 Energy { get; set; }
 
     /// <summary>
     /// Phòng thủ.
     /// </summary>
-    public long Defense { get; set; }
+    public System.Int64 Defense { get; set; }
 
     /// <summary>
     /// Tỉ lệ chí mạng (%).
     /// </summary>
-    public float CriticalRate { get; set; }
+    public System.Single CriticalRate { get; set; }
 }

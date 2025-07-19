@@ -12,17 +12,17 @@ public interface ITask
     /// <summary>
     /// Mã định danh duy nhất của nhiệm vụ.
     /// </summary>
-    ushort Id { get; set; }
+    System.UInt16 Id { get; set; }
 
     /// <summary>
     /// Số lượng cần hoàn thành cho nhiệm vụ.
     /// </summary>
-    ushort Count { get; set; }
+    System.UInt16 Count { get; set; }
 
     /// <summary>
     /// Tên của nhiệm vụ.
     /// </summary>
-    string Name { get; set; }
+    System.String Name { get; set; }
 
     /// <summary>
     /// Phần thưởng nhận được khi hoàn thành nhiệm vụ.
@@ -37,5 +37,5 @@ public interface ITask
     /// <summary>
     /// Danh sách mô tả chi tiết về nhiệm vụ.
     /// </summary>
-    List<string> Description { get; set; }
+    List<System.String> Description { get; set; }
 }

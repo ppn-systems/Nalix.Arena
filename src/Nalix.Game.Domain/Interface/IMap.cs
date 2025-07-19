@@ -14,32 +14,32 @@ public interface IMap
     /// <summary>
     /// Mã định danh duy nhất của bản đồ.
     /// </summary>
-    uint Id { get; }
+    System.UInt32 Id { get; }
 
     /// <summary>
     /// Tên của bản đồ.
     /// </summary>
-    string Name { get; set; }
+    System.String Name { get; set; }
 
     /// <summary>
     /// Thời gian liên quan đến bản đồ (có thể là thời gian tạo hoặc cập nhật, tính bằng Unix milliseconds).
     /// </summary>
-    long TimeMap { get; set; }
+    System.Int64 TimeMap { get; set; }
 
     /// <summary>
     /// Số lượng vùng (zone) trong bản đồ.
     /// </summary>
-    byte ZoneCount { get; set; }
+    System.Byte ZoneCount { get; set; }
 
     /// <summary>
     /// Trạng thái hoạt động của bản đồ (đang chạy hay không).
     /// </summary>
-    bool IsRunning { get; set; }
+    System.Boolean IsRunning { get; set; }
 
     /// <summary>
     /// Số lượng người chơi tối đa được phép trên bản đồ.
     /// </summary>
-    byte MaxPlayers { get; set; }
+    System.Byte MaxPlayers { get; set; }
 
     /// <summary>
     /// Bản đồ ô (tile map) chứa thông tin về cấu trúc ô của bản đồ.

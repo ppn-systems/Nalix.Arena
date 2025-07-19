@@ -3,7 +3,7 @@ using Nalix.Common.Constants;
 using Nalix.Common.Package;
 using Nalix.Common.Package.Attributes;
 using Nalix.Common.Package.Enums;
-using Nalix.Common.Security;
+using Nalix.Common.Security.Types;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Game.Application.Caching;
@@ -69,11 +69,12 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
         }
 
         // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server
-        (System.Byte[] privateKey, System.Byte[] publicKey) = X25519.GenerateKeyPair();
+        X25519.GenerateKeyPair(out System.Byte[] privateKey, out System.Byte[] publicKey);
 
         // Thực hiện trao đổi khóa X25519 để tạo bí mật chung
         // Kết hợp khóa riêng của server và khóa công khai của client để tạo bí mật chung
-        System.Byte[] secret = X25519.ComputeSharedSecret(privateKey, packet.Payload.Span);
+        System.Span<System.Byte> secret = stackalloc System.Byte[32];
+        X25519.ComputeSharedSecret(privateKey, packet.Payload.Span, secret);
 
         // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
         connection.EncryptionKey = SHA256.HashData(secret);

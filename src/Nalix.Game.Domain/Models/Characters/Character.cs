@@ -12,7 +12,7 @@ public sealed class Character : ICombatant
     /// <summary>
     /// ID của bản đồ mà nhân vật đang ở.
     /// </summary>
-    public int MapId { get; set; }
+    public System.Int32 MapId { get; set; }
 
     /// <summary>
     /// Vị trí hiện tại của nhân vật trên bản đồ.
@@ -44,16 +44,16 @@ public sealed class Character : ICombatant
     /// <summary>
     /// Tính sát thương gây ra cho mục tiêu dựa vào chỉ số tấn công và giáp của mục tiêu.
     /// </summary>
-    public long CalculateDamage(ICombatant target)
+    public System.Int64 CalculateDamage(ICombatant target)
     {
-        long targetArmor = 0;
+        System.Int64 targetArmor = 0;
 
         if (target is ICombatant combatant)
         {
             targetArmor = combatant.CharacterStats.Defense;
         }
 
-        long damage = CharacterStats.Attack - targetArmor;
+        System.Int64 damage = CharacterStats.Attack - targetArmor;
 
         // Đảm bảo sát thương tối thiểu là 1
         return damage < 1 ? 1 : damage;
@@ -62,7 +62,7 @@ public sealed class Character : ICombatant
     /// <summary>
     /// Nhận sát thương từ kẻ thù và giảm máu tương ứng.
     /// </summary>
-    public void TakeDamage(long amount)
+    public void TakeDamage(System.Int64 amount)
     {
         CharacterStats.Health -= amount;
 

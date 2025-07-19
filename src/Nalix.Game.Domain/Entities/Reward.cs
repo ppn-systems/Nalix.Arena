@@ -11,17 +11,17 @@ public class Reward
     /// <summary>
     /// Lượng kinh nghiệm (EXP) nhận được từ phần thưởng.
     /// </summary>
-    public uint Experience { get; set; }
+    public System.UInt32 Experience { get; set; }
 
     /// <summary>
     /// Lượng vàng nhận được từ phần thưởng.
     /// </summary>
-    public uint Gold { get; set; }
+    public System.UInt32 Gold { get; set; }
 
     /// <summary>
     /// Lượng kim cương nhận được từ phần thưởng.
     /// </summary>
-    public uint Gems { get; set; }
+    public System.UInt32 Gems { get; set; }
 
     /// <summary>
     /// Danh sách các vật phẩm nhận được từ phần thưởng.

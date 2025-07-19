@@ -3,7 +3,7 @@
 /// <summary>
 /// Xác định trạng thái của NPC trong trò chơi.
 /// </summary>
-public enum NpcState : byte
+public enum NpcState : System.Byte
 {
     /// <summary>
     /// NPC đang đứng yên, không thực hiện hành động nào.

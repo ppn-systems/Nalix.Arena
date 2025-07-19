@@ -3,7 +3,7 @@
 /// <summary>
 /// Xác định loại của NPC trong trò chơi.
 /// </summary>
-public enum NpcType : byte
+public enum NpcType : System.Byte
 {
     /// <summary>
     /// NPC thông thường, không có chức năng đặc biệt.
