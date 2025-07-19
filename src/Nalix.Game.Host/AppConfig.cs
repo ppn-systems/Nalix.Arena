@@ -77,7 +77,7 @@ internal static class AppConfig
     public static ServerListener InitializeServer()
     {
         return new ServerListener(
-               new ServerProtocol(new PacketDispatch<Packet>(cfg => cfg
+               new ServerProtocol(new PacketDispatchChannel<Packet>(cfg => cfg
                    .WithLogging(Logger)
                    .WithErrorHandling((exception, command) =>
                         Logger.Error($"Error handling command: {command}", exception))

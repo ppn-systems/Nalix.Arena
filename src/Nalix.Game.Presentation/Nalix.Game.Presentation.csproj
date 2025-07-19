@@ -4,6 +4,8 @@
 		<TargetFramework>net9.0</TargetFramework>
 
 		<StartupObject>Nalix.Game.Presentation.Program</StartupObject>
+
+		<AssemblyName>Frontend</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>
