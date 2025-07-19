@@ -7,7 +7,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Nalix.SDK" Version="2.1.7" />
 		<PackageReference Include="Nalix.Graphics" Version="2.1.7" />
+
 		<ProjectReference Include="..\Nalix.Game.Shared\Nalix.Game.Shared.csproj" />
 	</ItemGroup>
 

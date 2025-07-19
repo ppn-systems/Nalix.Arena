@@ -17,11 +17,7 @@ public sealed class ServerListener : Listener
     /// <param name="bufferPool">Bộ nhớ đệm để quản lý dữ liệu mạng.</param>
     /// <param name="logger">Trình ghi log cho các sự kiện hệ thống.</param>
     public ServerListener(IProtocol protocol, IBufferPool bufferPool, ILogger logger)
-        : base(protocol, bufferPool, logger)
-    {
-        IsUdpEnabled = true; // Bật UDP cho listener
-        IsTimeSyncEnabled = true; // Bật đồng bộ thời gian
-    }
+        : base(protocol, bufferPool, logger) => IsTimeSyncEnabled = true; // Bật đồng bộ thời gian
 
     /// <summary>
     /// Cập nhật thời gian hệ thống dựa trên số mili-giây đã trôi qua.

@@ -1,4 +1,5 @@
-﻿using Nalix.Game.Domain.Entities;
+﻿using Nalix.Framework.Time;
+using Nalix.Game.Domain.Entities;
 
 namespace Nalix.Game.Domain.Models.Items;
 

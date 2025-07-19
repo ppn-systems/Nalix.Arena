@@ -5,6 +5,7 @@ using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using Nalix.Logging.Extensions;
 using Nalix.Network.Package;
+using Nalix.SDK.Remote;
 using SFML.Graphics;
 
 namespace Nalix.Game.Presentation.Scenes.Systems;
@@ -86,7 +87,7 @@ public class NetworkScene : Scene
                 case ConnectState.Trying:
                     try
                     {
-                        NetClient<Packet>.Instance.Connect(20000);
+                        RemoteStreamClient<Packet>.Instance.Connect(20000);
                         "Network attempt #{0} successful.".Info(_attempt.ToString());
 
                         _state = ConnectState.Success;
