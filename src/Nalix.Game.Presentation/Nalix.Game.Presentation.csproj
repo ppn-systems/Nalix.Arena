@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
+		<IsTrimmable>true</IsTrimmable>
 		<TargetFramework>net9.0</TargetFramework>
 
 		<StartupObject>Nalix.Game.Presentation.Program</StartupObject>

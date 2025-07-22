@@ -1,5 +1,4 @@
 ﻿using Nalix.Graphics;
-using Nalix.Graphics.Assets.Manager;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using SFML.Audio;
@@ -161,10 +160,6 @@ public class SettingsScene : Scene
             // Âm thanh click
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
             _sound = new Sound(buffer);
-
-            // Nhạc nền (tạm dừng)
-            MusicManager.Play("assets/sounds/0.wav");
-            MusicManager.Pause();
         }
 
         /// <summary>
