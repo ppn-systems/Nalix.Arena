@@ -1,9 +1,9 @@
-﻿using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Models.Attacks;
-using Nalix.Game.Domain.Models.Combat;
-using Nalix.Game.Domain.Models.Monsters;
+﻿using Nalix.Domain.Entities;
+using Nalix.Domain.Models.Attacks;
+using Nalix.Domain.Models.Combat;
+using Nalix.Domain.Models.Monsters;
 
-namespace Nalix.Game.Domain.Interface;
+namespace Nalix.Domain.Interface;
 
 /// <summary>
 /// Giao diện định nghĩa các thuộc tính và hành vi cơ bản của một quái vật trong game.

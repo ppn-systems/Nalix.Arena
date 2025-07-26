@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Application.Operations;
+﻿namespace Nalix.Application.Operations;
 
 internal class ChatOps
 {

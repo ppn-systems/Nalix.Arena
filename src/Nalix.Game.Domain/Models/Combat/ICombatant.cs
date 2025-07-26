@@ -1,6 +1,6 @@
-﻿using Nalix.Game.Domain.Entities;
+﻿using Nalix.Domain.Entities;
 
-namespace Nalix.Game.Domain.Models.Combat;
+namespace Nalix.Domain.Models.Combat;
 
 /// <summary>
 /// Định nghĩa giao diện cho các thực thể tham gia chiến đấu.

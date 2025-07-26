@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Maps.Items;
+﻿namespace Nalix.Domain.Models.Maps.Items;
 
 /// <summary>
 /// Đại diện cho một cặp khóa-giá trị để xác định hành động trong bản đồ trò chơi.

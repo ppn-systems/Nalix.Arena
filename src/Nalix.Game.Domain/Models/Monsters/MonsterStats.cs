@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Monsters;
+﻿namespace Nalix.Domain.Models.Monsters;
 
 /// <summary>
 /// Chỉ số phi chiến đấu (non-combat) của quái vật.

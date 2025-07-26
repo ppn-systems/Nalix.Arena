@@ -1,6 +1,6 @@
-﻿using Nalix.Game.Domain.Interface;
+﻿using Nalix.Domain.Interface;
 
-namespace Nalix.Game.Domain.Models.Options;
+namespace Nalix.Domain.Models.Options;
 
 public sealed class OptionItem : IOption
 {

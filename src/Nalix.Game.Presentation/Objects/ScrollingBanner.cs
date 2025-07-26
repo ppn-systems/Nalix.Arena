@@ -1,10 +1,11 @@
-﻿using Nalix.Game.Presentation.Enums;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
+using Nalix.Presentation;
+using Nalix.Presentation.Enums;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Game.Presentation.Objects;
+namespace Nalix.Presentation.Objects;
 
 /// <summary>
 /// Đại diện cho một banner cuộn liên tục từ phải sang trái trên màn hình.
@@ -31,8 +32,8 @@ public class ScrollingBanner : RenderObject
     /// <param name="speed">Tốc độ cuộn tính bằng pixel mỗi giây.</param>
     public ScrollingBanner(System.String message, System.Single speed = 100f)
     {
-        base.SetZIndex(ZIndex.Banner.ToInt());
-        base.Reveal();
+        SetZIndex(ZIndex.Banner.ToInt());
+        Reveal();
 
         _speed = speed;
         Font font = Assets.Font.Load("1");

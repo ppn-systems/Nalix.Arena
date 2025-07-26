@@ -1,14 +1,15 @@
-﻿using Nalix.Game.Presentation.Enums;
-using Nalix.Game.Presentation.Objects;
+﻿using Nalix.Game.Presentation.Objects;
 using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
 using Nalix.Logging.Extensions;
 using Nalix.Network.Package;
+using Nalix.Presentation.Enums;
+using Nalix.Presentation.Objects;
 using Nalix.SDK.Remote;
 using SFML.Graphics;
 
-namespace Nalix.Game.Presentation.Scenes.Systems;
+namespace Nalix.Presentation.Scenes.Systems;
 
 /// <summary>
 /// Cảnh chịu trách nhiệm xử lý quá trình kết nối mạng trước khi vào trò chơi chính.
@@ -27,9 +28,9 @@ public class NetworkScene : Scene
     /// </summary>
     protected override void LoadObjects()
     {
-        base.AddObject(new LoadingSpinner());
-        base.AddObject(new NetworkHandler());
-        base.AddObject(new NotificationBox("Connecting to the server...", Side.Top));
+        AddObject(new LoadingSpinner());
+        AddObject(new NetworkHandler());
+        AddObject(new NotificationBox("Connecting to the server...", Side.Top));
     }
 
     /// <summary>

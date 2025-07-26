@@ -1,7 +1,9 @@
 ﻿using Nalix.Common.Logging;
-using Nalix.Game.Host.Assemblies;
 using Nalix.Game.Infrastructure.Database;
 using Nalix.Game.Infrastructure.Network;
+using Nalix.Host.Assemblies;
+using Nalix.Infrastructure.Database;
+using Nalix.Infrastructure.Network;
 using Nalix.Logging;
 using Nalix.Network.Dispatch;
 using Nalix.Network.Package;
@@ -10,7 +12,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nalix.Game.Host;
+namespace Nalix.Host;
 
 internal static class AppConfig
 {

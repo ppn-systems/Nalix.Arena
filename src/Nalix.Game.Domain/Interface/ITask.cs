@@ -1,8 +1,8 @@
-﻿using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Models.Tasks;
+﻿using Nalix.Domain.Entities;
+using Nalix.Domain.Models.Tasks;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Interface;
+namespace Nalix.Domain.Interface;
 
 /// <summary>
 /// Giao diện định nghĩa một nhiệm vụ trong game.

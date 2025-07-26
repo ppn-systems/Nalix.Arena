@@ -1,7 +1,7 @@
-﻿using Nalix.Framework.Time;
-using Nalix.Game.Domain.Entities;
+﻿using Nalix.Domain.Entities;
+using Nalix.Framework.Time;
 
-namespace Nalix.Game.Domain.Models.Items;
+namespace Nalix.Domain.Models.Items;
 
 /// <summary>
 /// Đại diện cho một bản đồ vật phẩm trong trò chơi.

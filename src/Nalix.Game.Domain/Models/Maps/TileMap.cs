@@ -1,6 +1,6 @@
-﻿using Nalix.Game.Domain.Entities;
+﻿using Nalix.Domain.Entities;
 
-namespace Nalix.Game.Domain.Models.Maps;
+namespace Nalix.Domain.Models.Maps;
 
 /// <summary>
 /// Lớp đại diện cho một bản đồ ô (tile map) trong game, chứa thông tin về kích thước, ô và nền.

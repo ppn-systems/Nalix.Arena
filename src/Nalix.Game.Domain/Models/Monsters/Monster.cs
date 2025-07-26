@@ -1,12 +1,12 @@
-﻿using Nalix.Framework.Time;
-using Nalix.Game.Domain.Common;
-using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Interface;
-using Nalix.Game.Domain.Models.Attacks;
-using Nalix.Game.Domain.Models.Combat;
+﻿using Nalix.Domain.Common;
+using Nalix.Domain.Entities;
+using Nalix.Domain.Interface;
+using Nalix.Domain.Models.Attacks;
+using Nalix.Domain.Models.Combat;
+using Nalix.Framework.Time;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Models.Monsters;
+namespace Nalix.Domain.Models.Monsters;
 
 /// <summary>
 /// Lớp trừu tượng đại diện cho một quái vật trong game, kế thừa từ <see cref="NamedEntity{TId}"/> và

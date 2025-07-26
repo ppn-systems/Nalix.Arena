@@ -1,6 +1,6 @@
 ﻿using Nalix.Graphics.Assets;
 
-namespace Nalix.Game.Presentation;
+namespace Nalix.Presentation;
 
 /// <summary>
 /// Cung cấp quyền truy cập tập trung đến các bộ tải tài nguyên được sử dụng trong lớp trình bày của trò chơi.

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Tasks;
+﻿namespace Nalix.Domain.Models.Tasks;
 
 /// <summary>
 /// Phân loại các loại nhiệm vụ trong game.

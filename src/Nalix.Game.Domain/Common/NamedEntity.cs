@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Common;
+﻿namespace Nalix.Domain.Common;
 
 /// <summary>
 /// Lớp trừu tượng cơ bản đại diện cho một thực thể có mã định danh và tên.

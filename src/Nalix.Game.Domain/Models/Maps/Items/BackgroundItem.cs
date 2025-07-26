@@ -1,6 +1,6 @@
-﻿using Nalix.Game.Domain.Entities;
+﻿using Nalix.Domain.Entities;
 
-namespace Nalix.Game.Domain.Models.Maps.Items;
+namespace Nalix.Domain.Models.Maps.Items;
 
 /// <summary>
 /// Lớp đại diện cho một vật phẩm nền (background item) trên bản đồ trong game.

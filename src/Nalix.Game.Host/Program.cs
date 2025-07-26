@@ -1,6 +1,7 @@
 ﻿using Nalix.Game.Host.Terminals;
+using Nalix.Host.Terminals;
 
-namespace Nalix.Game.Host;
+namespace Nalix.Host;
 
 internal class Program
 {

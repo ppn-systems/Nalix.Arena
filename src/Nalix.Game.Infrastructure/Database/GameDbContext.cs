@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nalix.Game.Shared.Security;
 
-namespace Nalix.Game.Infrastructure.Database;
+namespace Nalix.Infrastructure.Database;
 
 public class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(options), IGameDbContext
 {

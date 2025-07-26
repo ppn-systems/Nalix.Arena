@@ -1,9 +1,9 @@
-﻿using Nalix.Game.Domain.Common;
-using Nalix.Game.Domain.Models.Options;
+﻿using Nalix.Domain.Common;
+using Nalix.Domain.Models.Options;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nalix.Game.Domain.Models.Items;
+namespace Nalix.Domain.Models.Items;
 
 /// <summary>
 /// Đại diện cho một vật phẩm trong trò chơi, bao gồm thông tin giá cả, số lượng và các tùy chọn bổ sung.

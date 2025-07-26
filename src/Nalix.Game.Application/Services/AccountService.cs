@@ -1,18 +1,18 @@
-﻿using Nalix.Common.Connection;
+﻿using Nalix.Application.Caching;
+using Nalix.Common.Connection;
 using Nalix.Common.Package;
 using Nalix.Common.Package.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.Cryptography.Security;
-using Nalix.Game.Application.Caching;
-using Nalix.Game.Infrastructure.Database;
-using Nalix.Game.Infrastructure.Repositories;
 using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Security;
+using Nalix.Infrastructure.Database;
+using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Serialization;
 
-namespace Nalix.Game.Application.Services;
+namespace Nalix.Application.Services;
 
 [PacketController]
 public class AccountService<TPacket>(GameDbContext context) where TPacket : IPacket, IPacketFactory<TPacket>

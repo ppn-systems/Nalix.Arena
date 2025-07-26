@@ -3,7 +3,7 @@ using Nalix.Common.Logging;
 using Nalix.Network.Listeners;
 using Nalix.Network.Protocols;
 
-namespace Nalix.Game.Infrastructure.Network;
+namespace Nalix.Infrastructure.Network;
 
 /// <summary>
 /// Lớp `ServerListener` quản lý việc lắng nghe các kết nối mạng.

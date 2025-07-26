@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nalix.Game.Domain.Models.Items;
+namespace Nalix.Domain.Models.Items;
 
 public sealed class ItemContainer
 {

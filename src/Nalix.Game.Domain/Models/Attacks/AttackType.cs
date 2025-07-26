@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Attacks;
+﻿namespace Nalix.Domain.Models.Attacks;
 
 public enum AttackType : System.Byte
 {

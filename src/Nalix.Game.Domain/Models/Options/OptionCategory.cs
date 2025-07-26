@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Options;
+﻿namespace Nalix.Domain.Models.Options;
 
 /// <summary>
 /// Danh mục các loại tùy chọn trong game.

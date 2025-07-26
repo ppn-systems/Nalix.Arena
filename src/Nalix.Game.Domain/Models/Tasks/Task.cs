@@ -1,9 +1,9 @@
-﻿using Nalix.Game.Domain.Common;
-using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Interface;
+﻿using Nalix.Domain.Common;
+using Nalix.Domain.Entities;
+using Nalix.Domain.Interface;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Models.Tasks;
+namespace Nalix.Domain.Models.Tasks;
 
 /// <summary>
 /// Lớp đại diện cho một nhiệm vụ trong game, triển khai giao diện <see cref="ITask"/>.

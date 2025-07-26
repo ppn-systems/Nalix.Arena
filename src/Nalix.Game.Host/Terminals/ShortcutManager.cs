@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Host.Terminals;
+namespace Nalix.Host.Terminals;
 
 // Responsible for managing shortcuts and executing actions
 public class ShortcutManager

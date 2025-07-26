@@ -1,13 +1,13 @@
-﻿using Nalix.Game.Domain.Common;
-using Nalix.Game.Domain.Interface;
-using Nalix.Game.Domain.Models.Maps.Items;
-using Nalix.Game.Domain.Models.Monsters;
+﻿using Nalix.Domain.Common;
+using Nalix.Domain.Interface;
+using Nalix.Domain.Models.Maps.Items;
+using Nalix.Domain.Models.Monsters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nalix.Game.Domain.Models.Maps;
+namespace Nalix.Domain.Models.Maps;
 
 /// <summary>
 /// Lớp đại diện cho một bản đồ trong game, triển khai giao diện <see cref="IMap"/>.

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Nalix.Host;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Nalix.Game.Host.Terminals;
+namespace Nalix.Host.Terminals;
 
 /// <summary>
 /// Lớp Terminal chịu trách nhiệm quản lý giao tiếp với Console trong ứng dụng Server.

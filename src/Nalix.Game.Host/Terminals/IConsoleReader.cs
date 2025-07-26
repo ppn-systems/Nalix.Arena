@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Host.Terminals;
+﻿namespace Nalix.Host.Terminals;
 
 // Interface to abstract reading console keys (for testability)
 public interface IConsoleReader

@@ -1,4 +1,4 @@
-namespace Nalix.Game.Host.Assemblies;
+namespace Nalix.Host.Assemblies;
 
 /// <summary>
 /// High-performance helper class for retrieving assembly metadata information.

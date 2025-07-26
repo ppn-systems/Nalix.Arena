@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Nalix.Common.Repositories.Async;
 using Nalix.Common.Repositories.Sync;
-using Nalix.Game.Infrastructure.Database;
+using Nalix.Infrastructure.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Nalix.Game.Infrastructure.Repositories;
+namespace Nalix.Infrastructure.Repositories;
 
 /// <summary>
 /// Generic repository implementation using Entity Framework Core.

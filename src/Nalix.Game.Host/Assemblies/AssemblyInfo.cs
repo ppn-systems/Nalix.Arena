@@ -1,4 +1,4 @@
-namespace Nalix.Game.Host.Assemblies;
+namespace Nalix.Host.Assemblies;
 
 /// <summary>
 /// Structure containing comprehensive assembly version information.

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Maps;
+﻿namespace Nalix.Domain.Models.Maps;
 
 /// <summary>
 /// Đại diện cho một điểm waypoint trong bản đồ trò chơi.

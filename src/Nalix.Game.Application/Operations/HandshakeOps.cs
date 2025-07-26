@@ -1,4 +1,5 @@
-﻿using Nalix.Common.Connection;
+﻿using Nalix.Application.Caching;
+using Nalix.Common.Connection;
 using Nalix.Common.Constants;
 using Nalix.Common.Package;
 using Nalix.Common.Package.Attributes;
@@ -6,11 +7,10 @@ using Nalix.Common.Package.Enums;
 using Nalix.Common.Security.Types;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
-using Nalix.Game.Application.Caching;
 using Nalix.Game.Shared.Commands;
 using Nalix.Logging;
 
-namespace Nalix.Game.Application.Operations;
+namespace Nalix.Application.Operations;
 
 /// <summary>
 /// Quản lý quá trình bắt tay bảo mật để thiết lập kết nối mã hóa an toàn với client.

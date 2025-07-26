@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Entities;
+﻿namespace Nalix.Domain.Entities;
 
 /// <summary>
 /// Đại diện cho một vị trí 2D trên bản đồ trò chơi với tọa độ X và Y.
@@ -37,6 +37,6 @@ public struct Position(System.Int16 x, System.Int16 y)
     {
         System.Int32 dx = X - other.X;
         System.Int32 dy = Y - other.Y;
-        return System.Math.Sqrt((dx * dx) + (dy * dy));
+        return System.Math.Sqrt(dx * dx + dy * dy);
     }
 }

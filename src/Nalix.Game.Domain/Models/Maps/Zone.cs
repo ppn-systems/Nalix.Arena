@@ -1,10 +1,10 @@
-﻿using Nalix.Game.Domain.Interface;
-using Nalix.Game.Domain.Models.Characters;
-using Nalix.Game.Domain.Models.Items;
+﻿using Nalix.Domain.Interface;
+using Nalix.Domain.Models.Characters;
+using Nalix.Domain.Models.Items;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Models.Maps;
+namespace Nalix.Domain.Models.Maps;
 
 public sealed class Zone : IZone
 {

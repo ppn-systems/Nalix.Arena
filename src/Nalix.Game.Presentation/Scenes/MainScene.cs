@@ -1,14 +1,15 @@
-﻿using Nalix.Game.Presentation.Objects;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Rendering.Parallax;
 using Nalix.Graphics.Scenes;
+using Nalix.Presentation;
+using Nalix.Presentation.Objects;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Game.Presentation.Scenes;
+namespace Nalix.Presentation.Scenes;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
@@ -25,10 +26,10 @@ internal class MainScene : Scene
     /// </summary>
     protected override void LoadObjects()
     {
-        base.AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
-        base.AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
-        base.AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
-        base.AddObject(new Menu());
+        AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
+        AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
+        AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
+        AddObject(new Menu());
     }
 
     #region Private Class
@@ -43,7 +44,7 @@ internal class MainScene : Scene
 
         public Menu()
         {
-            base.SetZIndex(1); // Ưu tiên vẽ sau nền
+            SetZIndex(1); // Ưu tiên vẽ sau nền
 
             _login = new StretchableButton("Login", 240f);
 
@@ -99,7 +100,7 @@ internal class MainScene : Scene
 
         public ParallaxLayer()
         {
-            base.SetZIndex(1);
+            SetZIndex(1);
 
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
@@ -141,7 +142,7 @@ internal class MainScene : Scene
 
         public SettingIcon()
         {
-            base.SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
+            SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
             // Tải texture biểu tượng thiết lập
             Texture texture = Assets.UiTextures.Load("icons/3");
@@ -196,7 +197,7 @@ internal class MainScene : Scene
 
         public TwelveIcon()
         {
-            base.SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
+            SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
             // Tải texture biểu tượng 12+
             Texture texture = Assets.UiTextures.Load("icons/12+");

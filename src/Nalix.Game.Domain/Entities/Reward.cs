@@ -1,7 +1,7 @@
-﻿using Nalix.Game.Domain.Models.Items;
+﻿using Nalix.Domain.Models.Items;
 using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Entities;
+namespace Nalix.Domain.Entities;
 
 /// <summary>
 /// Lớp đại diện cho phần thưởng nhận được trong game.

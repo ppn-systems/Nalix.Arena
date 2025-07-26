@@ -8,7 +8,7 @@ using System;
 using System.IO;
 using System.Net.NetworkInformation;
 
-namespace Nalix.Game.Infrastructure.Database;
+namespace Nalix.Infrastructure.Database;
 
 public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
 {
@@ -24,7 +24,7 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
             configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
                 .AddEnvironmentVariables()
                 .Build();
         }

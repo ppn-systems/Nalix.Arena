@@ -8,7 +8,7 @@ using Nalix.Network.Protocols;
 using System;
 using System.Threading;
 
-namespace Nalix.Game.Infrastructure.Network;
+namespace Nalix.Infrastructure.Network;
 
 /// <summary>
 /// Lớp `ServerProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.

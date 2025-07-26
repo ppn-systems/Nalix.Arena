@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Models.Items;
+﻿namespace Nalix.Domain.Models.Items;
 
 /// <summary>
 /// Xác định nguồn gốc của vật phẩm khi được rơi.

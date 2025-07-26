@@ -1,12 +1,13 @@
 ﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
 using Nalix.Graphics.Scenes;
+using Nalix.Presentation;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Game.Presentation.Scenes.Systems;
+namespace Nalix.Presentation.Scenes.Systems;
 
 /// <summary>
 /// Cảnh thiết lập trò chơi, nơi người dùng có thể thực hiện các tùy chỉnh.
@@ -25,8 +26,8 @@ public class SettingsScene : Scene
     /// </summary>
     protected override void LoadObjects()
     {
-        base.AddObject(new Background());
-        base.AddObject(new CloseIcon());
+        AddObject(new Background());
+        AddObject(new CloseIcon());
     }
 
     /// <summary>
@@ -114,8 +115,8 @@ public class SettingsScene : Scene
 
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
-            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
 
             _banner = new Sprite(panel)
             {

@@ -4,7 +4,7 @@ using Nalix.Game.Shared.Commands;
 using Nalix.Game.Shared.Messages;
 using Nalix.Shared.Serialization;
 
-namespace Nalix.Game.Application.Caching;
+namespace Nalix.Application.Caching;
 
 public static class PacketCache<TPacket>
     where TPacket : IPacket, IPacketFactory<TPacket>

@@ -1,6 +1,6 @@
 ﻿using Nalix.Common.Connection;
 
-namespace Nalix.Game.Domain.Models.Characters;
+namespace Nalix.Domain.Models.Characters;
 
 /// <summary>
 /// Đại diện cho một người chơi trong trò chơi.

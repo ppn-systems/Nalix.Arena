@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Nalix.Game.Domain.Entities;
+namespace Nalix.Domain.Entities;
 
 /// <summary>
 /// Lớp đại diện cho bảng vật phẩm rơi (loot table) trong game.

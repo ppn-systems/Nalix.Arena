@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Common.Enums;
+﻿namespace Nalix.Domain.Common.Enums;
 
 /// <summary>
 /// Xác định trạng thái của NPC trong trò chơi.

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Host.Terminals;
+﻿namespace Nalix.Host.Terminals;
 
 // Concrete implementation using System.Console
 public class ConsoleReader : IConsoleReader

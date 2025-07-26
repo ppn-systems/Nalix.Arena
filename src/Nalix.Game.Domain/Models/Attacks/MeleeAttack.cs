@@ -1,6 +1,6 @@
-﻿using Nalix.Game.Domain.Models.Combat;
+﻿using Nalix.Domain.Models.Combat;
 
-namespace Nalix.Game.Domain.Models.Attacks;
+namespace Nalix.Domain.Models.Attacks;
 
 public sealed class MeleeAttack : IAttackBehavior
 {

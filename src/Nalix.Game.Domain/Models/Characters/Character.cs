@@ -1,8 +1,8 @@
-﻿using Nalix.Game.Domain.Entities;
-using Nalix.Game.Domain.Models.Combat;
-using Nalix.Game.Domain.Models.Items;
+﻿using Nalix.Domain.Entities;
+using Nalix.Domain.Models.Combat;
+using Nalix.Domain.Models.Items;
 
-namespace Nalix.Game.Domain.Models.Characters;
+namespace Nalix.Domain.Models.Characters;
 
 /// <summary>
 /// Đại diện cho một nhân vật trong trò chơi.

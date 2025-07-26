@@ -1,4 +1,4 @@
-﻿namespace Nalix.Game.Domain.Entities;
+﻿namespace Nalix.Domain.Entities;
 
 /// <summary>
 /// Lớp chứa thông tin về tiền tệ của người chơi.

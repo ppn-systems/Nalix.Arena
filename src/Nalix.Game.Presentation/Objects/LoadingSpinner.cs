@@ -1,10 +1,11 @@
-﻿using Nalix.Game.Presentation.Enums;
-using Nalix.Graphics;
+﻿using Nalix.Graphics;
 using Nalix.Graphics.Rendering.Object;
+using Nalix.Presentation;
+using Nalix.Presentation.Enums;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Game.Presentation.Objects;
+namespace Nalix.Presentation.Objects;
 
 /// <summary>
 /// Một đối tượng có thể hiển thị, thể hiện một vòng quay tải (loading spinner) với nền mờ dần và biểu tượng xoay, thay đổi kích thước.
@@ -32,8 +33,8 @@ public sealed class LoadingSpinner : RenderObject
     /// </summary>
     public LoadingSpinner()
     {
-        base.SetZIndex(ZIndex.Overlay.ToInt()); // Đặt độ ưu tiên vẽ cao nhất để luôn hiển thị trên cùng
-        base.Reveal(); // Bắt đầu hiển thị vòng quay
+        SetZIndex(ZIndex.Overlay.ToInt()); // Đặt độ ưu tiên vẽ cao nhất để luôn hiển thị trên cùng
+        Reveal(); // Bắt đầu hiển thị vòng quay
 
         // Kích thước màn hình
         Vector2f screenSize = new(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y);
@@ -78,7 +79,7 @@ public sealed class LoadingSpinner : RenderObject
         _iconSprite.Rotation = _angle; // Áp dụng góc xoay cho biểu tượng
 
         // Dao động kích thước (sử dụng sóng sin)
-        System.Single scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
+        System.Single scale = BaseScale + System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation;
         _iconSprite.Scale = new Vector2f(scale, scale); // Áp dụng tỷ lệ mới
     }
 
