@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <IsTrimmable>true</IsTrimmable>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+
+	<ItemGroup>
+		<ProjectReference Include="..\Nalix.CrossPlatform\Nalix.CrossPlatform.csproj" />
+		<ProjectReference Include="..\Nalix.Infrastructure\Nalix.Infrastructure.csproj" />
+	</ItemGroup>
+
+</Project>

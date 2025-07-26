@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<IsTrimmable>true</IsTrimmable>
+		<TargetFramework>net9.0</TargetFramework>
+
+		<StartupObject>Nalix.Presentation.Program</StartupObject>
+
+		<AssemblyName>Frontend</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Nalix.SDK" Version="2.1.7" />
+		<PackageReference Include="Nalix.Graphics" Version="2.1.7" />
+
+		<ProjectReference Include="..\Nalix.CrossPlatform\Nalix.CrossPlatform.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\..\assets\**\*.*">
+			<Link>assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+</Project>
