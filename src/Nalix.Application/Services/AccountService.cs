@@ -1,7 +1,7 @@
 ﻿using Nalix.Application.Caching;
 using Nalix.Common.Connection;
-using Nalix.Common.Package;
-using Nalix.Common.Package.Attributes;
+using Nalix.Common.Packets;
+using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.CrossPlatform.Commands;
 using Nalix.CrossPlatform.Security;
@@ -15,7 +15,7 @@ using Nalix.Shared.Serialization;
 namespace Nalix.Application.Services;
 
 [PacketController]
-public class AccountService<TPacket>(GameDbContext context) where TPacket : IPacket, IPacketFactory<TPacket>
+public class AccountService<TPacket>(GameDbContext context) where TPacket : IPacket
 {
     private readonly Repository<Credentials> _accounts = new(context);
 

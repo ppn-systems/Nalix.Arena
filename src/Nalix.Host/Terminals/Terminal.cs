@@ -1,5 +1,4 @@
-﻿using Nalix.Host;
-using System;
+﻿using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -123,19 +122,6 @@ internal sealed class Terminal
             }
             _ = Task.Run(() => AppConfig.Server.StopListening());
         }, "Stop server");
-
-        _shortcutManager.AddOrUpdateShortcut(ConsoleKey.S, () =>
-        {
-            if (AppConfig.Server == null)
-            {
-                AppConfig.Logger.Warn("Server is not initialized.");
-                return;
-            }
-            var snapshot = AppConfig.Server.GetSnapshot();
-            AppConfig.Logger.Info(
-                $"Server status: {(snapshot.IsListening ? "Running" : "Stopped")}" +
-                $"\nAddress: {snapshot.Address} - Port: {snapshot.Port} - Dispose: {snapshot.IsDisposed}");
-        }, "Show server status");
     }
 
     /// <summary>

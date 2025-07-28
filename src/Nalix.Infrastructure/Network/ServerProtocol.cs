@@ -1,5 +1,4 @@
 ﻿using Nalix.Common.Connection;
-using Nalix.Common.Package.Metadata;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Network.Dispatch.Core;

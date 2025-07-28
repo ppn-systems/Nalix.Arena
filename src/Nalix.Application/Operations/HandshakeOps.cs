@@ -1,9 +1,9 @@
 ﻿using Nalix.Application.Caching;
 using Nalix.Common.Connection;
 using Nalix.Common.Constants;
-using Nalix.Common.Package;
-using Nalix.Common.Package.Attributes;
-using Nalix.Common.Package.Enums;
+using Nalix.Common.Packets;
+using Nalix.Common.Packets.Attributes;
+using Nalix.Common.Packets.Enums;
 using Nalix.Common.Security.Types;
 using Nalix.CrossPlatform.Commands;
 using Nalix.Cryptography.Asymmetric;
@@ -18,7 +18,7 @@ namespace Nalix.Application.Operations;
 /// Lớp này chịu trách nhiệm khởi tạo bắt tay, tạo cặp khóa, và tính toán khóa mã hóa chung.
 /// </summary>
 [PacketController]
-internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFactory<TPacket>
+internal sealed class HandshakeOps<TPacket> where TPacket : IPacket
 {
     /// <summary>
     /// Khởi tạo quá trình bắt tay bảo mật với client.
@@ -31,7 +31,6 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
     /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
     [PacketTimeout(Timeouts.Moderate)]
-    [PacketRateLimit(RequestLimitType.Low)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((System.UInt16)Command.Handshake)]
     [System.Runtime.CompilerServices.MethodImpl(
@@ -46,16 +45,6 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
                 connection.RemoteEndPoint);
 
             return PacketCache<TPacket>.HandshakeAlreadyDone;
-        }
-
-        // Kiểm tra định dạng gói tin, đảm bảo là nhị phân để chứa khóa công khai X25519
-        if (packet.Type != PacketType.Binary)
-        {
-            NLogix.Host.Instance.Debug(
-                "Received non-binary packet [Type={0}] from {1}",
-                packet.Type, connection.RemoteEndPoint);
-
-            return PacketCache<TPacket>.HandshakeInvalidType;
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
@@ -86,7 +75,7 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket, IPacketFact
 
         // Gửi khóa công khai của server về client để tiếp tục giai đoạn bắt tay
         return TPacket.Create(
-            Command.Handshake.AsUInt16(), PacketType.Binary,
+            Command.Handshake.AsUInt16(),
             PacketFlags.None, PacketPriority.Low, publicKey).Serialize();
     }
 }
