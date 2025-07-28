@@ -1,7 +1,8 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Presentation;
-using Nalix.Presentation.Enums;
+﻿using Nalix.Presentation.Enums;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Input;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -40,7 +41,7 @@ public class NotificationBox : RenderObject
         _background = new Sprite(bgTexture)
         {
             Scale = new Vector2f(0.8f, 0.8f),
-            Position = new Vector2f((GameEngine.ScreenSize.X - 0.8f * bgTexture.Size.X) / 2f, floatY)
+            Position = new Vector2f((GameEngine.ScreenSize.X - (0.8f * bgTexture.Size.X)) / 2f, floatY)
         };
 
         // Text
@@ -55,14 +56,14 @@ public class NotificationBox : RenderObject
 
         // Đặt gốc về giữa text (cho phép Position là tâm)
         _messageText.Origin = new Vector2f(
-            textBounds.Left + textBounds.Width / 2f,
-            textBounds.Top + textBounds.Height / 2f
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
         );
 
         // Đặt vị trí text vào chính giữa background
         _messageText.Position = new Vector2f(
-            _background.Position.X + _background.GetGlobalBounds().Width / 2f,
-            _background.Position.Y + _background.GetGlobalBounds().Height / 2f
+            _background.Position.X + (_background.GetGlobalBounds().Width / 2f),
+            _background.Position.Y + (_background.GetGlobalBounds().Height / 2f)
         );
 
         if (side == Side.Bottom)
@@ -77,8 +78,8 @@ public class NotificationBox : RenderObject
             // Center button horizontally below the message text
             _button.Position = new Vector2f(
                 _background.Position.X +
-                _background.GetGlobalBounds().Width / 2f -
-                _button.GetGlobalBounds().Width / 2f,
+                (_background.GetGlobalBounds().Width / 2f) -
+                (_button.GetGlobalBounds().Width / 2f),
                 buttonY
             );
 
@@ -109,13 +110,13 @@ public class NotificationBox : RenderObject
         FloatRect textBounds = _messageText.GetLocalBounds();
 
         _messageText.Origin = new Vector2f(
-            textBounds.Left + textBounds.Width / 2f,
-            textBounds.Top + textBounds.Height / 2f
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
         );
 
         _messageText.Position = new Vector2f(
-            _background.Position.X + _background.GetGlobalBounds().Width / 2f,
-            _background.Position.Y + _background.GetGlobalBounds().Height / 2f
+            _background.Position.X + (_background.GetGlobalBounds().Width / 2f),
+            _background.Position.Y + (_background.GetGlobalBounds().Height / 2f)
         );
     }
 
@@ -236,14 +237,14 @@ public class NotificationBox : RenderObject
 
         // Set the origin of the text to its center
         _buttonText.Origin = new Vector2f(
-            textBounds.Left + textBounds.Width / 2f,
-            textBounds.Top + textBounds.Height / 2f
+            textBounds.Left + (textBounds.Width / 2f),
+            textBounds.Top + (textBounds.Height / 2f)
         );
 
         // Position the text at the center of the sprite
         _buttonText.Position = new Vector2f(
-            spriteBounds.Left + spriteBounds.Width / 2f,
-            spriteBounds.Top + spriteBounds.Height / 2f
+            spriteBounds.Left + (spriteBounds.Width / 2f),
+            spriteBounds.Top + (spriteBounds.Height / 2f)
         );
     }
 }

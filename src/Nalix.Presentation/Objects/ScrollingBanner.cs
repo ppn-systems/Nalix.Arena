@@ -1,7 +1,7 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Presentation;
-using Nalix.Presentation.Enums;
+﻿using Nalix.Presentation.Enums;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 

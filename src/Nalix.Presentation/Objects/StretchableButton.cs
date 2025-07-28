@@ -1,6 +1,5 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Presentation;
+﻿using Nalix.Rendering.Input;
+using Nalix.Rendering.Objects;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -140,8 +139,8 @@ public class StretchableButton : RenderObject
     private void CenterLabel(System.Single totalWidth)
     {
         FloatRect textBounds = _label.GetLocalBounds();
-        System.Single x = _position.X + (totalWidth - textBounds.Width) / 2f - textBounds.Left;
-        System.Single y = _position.Y + (DefaultHeight - textBounds.Height) / 2f - textBounds.Top;
+        System.Single x = _position.X + ((totalWidth - textBounds.Width) / 2f) - textBounds.Left;
+        System.Single y = _position.Y + ((DefaultHeight - textBounds.Height) / 2f) - textBounds.Top;
         _label.Position = new Vector2f(x, y);
     }
 

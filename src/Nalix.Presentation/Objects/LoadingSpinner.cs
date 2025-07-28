@@ -1,7 +1,7 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Presentation;
-using Nalix.Presentation.Enums;
+﻿using Nalix.Presentation.Enums;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
@@ -79,7 +79,7 @@ public sealed class LoadingSpinner : RenderObject
         _iconSprite.Rotation = _angle; // Áp dụng góc xoay cho biểu tượng
 
         // Dao động kích thước (sử dụng sóng sin)
-        System.Single scale = BaseScale + System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation;
+        System.Single scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
         _iconSprite.Scale = new Vector2f(scale, scale); // Áp dụng tỷ lệ mới
     }
 

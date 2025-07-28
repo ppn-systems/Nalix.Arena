@@ -1,7 +1,8 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Graphics.Scenes;
-using Nalix.Presentation;
+﻿using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Input;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
+using Nalix.Rendering.Scenes;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
@@ -115,8 +116,8 @@ public class SettingsScene : Scene
 
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
-            System.Single posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
             _banner = new Sprite(panel)
             {

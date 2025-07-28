@@ -1,4 +1,4 @@
-﻿using Nalix.Graphics.Assets;
+﻿using Nalix.Rendering.Resources;
 
 namespace Nalix.Presentation;
 

@@ -1,9 +1,10 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Graphics.Rendering.Parallax;
-using Nalix.Graphics.Scenes;
-using Nalix.Presentation;
-using Nalix.Presentation.Objects;
+﻿using Nalix.Presentation.Objects;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Effects.Parallax;
+using Nalix.Rendering.Input;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
+using Nalix.Rendering.Scenes;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;

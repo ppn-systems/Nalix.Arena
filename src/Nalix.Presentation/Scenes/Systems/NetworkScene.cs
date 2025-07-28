@@ -1,10 +1,10 @@
-﻿using Nalix.Graphics;
-using Nalix.Graphics.Rendering.Object;
-using Nalix.Graphics.Scenes;
-using Nalix.Logging.Extensions;
+﻿using Nalix.Logging.Extensions;
 using Nalix.Network.Package;
 using Nalix.Presentation.Enums;
 using Nalix.Presentation.Objects;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Objects;
+using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using SFML.Graphics;
 

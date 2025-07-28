@@ -11,8 +11,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Nalix.SDK" Version="2.1.7" />
-		<PackageReference Include="Nalix.Graphics" Version="2.1.7" />
 
+		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
 		<ProjectReference Include="..\Nalix.CrossPlatform\Nalix.CrossPlatform.csproj" />
 	</ItemGroup>
 
