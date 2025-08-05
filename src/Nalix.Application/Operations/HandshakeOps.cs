@@ -1,14 +1,13 @@
-﻿using Nalix.Application.Caching;
-using Nalix.Common.Connection;
-using Nalix.Common.Constants;
+﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Attributes;
-using Nalix.Common.Packets.Enums;
 using Nalix.Common.Security.Types;
-using Nalix.CrossPlatform.Commands;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Logging;
+using Nalix.NetCore.Commands;
+using Nalix.NetCore.Packet.Primitives;
+using Nalix.Shared.Memory.Pooling;
 
 namespace Nalix.Application.Operations;
 
@@ -18,8 +17,10 @@ namespace Nalix.Application.Operations;
 /// Lớp này chịu trách nhiệm khởi tạo bắt tay, tạo cặp khóa, và tính toán khóa mã hóa chung.
 /// </summary>
 [PacketController]
-internal sealed class HandshakeOps<TPacket> where TPacket : IPacket
+internal sealed class HandshakeOps
 {
+    static HandshakeOps() => ObjectPoolManager.Instance.Prealloc<HandshakePacket>(1024);
+
     /// <summary>
     /// Khởi tạo quá trình bắt tay bảo mật với client.
     /// Nhận gói tin chứa khóa công khai X25519 (32 byte) từ client, tạo cặp khóa X25519 cho server,
@@ -30,52 +31,129 @@ internal sealed class HandshakeOps<TPacket> where TPacket : IPacket
     /// <param name="connection">Thông tin kết nối của client yêu cầu bắt tay bảo mật.</param>
     /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
-    [PacketTimeout(Timeouts.Moderate)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((System.UInt16)Command.Handshake)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static System.Memory<System.Byte> Handshake(IPacket packet, IConnection connection)
+    internal static System.Memory<System.Byte> Handshake(
+        IPacket packet,
+        IConnection connection)
     {
-        // Nếu đã handshake, không cho phép lặp lại
+        // Kiểm tra type của packet - sử dụng pattern matching theo SOLID principles
+        if (packet is not HandshakePacket initPacket)
+        {
+            NLogix.Host.Instance.Error(
+                "Invalid packet type. Expected HandshakePacket from {0}",
+                connection.RemoteEndPoint);
+
+            return CreateResponse((System.UInt16)Command.String, "Invalid packet type");
+        }
+
+        // Nếu đã handshake, không cho phép lặp lại - theo security best practices
         if (connection.EncryptionKey is not null)
         {
             NLogix.Host.Instance.Warn(
                 "Handshake already completed for {0}",
                 connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.HandshakeAlreadyDone;
+            return CreateResponse((System.UInt16)Command.String, "Handshake already completed");
+        }
+
+        // Defensive programming - kiểm tra payload null
+        if (initPacket.Payload is null)
+        {
+            NLogix.Host.Instance.Error(
+                "Null payload in handshake packet from {0}",
+                connection.RemoteEndPoint);
+
+            return CreateResponse((System.UInt16)Command.String, "Invalid payload");
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
-        if (packet.Payload.Length != 32)
+        if (initPacket.Payload.Length != 32)
         {
             NLogix.Host.Instance.Debug(
                 "Invalid public key length [Length={0}] from {1}",
-                packet.Payload.Length, connection.RemoteEndPoint);
+                initPacket.Payload.Length, connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.HandshakeInvalidKeyLength;
+            return CreateResponse(
+                (System.UInt16)Command.String,
+                $"Invalid key length: expected 32, got {initPacket.Payload.Length}");
         }
 
-        // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server
-        X25519.GenerateKeyPair(out System.Byte[] privateKey, out System.Byte[] publicKey);
+        // Tạo response packet chứa public key của server
+        HandshakePacket response = ObjectPoolManager.Instance.Get<HandshakePacket>();
 
-        // Thực hiện trao đổi khóa X25519 để tạo bí mật chung
-        // Kết hợp khóa riêng của server và khóa công khai của client để tạo bí mật chung
-        System.Span<System.Byte> secret = stackalloc System.Byte[32];
-        X25519.ComputeSharedSecret(privateKey, packet.Payload.Span, secret);
+        try
+        {
+            // Tạo cặp khóa X25519 (khóa riêng và công khai) cho server
+            X25519.X25519KeyPair keyPair = X25519.GenerateKeyPair();
 
-        // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
-        connection.EncryptionKey = SHA256.HashData(secret);
+            // Tính toán shared secret từ private key của server và public key của client
+            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Payload);
 
-        System.Array.Clear(privateKey, 0, privateKey.Length);
+            // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
+            connection.EncryptionKey = SHA256.HashData(secret);
 
-        // Nâng cấp quyền truy cập của client lên mức User
-        connection.Level = PermissionLevel.User;
+            // Security: Clear sensitive data từ memory
+            System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
+            System.Array.Clear(secret, 0, secret.Length);
 
-        // Gửi khóa công khai của server về client để tiếp tục giai đoạn bắt tay
-        return TPacket.Create(
-            Command.Handshake.AsUInt16(),
-            PacketFlags.None, PacketPriority.Low, publicKey).Serialize();
+            // Nâng cấp quyền truy cập của client lên mức User
+            connection.Level = PermissionLevel.User;
+
+            // Log successful handshake
+            NLogix.Host.Instance.Info(
+                "Handshake completed successfully for {0}",
+                connection.RemoteEndPoint);
+
+            response.Initialize(Command.Handshake.AsUInt16(), keyPair.PublicKey);
+
+            return new System.Memory<System.Byte>(response.Serialize());
+        }
+        catch (System.Exception ex)
+        {
+            // Error handling theo security best practices
+            NLogix.Host.Instance.Error(
+                "Handshake failed for {0}: {1}",
+                connection.RemoteEndPoint, ex.Message);
+
+            // Reset connection state nếu có lỗi
+            connection.EncryptionKey = null;
+            connection.Level = PermissionLevel.Guest;
+
+            return CreateResponse(
+                (System.UInt16)Command.String,
+                "Handshake processing failed");
+        }
+        finally
+        {
+            ObjectPoolManager.Instance.Return<HandshakePacket>(response);
+        }
+    }
+
+    /// <summary>
+    /// Tạo success response packet sử dụng StringPacket
+    /// Theo Single Responsibility Principle - chỉ tập trung vào việc tạo response
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static System.Memory<System.Byte> CreateResponse(
+        System.UInt16 opCode,
+        System.String message)
+    {
+        StringPacket packet = ObjectPoolManager.Instance.Get<StringPacket>();
+
+        try
+        {
+            packet.Initialize(opCode, message);
+
+            return new System.Memory<System.Byte>(packet.Serialize());
+        }
+        finally
+        {
+            // Đảm bảo trả lại packet về pool sau khi sử dụng
+            ObjectPoolManager.Instance.Return<StringPacket>(packet);
+        }
     }
 }

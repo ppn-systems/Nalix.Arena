@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Connection;
+using Nalix.Common.Packets;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Network.Dispatch.Core;
@@ -13,12 +14,12 @@ namespace Nalix.Infrastructure.Network;
 /// Lớp `ServerProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
 /// </summary>
 /// <param name="packetDispatcher">Bộ điều phối gói tin.</param>
-public sealed class ServerProtocol(IPacketDispatch<Packet> packetDispatcher) : Protocol
+public sealed class ServerProtocol(IPacketDispatch<BasePacket> packetDispatcher) : Protocol
 {
     /// <summary>
     /// Bộ điều phối gói tin được sử dụng để xử lý dữ liệu nhận được.
     /// </summary>
-    private readonly IPacketDispatch<Packet> _packetDispatcher = packetDispatcher;
+    private readonly IPacketDispatch<Packet> _packetDispatcher = (IPacketDispatch<Packet>)packetDispatcher;
 
     /// <summary>
     /// Xác định xem kết nối có được giữ mở liên tục hay không.

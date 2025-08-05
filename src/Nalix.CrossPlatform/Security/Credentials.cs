@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nalix.CrossPlatform.Security;
+namespace Nalix.NetCore.Security;
 
 /// <summary>
 /// Đại diện cho thông tin đăng nhập gồm tên người dùng và mật khẩu.
@@ -21,7 +21,7 @@ public sealed class Credentials
     public const System.Int32 UsernameMaxLength = 20;
 
     public const System.Int32 PasswordMinLength = 8;
-    public const System.Int32 PasswordMaxLength = 50;
+    public const System.Int32 PasswordMaxLength = 128;
 
     #endregion Constants
 
@@ -41,9 +41,10 @@ public sealed class Credentials
     [Required]
     [MinLength(3)]
     [MaxLength(20)]
+    [SerializeOrder(0)]
+    [SerializeDynamicSize(20)]
     [RegularExpression(@"^[a-zA-Z0-9_-]+$",
         ErrorMessage = "Username can only contain letters, numbers, underscores, and hyphens.")]
-    [SerializeOrder(0)]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     public System.String Username { get; set; }
 
@@ -52,6 +53,7 @@ public sealed class Credentials
     /// </summary>
     [NotMapped]
     [SerializeOrder(1)]
+    [SerializeDynamicSize(128)]
     public System.String Password { get; set; }
 
     /// <summary>
@@ -88,6 +90,16 @@ public sealed class Credentials
     public System.Int32 FailedLoginCount { get; set; } = 0;
 
     /// <summary>
+    /// Thời điểm lần đăng nhập thành công cuối cùng.
+    /// </summary>
+    public System.DateTime? LastLoginAt { get; set; }
+
+    /// <summary>
+    /// Thời điểm lần đăng xuất thành công cuối cùng.
+    /// </summary>
+    public System.DateTime? LastLogoutAt { get; set; }
+
+    /// <summary>
     /// Thời điểm lần đăng nhập sai cuối cùng.
     /// </summary>
     public System.DateTime? LastFailedLoginAt { get; set; }
@@ -104,4 +116,10 @@ public sealed class Credentials
     public System.DateTime CreatedAt { get; set; } = System.DateTime.UtcNow;
 
     #endregion Properties
+
+    #region APIs
+
+    public System.Int32 EstimatedSerializedLength() => Username.Length + Password.Length;
+
+    #endregion APIs
 }

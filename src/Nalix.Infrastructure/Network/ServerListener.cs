@@ -1,6 +1,6 @@
 ﻿using Nalix.Common.Caching;
 using Nalix.Common.Logging;
-using Nalix.Network.Listeners;
+using Nalix.Network.Listeners.Tcp;
 using Nalix.Network.Protocols;
 
 namespace Nalix.Infrastructure.Network;
@@ -8,7 +8,7 @@ namespace Nalix.Infrastructure.Network;
 /// <summary>
 /// Lớp `ServerListener` quản lý việc lắng nghe các kết nối mạng.
 /// </summary>
-public sealed class ServerListener : Listener
+public sealed class ServerListener : TcpListenerBase
 {
     /// <summary>
     /// Được kế thừa từ `Listener`, lớp này cung cấp cơ chế cập nhật thời gian cho các sự kiện mạng.

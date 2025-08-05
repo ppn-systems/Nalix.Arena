@@ -1,7 +1,7 @@
 ﻿using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
 
-namespace Nalix.CrossPlatform.Security;
+namespace Nalix.NetCore.Security;
 
 /// <summary>
 /// Đại diện cho một yêu cầu thay đổi mật khẩu của người dùng.

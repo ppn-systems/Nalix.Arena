@@ -1,4 +1,4 @@
-﻿namespace Nalix.CrossPlatform.Commands;
+﻿namespace Nalix.NetCore.Commands;
 
 public static class Extensions
 {

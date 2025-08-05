@@ -1,4 +1,4 @@
-﻿namespace Nalix.CrossPlatform.Messages;
+﻿namespace Nalix.NetCore.Messages;
 
 public struct PacketResponse<T>
 {

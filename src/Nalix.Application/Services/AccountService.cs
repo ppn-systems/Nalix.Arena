@@ -1,302 +1,374 @@
-﻿using Nalix.Application.Caching;
-using Nalix.Common.Connection;
+﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
-using Nalix.CrossPlatform.Commands;
-using Nalix.CrossPlatform.Security;
 using Nalix.Cryptography.Security;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
+using Nalix.NetCore.Commands;
+using Nalix.NetCore.Packet.Collections;
+using Nalix.NetCore.Packet.Primitives;
+using Nalix.NetCore.Security;
 using Nalix.Network.Connection;
-using Nalix.Shared.Serialization;
+using Nalix.Shared.Memory.Pooling;
 
 namespace Nalix.Application.Services;
 
+/// <summary>
+/// Dịch vụ quản lý tài khoản người dùng với các chức năng đăng ký, đăng nhập, đăng xuất và thay đổi mật khẩu.
+/// Được tối ưu hóa với Object Pooling để giảm thiểu garbage collection và cải thiện hiệu suất.
+/// Tuân thủ các nguyên tắc SOLID và Domain Driven Design (DDD) cho code sạch và dễ bảo trì.
+/// </summary>
 [PacketController]
-public class AccountService<TPacket>(GameDbContext context) where TPacket : IPacket
+internal sealed class AccountService
 {
-    private readonly Repository<Credentials> _accounts = new(context);
+    private readonly Repository<Credentials> _accounts;
+
+    static AccountService() =>
+        // Prealloc các packet types sẽ được sử dụng nhiều
+        ObjectPoolManager.Instance.Prealloc<CredentialsPacket>(512);
+
+    public AccountService(GameDbContext context) => _accounts = new Repository<Credentials>(context);
 
     /// <summary>
     /// Đăng ký tài khoản mới cho người dùng.
-    /// Phương thức này xử lý yêu cầu đăng ký bằng cách kiểm tra xem tên người dùng đã tồn tại chưa,
-    /// tạo hash mật khẩu an toàn và lưu tài khoản mới vào cơ sở dữ liệu.
+    /// Sử dụng CredentialsPacket và object pooling để tối ưu hiệu suất.
     /// </summary>
-    /// <param name="packet">Gói tin chứa thông tin đăng ký (tên người dùng, mật khẩu).</param>
+    /// <param name="packet">Gói tin chứa thông tin đăng ký.</param>
     /// <param name="connection">Thông tin kết nối của client.</param>
-    /// <returns>Chuỗi thông báo kết quả của quá trình đăng ký.</returns>
+    /// <returns>Memory chứa response packet đã được serialize.</returns>
     [PacketOpcode((System.UInt16)Command.Register)]
     [PacketPermission(PermissionLevel.Guest)]
+    [PacketEncryption(true)]
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> RegisterAsync(
         IPacket packet, IConnection connection)
     {
-        Credentials credentials = new();
-        _ = LiteSerializer.Deserialize(packet.Payload.Span, ref credentials);
-
-        // Kiểm tra xem tên người dùng đã tồn tại trong cơ sở dữ liệu chưa
-        if (await _accounts.AnyAsync(a => a.Username == credentials.Username))
+        // Pattern matching theo SOLID principles
+        if (packet is not CredentialsPacket credentialsPacket)
         {
-            NLogix.Host.Instance.Warn(
-                $"Username {0} already exists from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Error(
+                "Invalid packet type. Expected CredentialsPacket from {0}",
+                connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.DuplicateUsername;
+            return CreateErrorResponse((System.UInt16)Command.String, "Invalid packet type");
+        }
+
+        // Defensive programming
+        if (credentialsPacket.Credentials is null)
+        {
+            NLogix.Host.Instance.Error(
+                "Null credentials in register packet from {0}",
+                connection.RemoteEndPoint);
+
+            return CreateErrorResponse((System.UInt16)Command.String, "Invalid credentials");
+        }
+
+        Credentials credentials = credentialsPacket.Credentials;
+
+        // Validation đầu vào
+        if (System.String.IsNullOrWhiteSpace(credentials.Username) ||
+            System.String.IsNullOrWhiteSpace(credentials.Password))
+        {
+            NLogix.Host.Instance.Debug(
+                "Empty username or password in register attempt from {0}",
+                connection.RemoteEndPoint);
+
+            return CreateErrorResponse(
+                (System.UInt16)Command.String,
+                "Username and password cannot be empty");
         }
 
         try
         {
-            // Tạo hash và salt cho mật khẩu để lưu trữ an toàn
-            SecureCredentials.GenerateCredentialHash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
+
+
+            // Kiểm tra username đã tồn tại
+            if (await _accounts.AnyAsync(a => a.Username == credentials.Username))
+            {
+                NLogix.Host.Instance.Warn(
+                    "Username {0} already exists from connection {1}",
+                    credentials.Username, connection.RemoteEndPoint);
+
+                return CreateErrorResponse(
+                    (System.UInt16)Command.String,
+                    "Username already exists");
+            }
+
+            // Tạo hash và salt cho mật khẩu
+            SecureCredentials.GenerateCredentialHash(
+                credentials.Password,
+                out System.Byte[] salt,
+                out System.Byte[] hash);
+
             Credentials newAccount = new()
             {
                 Username = credentials.Username,
                 Salt = salt,
                 Hash = hash,
                 Role = PermissionLevel.User,
-                CreatedAt = System.DateTime.UtcNow
+                CreatedAt = System.DateTime.UtcNow,
+                IsActive = true,
+                FailedLoginCount = 0
             };
 
-            // Thêm tài khoản mới vào cơ sở dữ liệu và lưu thay đổi
+            // Thêm và lưu tài khoản mới
             _accounts.Add(newAccount);
             _ = await _accounts.SaveChangesAsync();
+
+            // Security: Clear sensitive data
+            System.Array.Clear(salt, 0, salt.Length);
+            System.Array.Clear(hash, 0, hash.Length);
+
             NLogix.Host.Instance.Info(
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.RegisterSuccess;
+            return CreateSuccessResponse(
+                (System.UInt16)Command.String,
+                "Registration successful");
         }
         catch (System.Exception ex)
         {
-            // Ghi log lỗi nếu quá trình đăng ký thất bại
             NLogix.Host.Instance.Error(
-                "Failed to register account {0} from connection {1}, Ex: {2}",
-                credentials.Username, connection.RemoteEndPoint, ex);
+                "Failed to register account {0} from connection {1}: {2}",
+                credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            return PacketCache<TPacket>.RegisterInternalError;
+            return CreateErrorResponse(
+                (System.UInt16)Command.String,
+                "Registration failed due to internal error");
         }
     }
 
     /// <summary>
-    /// Xử lý yêu cầu đăng nhập của người dùng.
-    /// Phương thức này xác thực thông tin đăng nhập, kiểm tra trạng thái tài khoản,
-    /// và cập nhật trạng thái đăng nhập nếu thành công.
+    /// Xử lý yêu cầu đăng nhập của người dùng với enhanced security và object pooling.
     /// </summary>
-    /// <param name="packet">Gói tin chứa thông tin đăng nhập (tên người dùng, mật khẩu).</param>
-    /// <param name="connection">Thông tin kết nối của client.</param>
-    /// <returns>Chuỗi thông báo kết quả của quá trình đăng nhập.</returns>
     [PacketOpcode((System.UInt16)Command.Login)]
     [PacketPermission(PermissionLevel.Guest)]
-    public async System.Threading.Tasks.Task<System.Memory<System.Byte>> LoginAsync(
+    [PacketEncryption(true)]
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> LoginAsync(
         IPacket packet, IConnection connection)
     {
-        Credentials credentials = new();
-        _ = LiteSerializer.Deserialize(packet.Payload.Span, ref credentials);
-
-        // Tìm tài khoản trong cơ sở dữ liệu theo tên người dùng
-        Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == credentials.Username);
-        if (account == null)
+        if (packet is not CredentialsPacket credentialsPacket)
         {
-            NLogix.Host.Instance.Warn(
-                "Login account attempt with non-existent username {0} from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Error(
+                "Invalid packet type. Expected CredentialsPacket from {0}",
+                connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.LoginUserNotExist;
+            return CreateErrorResponse((System.UInt16)Command.String, "Invalid packet type");
         }
 
-        // Kiểm tra nếu tài khoản bị khóa do quá nhiều lần đăng nhập thất bại
-        if (account.FailedLoginCount >= 5 && account.LastFailedLoginAt.HasValue &&
-            System.DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
+        if (credentialsPacket.Credentials is null)
         {
-            NLogix.Host.Instance.Warn(
-                "Account {0} locked due to too many failed attempts from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
+            NLogix.Host.Instance.Error(
+                "Null credentials in login packet from {0}",
+                connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.LoginAccountLocked;
+            return CreateErrorResponse((System.UInt16)Command.String, "Invalid credentials");
         }
 
-        // Xác thực mật khẩu
-        if (!SecureCredentials.VerifyCredentialHash(credentials.Password, account.Salt, account.Hash))
-        {
-            // Tăng số lần đăng nhập thất bại và cập nhật thời gian thất bại
-            account.FailedLoginCount++;
-            account.LastFailedLoginAt = System.DateTime.UtcNow;
-
-            _ = await _accounts.SaveChangesAsync();
-            NLogix.Host.Instance.Warn(
-                "Incorrect password for {0}, attempt {1} from connection {2}",
-                credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
-
-            return PacketCache<TPacket>.LoginIncorrectPassword;
-        }
-
-        // Kiểm tra trạng thái hoạt động của tài khoản
-        if (!account.IsActive)
-        {
-            NLogix.Host.Instance.Warn(
-                "Login account attempt on disabled account {0} from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
-
-            return PacketCache<TPacket>.LoginAccountDisabled;
-        }
+        Credentials credentials = credentialsPacket.Credentials;
 
         try
         {
-            // Đặt lại số lần đăng nhập thất bại và cập nhật trạng thái tài khoản
+            // Tìm tài khoản theo username
+            Credentials account = await _accounts.GetFirstOrDefaultAsync(
+                a => a.Username == credentials.Username);
+
+            if (account is null)
+            {
+                NLogix.Host.Instance.Warn(
+                    "Login attempt with non-existent username {0} from connection {1}",
+                    credentials.Username, connection.RemoteEndPoint);
+
+                return CreateErrorResponse(
+                    (System.UInt16)Command.String,
+                    "Invalid username or password");
+            }
+
+            // Kiểm tra account lockout
+            if (account.FailedLoginCount >= 5 && account.LastFailedLoginAt.HasValue &&
+                System.DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
+            {
+                NLogix.Host.Instance.Warn(
+                    "Account {0} locked due to too many failed attempts from connection {1}",
+                    credentials.Username, connection.RemoteEndPoint);
+
+                return CreateErrorResponse(
+                    (System.UInt16)Command.String,
+                    "Account temporarily locked. Try again later.");
+            }
+
+            // Xác thực mật khẩu
+            if (!SecureCredentials.VerifyCredentialHash(
+                credentials.Password, account.Salt, account.Hash))
+            {
+                // Tăng failed login count
+                account.FailedLoginCount++;
+                account.LastFailedLoginAt = System.DateTime.UtcNow;
+                _ = await _accounts.SaveChangesAsync();
+
+                NLogix.Host.Instance.Warn(
+                    "Incorrect password for {0}, attempt {1} from connection {2}",
+                    credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
+
+                return CreateErrorResponse(
+                    (System.UInt16)Command.String,
+                    "Invalid username or password");
+            }
+
+            // Kiểm tra account active
+            if (!account.IsActive)
+            {
+                NLogix.Host.Instance.Warn(
+                    "Login attempt on disabled account {0} from connection {1}",
+                    credentials.Username, connection.RemoteEndPoint);
+
+                return CreateErrorResponse(
+                    (System.UInt16)Command.String,
+                    "Account is disabled");
+            }
+
+            // Reset failed login count và update trạng thái
             account.FailedLoginCount = 0;
-            account.IsActive = true;
+            account.LastFailedLoginAt = null;
+            account.LastLoginAt = System.DateTime.UtcNow;
             _ = await _accounts.SaveChangesAsync();
 
-            // Cập nhật thông tin kết nối với quyền và tên người dùng
+            // Update connection state
+            connection.Level = account.Role;
             ConnectionHub.Instance.AssociateUsername(connection, account.Username);
 
             NLogix.Host.Instance.Info(
-                $"User {0} logged in successfully from connection {1}",
+                "User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.LoginSuccess;
+            return CreateSuccessResponse(
+                (System.UInt16)Command.String,
+                "Login successful");
         }
         catch (System.Exception ex)
         {
-            // Ghi log lỗi nếu quá trình đăng nhập thất bại
             NLogix.Host.Instance.Error(
-                "Failed to complete login for {0} from connection {1}, Ex: {2}",
-                credentials.Username, connection.RemoteEndPoint, ex);
+                "Login failed for {0} from connection {1}: {2}",
+                credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            return PacketCache<TPacket>.LoginInternalError;
+            return CreateErrorResponse(
+                (System.UInt16)Command.String,
+                "Login failed due to internal error");
         }
     }
 
     /// <summary>
-    /// Xử lý yêu cầu đăng xuất của người dùng.
-    /// Phương thức này cập nhật trạng thái tài khoản, xóa thông tin phiên và ngắt kết nối.
+    /// Xử lý yêu cầu đăng xuất với proper cleanup và object pooling.
     /// </summary>
-    /// <param name="_">Gói tin (không sử dụng).</param>
-    /// <param name="connection">Thông tin kết nối của client.</param>
-    /// <returns>Chuỗi thông báo kết quả của quá trình đăng xuất.</returns>
     [PacketOpcode((System.UInt16)Command.Logout)]
     [PacketPermission(PermissionLevel.User)]
+    [PacketEncryption(false)]
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> LogoutAsync(
-        IPacket __, IConnection connection)
+        IPacket ___, IConnection connection)
     {
-        // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
         System.String username = ConnectionHub.Instance.GetUsername(connection.Id);
 
         if (username is null)
         {
             NLogix.Host.Instance.Warn(
-                "Logout attempt without valid username metadata from connection {0}",
+                "Logout attempt without valid session from connection {0}",
                 connection.RemoteEndPoint);
 
-            return PacketCache<TPacket>.LogoutInvalidSession;
-        }
-
-        // Tìm tài khoản trong cơ sở dữ liệu
-        Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username);
-        if (account == null)
-        {
-            NLogix.Host.Instance.Warn(
-                "Logout attempt with non-existent username {0} from connection {1}",
-                username, connection.RemoteEndPoint);
-
-            return PacketCache<TPacket>.LogoutUserNotExist;
+            return CreateErrorResponse(
+                (System.UInt16)Command.String,
+                "Invalid session");
         }
 
         try
         {
-            // Cập nhật trạng thái tài khoản thành không hoạt động
-            account.IsActive = false;
-            _ = await _accounts.SaveChangesAsync();
-        }
-        catch (System.Exception)
-        {
-            // Ghi log lỗi nhưng vẫn tiếp tục đăng xuất
-            NLogix.Host.Instance.Info("User {0} logged out from connection {1}", username, connection.RemoteEndPoint);
-            return PacketCache<TPacket>.LogoutUpdateFailed;
-        }
+            Credentials account = await _accounts.GetFirstOrDefaultAsync(
+                a => a.Username == username);
 
-        // Ghi log sự kiện đăng xuất
-        NLogix.Host.Instance.Info(
-            "User {0} logged out from connection {1}",
-            username, connection.RemoteEndPoint);
+            if (account is not null)
+            {
+                account.IsActive = false;
+                account.LastLogoutAt = System.DateTime.UtcNow;
+                _ = await _accounts.SaveChangesAsync();
+            }
 
-        // Xóa thông tin metadata và hạ quyền về mức Guest
-        connection.Level = PermissionLevel.Guest;
+            // Cleanup connection state
+            connection.Level = PermissionLevel.Guest;
+            _ = ConnectionHub.Instance.UnregisterConnection(connection.Id);
 
-        // Ngắt kết nối
-        connection.Disconnect();
-
-        return PacketCache<TPacket>.LogoutSuccess;
-    }
-
-    /// <summary>
-    /// Xử lý yêu cầu thay đổi mật khẩu của người dùng.
-    /// Phương thức này xác thực mật khẩu cũ, tạo hash mật khẩu mới và cập nhật vào cơ sở dữ liệu.
-    /// </summary>
-    /// <param name="packet">Gói tin chứa thông tin mật khẩu cũ và mới.</param>
-    /// <param name="connection">Thông tin kết nối của client.</param>
-    /// <returns>Chuỗi thông báo kết quả của quá trình thay đổi mật khẩu.</returns>
-    [PacketOpcode((System.UInt16)Command.ChangePassword)]
-    [PacketPermission(PermissionLevel.User)]
-    internal async System.Threading.Tasks.Task<System.String> ChangePasswordAsync(
-        IPacket packet, IConnection connection)
-    {
-        // Kiểm tra xem phiên có chứa tên người dùng hợp lệ không
-        System.String username = ConnectionHub.Instance.GetUsername(connection.Id);
-
-        if (username is null)
-        {
-            NLogix.Host.Instance.Warn(
-                "Change password attempt without valid username metadata from connection {0}",
-                connection.RemoteEndPoint);
-
-            return "Invalid session. Please login again.";
-        }
-
-        PasswordChange request = new();
-        _ = LiteSerializer.Deserialize(packet.Payload.Span, ref request);
-
-        // Tìm tài khoản trong cơ sở dữ liệu
-        Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username);
-        if (account == null)
-        {
-            return "Account does not exist.";
-        }
-
-        // Xác thực mật khẩu cũ
-        if (!SecureCredentials.VerifyCredentialHash(request.OldPassword, account.Salt, account.Hash))
-        {
-            return "Old password is incorrect.";
-        }
-
-        try
-        {
-            // Tạo hash và salt mới cho mật khẩu
-            SecureCredentials.GenerateCredentialHash(
-                request.NewPassword,
-                out System.Byte[] salt,
-                out System.Byte[] hash);
-
-            account.Salt = salt;
-            account.Hash = hash;
-            _ = await _accounts.SaveChangesAsync();
-
-            // Ghi log sự kiện thay đổi mật khẩu
             NLogix.Host.Instance.Info(
-                "User {0} changed password successfully from connection {1}",
+                "User {0} logged out successfully from connection {1}",
                 username, connection.RemoteEndPoint);
 
-            return "Password changed successfully.";
+            // Disconnect after successful logout
+            connection.Disconnect();
+
+            return CreateSuccessResponse(
+                (System.UInt16)Command.String,
+                "Logout successful");
         }
         catch (System.Exception ex)
         {
-            // Ghi log lỗi nếu quá trình thay đổi mật khẩu thất bại
             NLogix.Host.Instance.Error(
-                "Failed to change password for {0} from connection {1}, Ex: {2}",
-                username, connection.RemoteEndPoint, ex);
+                "Logout failed for {0} from connection {1}: {2}",
+                username, connection.RemoteEndPoint, ex.Message);
 
-            return "Failed to change password due to internal error.";
+            // Vẫn cleanup connection state ngay cả khi có lỗi
+            connection.Level = PermissionLevel.Guest;
+            connection.Disconnect();
+
+            return CreateErrorResponse(
+                (System.UInt16)Command.String,
+                "Logout completed with warnings");
+        }
+    }
+
+    /// <summary>
+    /// Tạo success response packet sử dụng StringPacket với object pooling.
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static System.Memory<System.Byte> CreateSuccessResponse(
+        System.UInt16 opCode, System.String message)
+    {
+        StringPacket packet = ObjectPoolManager.Instance.Get<StringPacket>();
+
+        try
+        {
+            packet.Initialize(opCode, message);
+            return new System.Memory<System.Byte>(packet.Serialize());
+        }
+        finally
+        {
+            ObjectPoolManager.Instance.Return<StringPacket>(packet);
+        }
+    }
+
+    /// <summary>
+    /// Tạo error response packet sử dụng StringPacket với object pooling.
+    /// </summary>
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static System.Memory<System.Byte> CreateErrorResponse(
+        System.UInt16 opCode, System.String message)
+    {
+        StringPacket packet = ObjectPoolManager.Instance.Get<StringPacket>();
+
+        try
+        {
+            packet.Initialize(opCode, message);
+            return new System.Memory<System.Byte>(packet.Serialize());
+        }
+        finally
+        {
+            ObjectPoolManager.Instance.Return<StringPacket>(packet);
         }
     }
 }

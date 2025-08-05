@@ -1,4 +1,4 @@
-﻿namespace Nalix.CrossPlatform.Messages;
+﻿namespace Nalix.NetCore.Messages;
 
 /// <summary>
 /// Định nghĩa các mã phản hồi (response codes) dùng để biểu thị trạng thái hoặc lỗi trong quá trình xử lý yêu cầu.
