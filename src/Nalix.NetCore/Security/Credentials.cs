@@ -119,7 +119,7 @@ public sealed class Credentials
 
     #region APIs
 
-    public System.Int32 EstimatedSerializedLength() => Username.Length + Password.Length;
+    public System.UInt16 EstimatedSerializedLength() => (System.UInt16)(Username.Length + Password.Length);
 
     #endregion APIs
 }

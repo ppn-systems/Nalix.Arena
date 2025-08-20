@@ -1,13 +1,14 @@
 ﻿using Nalix.Common.Connection;
-using Nalix.Common.Packets;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Logging;
 using Nalix.NetCore.Commands;
-using Nalix.NetCore.Packet.Primitives;
+using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
+using Nalix.Shared.Messaging.Control;
+using Nalix.Shared.Messaging.Text;
 
 namespace Nalix.Application.Operations;
 
@@ -19,7 +20,14 @@ namespace Nalix.Application.Operations;
 [PacketController]
 internal sealed class HandshakeOps
 {
-    static HandshakeOps() => ObjectPoolManager.Instance.Prealloc<HandshakePacket>(1024);
+    static HandshakeOps()
+    {
+        _ = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                .SetMaxCapacity<Handshake>(1024);
+
+        _ = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                .Prealloc<Handshake>(512);
+    }
 
     /// <summary>
     /// Khởi tạo quá trình bắt tay bảo mật với client.
@@ -36,18 +44,9 @@ internal sealed class HandshakeOps
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static System.Memory<System.Byte> Handshake(
-        IPacket packet,
+        Handshake packet,
         IConnection connection)
     {
-        // Kiểm tra type của packet - sử dụng pattern matching theo SOLID principles
-        if (packet is not HandshakePacket initPacket)
-        {
-            NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected HandshakePacket from {0}",
-                connection.RemoteEndPoint);
-
-            return CreateResponse((System.UInt16)Command.String, "Invalid packet type");
-        }
 
         // Nếu đã handshake, không cho phép lặp lại - theo security best practices
         if (connection.EncryptionKey is not null)
@@ -56,33 +55,32 @@ internal sealed class HandshakeOps
                 "Handshake already completed for {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse((System.UInt16)Command.String, "Handshake already completed");
+            return CreateResponse("Handshake already completed");
         }
 
         // Defensive programming - kiểm tra payload null
-        if (initPacket.Payload is null)
+        if (packet.Data is null)
         {
             NLogix.Host.Instance.Error(
                 "Null payload in handshake packet from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse((System.UInt16)Command.String, "Invalid payload");
+            return CreateResponse("Invalid payload");
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
-        if (initPacket.Payload.Length != 32)
+        if (packet.Data.Length != 32)
         {
             NLogix.Host.Instance.Debug(
                 "Invalid public key length [Length={0}] from {1}",
-                initPacket.Payload.Length, connection.RemoteEndPoint);
+                packet.Data.Length, connection.RemoteEndPoint);
 
-            return CreateResponse(
-                (System.UInt16)Command.String,
-                $"Invalid key length: expected 32, got {initPacket.Payload.Length}");
+            return CreateResponse($"Invalid key length: expected 32, got {packet.Data.Length}");
         }
 
         // Tạo response packet chứa public key của server
-        HandshakePacket response = ObjectPoolManager.Instance.Get<HandshakePacket>();
+        Handshake response = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                                     .Get<Handshake>();
 
         try
         {
@@ -90,7 +88,7 @@ internal sealed class HandshakeOps
             X25519.X25519KeyPair keyPair = X25519.GenerateKeyPair();
 
             // Tính toán shared secret từ private key của server và public key của client
-            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Payload);
+            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
 
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
             connection.EncryptionKey = SHA256.HashData(secret);
@@ -107,7 +105,7 @@ internal sealed class HandshakeOps
                 "Handshake completed successfully for {0}",
                 connection.RemoteEndPoint);
 
-            response.Initialize(Command.Handshake.AsUInt16(), keyPair.PublicKey);
+            response.Initialize(keyPair.PublicKey);
 
             return new System.Memory<System.Byte>(response.Serialize());
         }
@@ -122,13 +120,12 @@ internal sealed class HandshakeOps
             connection.EncryptionKey = null;
             connection.Level = PermissionLevel.Guest;
 
-            return CreateResponse(
-                (System.UInt16)Command.String,
-                "Handshake processing failed");
+            return CreateResponse("Handshake processing failed");
         }
         finally
         {
-            ObjectPoolManager.Instance.Return<HandshakePacket>(response);
+            InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                    .Return<Handshake>(response);
         }
     }
 
@@ -138,22 +135,22 @@ internal sealed class HandshakeOps
     /// </summary>
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static System.Memory<System.Byte> CreateResponse(
-        System.UInt16 opCode,
-        System.String message)
+    private static System.Memory<System.Byte> CreateResponse(System.String message)
     {
-        StringPacket packet = ObjectPoolManager.Instance.Get<StringPacket>();
+        Text256 response = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                                 .Get<Text256>();
 
         try
         {
-            packet.Initialize(opCode, message);
+            response.Initialize(message);
 
-            return new System.Memory<System.Byte>(packet.Serialize());
+            return new System.Memory<System.Byte>(response.Serialize());
         }
         finally
         {
             // Đảm bảo trả lại packet về pool sau khi sử dụng
-            ObjectPoolManager.Instance.Return<StringPacket>(packet);
+            InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
+                                    .Return<Text256>(response);
         }
     }
 }

@@ -84,7 +84,7 @@ public class AutoDbContextFactory : IDesignTimeDbContextFactory<GameDbContext>
             else if (dbType.Equals("SQLite", StringComparison.OrdinalIgnoreCase))
             {
                 _ = optionsBuilder.UseSqlite(
-                    $"Data Source={Directories.DatabasePath}\\Auto.db",
+                    $"Data Source={Directories.BaseAssetsDirectory}\\GM.db",
                     sqliteOptions =>
                     {
                         _ = sqliteOptions.CommandTimeout(60);

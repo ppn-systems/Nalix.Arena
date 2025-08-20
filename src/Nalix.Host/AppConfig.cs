@@ -4,8 +4,6 @@ using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
 using Nalix.Network.Dispatch;
-using Nalix.Network.Package;
-using Nalix.Shared.Memory.Pooling;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -77,11 +75,11 @@ internal static class AppConfig
     public static ServerListener InitializeServer()
     {
         return new ServerListener(
-               new ServerProtocol(new PacketDispatchChannel<Packet>(cfg => cfg
+               new ServerProtocol(new PacketDispatchChannel(cfg => cfg
                    .WithLogging(Logger)
                    .WithErrorHandling((exception, command) =>
                         Logger.Error($"Error handling command: {command}", exception))
         //.WithHandler(() => new AccountService(context))
-        )), new BufferPoolManager(), Logger);
+        )));
     }
 }

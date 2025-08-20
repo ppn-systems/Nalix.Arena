@@ -89,7 +89,7 @@ internal sealed class Terminal
                 {
                     if (AppConfig.Server.IsListening)
                     {
-                        AppConfig.Server.StopListening();
+                        _ = AppConfig.Server.DeactivateAsync();
                         AppConfig.Logger.Info("Server stopped.");
                     }
                 }
@@ -110,7 +110,7 @@ internal sealed class Terminal
                 AppConfig.Logger.Warn("Server is not initialized.");
                 return;
             }
-            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Server.StartListeningAsync(_cTokenSrc.Token));
+            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Server.ActivateAsync(_cTokenSrc.Token));
         }, "Run server");
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.P, () =>
@@ -120,7 +120,7 @@ internal sealed class Terminal
                 AppConfig.Logger.Warn("Server is not initialized.");
                 return;
             }
-            _ = Task.Run(() => AppConfig.Server.StopListening());
+            _ = Task.Run(() => AppConfig.Server.DeactivateAsync());
         }, "Stop server");
     }
 

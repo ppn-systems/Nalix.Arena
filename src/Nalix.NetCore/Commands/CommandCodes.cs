@@ -4,7 +4,7 @@
 /// Chứa các hằng số opcode tương ứng với enum Command.
 /// Dùng để gán trong các attribute yêu cầu constant expression.
 /// </summary>
-internal static class CommandOpcodes
+internal static class CommandCodes
 {
     public const System.UInt32 MagicNumber/**/= 0x4E414C58;
 

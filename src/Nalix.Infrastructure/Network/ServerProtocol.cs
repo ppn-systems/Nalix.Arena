@@ -1,10 +1,11 @@
 ﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets;
+using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging;
 using Nalix.Network.Connection;
-using Nalix.Network.Dispatch.Core;
-using Nalix.Network.Package;
+using Nalix.Network.Dispatch.Core.Interfaces;
 using Nalix.Network.Protocols;
+using Nalix.Shared.Injection;
 using System;
 using System.Threading;
 
@@ -14,12 +15,12 @@ namespace Nalix.Infrastructure.Network;
 /// Lớp `ServerProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
 /// </summary>
 /// <param name="packetDispatcher">Bộ điều phối gói tin.</param>
-public sealed class ServerProtocol(IPacketDispatch<BasePacket> packetDispatcher) : Protocol
+public sealed class ServerProtocol(IPacketDispatch<IPacket> packetDispatcher) : Protocol
 {
     /// <summary>
     /// Bộ điều phối gói tin được sử dụng để xử lý dữ liệu nhận được.
     /// </summary>
-    private readonly IPacketDispatch<Packet> _packetDispatcher = (IPacketDispatch<Packet>)packetDispatcher;
+    private readonly IPacketDispatch<IPacket> _packetDispatcher = packetDispatcher;
 
     /// <summary>
     /// Xác định xem kết nối có được giữ mở liên tục hay không.
@@ -36,14 +37,15 @@ public sealed class ServerProtocol(IPacketDispatch<BasePacket> packetDispatcher)
         base.OnAccept(connection, cancellationToken);
 
         // Thêm kết nối vào danh sách quản lý
-        _ = ConnectionHub.Instance.RegisterConnection(connection);
+        _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().RegisterConnection(connection);
 
         NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
     }
 
     public override void ProcessMessage(ReadOnlySpan<Byte> bytes)
     {
-        IConnection connection = ConnectionHub.Instance.GetConnection(bytes[PacketSize.Header..sizeof(UInt32)]);
+        IConnection connection = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
+                                                         .GetConnection(bytes[PacketConstants.HeaderSize..sizeof(UInt32)]);
 
         try
         {

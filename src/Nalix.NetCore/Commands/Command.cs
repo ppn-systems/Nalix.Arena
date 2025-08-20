@@ -5,12 +5,7 @@ public enum Command : System.UInt16
     /// <summary>
     /// Lệnh không xác định hoặc không có chức năng cụ thể.
     /// </summary>
-    None = 0,
-
-    /// <summary>
-    /// Lệnh để gửi một thông điệp văn bản đơn giản.
-    /// </summary>
-    String = 0x02,
+    None = 0x00,
 
     /// <summary>
     /// Lệnh để thiết lập kết nối ban đầu giữa máy khách và máy chủ.

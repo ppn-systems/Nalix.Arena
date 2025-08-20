@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Nalix.CrossPlatform\Nalix.NetCore.csproj" />
+		<ProjectReference Include="..\Nalix.NetCore\Nalix.NetCore.csproj" />
 	</ItemGroup>
 
 </Project>

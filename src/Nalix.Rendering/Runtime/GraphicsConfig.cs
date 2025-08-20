@@ -1,5 +1,5 @@
+using Nalix.Common.Attributes;
 using Nalix.Common.Environment;
-using Nalix.Shared.Configuration.Attributes;
 using Nalix.Shared.Configuration.Binding;
 
 namespace Nalix.Rendering.Runtime;
@@ -53,5 +53,5 @@ public sealed class GraphicsConfig : ConfigurationLoader
     /// Gets the base path for assets. Default value is <see cref="Directories.BasePath"/>.
     /// </summary>
     [ConfiguredIgnore]
-    public System.String AssetPath { get; init; } = Directories.BasePath;
+    public System.String AssetPath { get; init; } = Directories.BaseAssetsDirectory;
 }

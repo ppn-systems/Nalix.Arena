@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Domain", "Nalix.Domai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Host", "Nalix.Host\Nalix.Host.csproj", "{98A40ADC-5F80-4229-9959-B98642DAAC6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.NetCore", "Nalix.CrossPlatform\Nalix.NetCore.csproj", "{99E5F3A6-0998-4C57-980B-621312EA7673}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.NetCore", "Nalix.NetCore\Nalix.NetCore.csproj", "{99E5F3A6-0998-4C57-980B-621312EA7673}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Rendering", "Nalix.Rendering\Nalix.Rendering.csproj", "{00090124-37B7-4818-E37A-7F72DAE3DB29}"
 EndProject

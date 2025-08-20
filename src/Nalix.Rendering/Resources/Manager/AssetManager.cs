@@ -19,17 +19,17 @@ public sealed class AssetManager(String root = null!) : SingletonBase<AssetManag
     /// <summary>
     /// Gets the sound effects loader instance.
     /// </summary>
-    public SfxLoader SfxLoader { get; } = new SfxLoader(root ?? Directories.BasePath);
+    public SfxLoader SfxLoader { get; } = new SfxLoader(root ?? Directories.BaseAssetsDirectory);
 
     /// <summary>
     /// Gets the font loader instance.
     /// </summary>
-    public FontLoader FontLoader { get; } = new FontLoader(root ?? Directories.BasePath);
+    public FontLoader FontLoader { get; } = new FontLoader(root ?? Directories.BaseAssetsDirectory);
 
     /// <summary>
     /// Gets the texture loader instance.
     /// </summary>
-    public TextureLoader TextureLoader { get; } = new TextureLoader(root ?? Directories.BasePath);
+    public TextureLoader TextureLoader { get; } = new TextureLoader(root ?? Directories.BaseAssetsDirectory);
 
     /// <summary>
     /// Load a texture by name (from file or memory).

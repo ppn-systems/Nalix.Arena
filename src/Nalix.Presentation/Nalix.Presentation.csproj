@@ -10,10 +10,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Nalix.SDK" Version="2.7.1" />
+		<PackageReference Include="Nalix.SDK" Version="3.8.0" />
 
 		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
-		<ProjectReference Include="..\Nalix.CrossPlatform\Nalix.NetCore.csproj" />
+		<ProjectReference Include="..\Nalix.NetCore\Nalix.NetCore.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
