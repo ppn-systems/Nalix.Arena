@@ -1,6 +1,4 @@
-﻿using Nalix.Client;
-using Nalix.Client.Scenes;
-using Nalix.Rendering.Attributes;
+﻿using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -10,7 +8,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Client.Scenes.Systems;
+namespace Nalix.Client.Scenes.Menu;
 
 /// <summary>
 /// Cảnh thiết lập trò chơi, nơi người dùng có thể thực hiện các tùy chỉnh.

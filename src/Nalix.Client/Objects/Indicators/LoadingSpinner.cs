@@ -1,12 +1,11 @@
-﻿using Nalix.Client;
-using Nalix.Client.Enums;
+﻿using Nalix.Client.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Client.Objects;
+namespace Nalix.Client.Objects.Indicators;
 
 /// <summary>
 /// Một đối tượng có thể hiển thị, thể hiện một vòng quay tải (loading spinner) với nền mờ dần và biểu tượng xoay, thay đổi kích thước.
@@ -80,7 +79,7 @@ public sealed class LoadingSpinner : RenderObject
         _iconSprite.Rotation = _angle; // Áp dụng góc xoay cho biểu tượng
 
         // Dao động kích thước (sử dụng sóng sin)
-        System.Single scale = BaseScale + System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation;
+        System.Single scale = BaseScale + (System.MathF.Sin(_angle * 0.0174533f /* chuyển sang radian */) * ScaleOscillation);
         _iconSprite.Scale = new Vector2f(scale, scale); // Áp dụng tỷ lệ mới
     }
 

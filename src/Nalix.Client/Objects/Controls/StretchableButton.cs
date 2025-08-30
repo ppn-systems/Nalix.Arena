@@ -1,11 +1,10 @@
-﻿using Nalix.Client;
-using Nalix.Rendering.Input;
+﻿using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Client.Objects;
+namespace Nalix.Client.Objects.Controls;
 
 /// <summary>
 /// A stretchable button composed of three textures: left, center, and right.

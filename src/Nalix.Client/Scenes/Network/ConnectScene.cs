@@ -1,5 +1,6 @@
 ﻿using Nalix.Client.Enums;
-using Nalix.Client.Objects;
+using Nalix.Client.Objects.Indicators;
+using Nalix.Client.Objects.Notifications;
 using Nalix.Logging.Extensions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
@@ -8,17 +9,17 @@ using Nalix.SDK.Remote;
 using Nalix.Shared.Injection;
 using SFML.Graphics;
 
-namespace Nalix.Client.Scenes.Systems;
+namespace Nalix.Client.Scenes.Network;
 
 /// <summary>
 /// Cảnh chịu trách nhiệm xử lý quá trình kết nối mạng trước khi vào trò chơi chính.
 /// </summary>
-public class NetworkScene : Scene
+public class ConnectScene : Scene
 {
     /// <summary>
     /// Khởi tạo một cảnh mạng với tên được xác định trong <see cref="SceneNames.Network"/>.
     /// </summary>
-    public NetworkScene() : base(SceneNames.Network)
+    public ConnectScene() : base(SceneNames.Network)
     {
     }
 

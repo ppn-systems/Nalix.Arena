@@ -1,5 +1,4 @@
-﻿using Nalix.Client;
-using Nalix.Client.Enums;
+﻿using Nalix.Client.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
@@ -8,7 +7,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Client.Objects;
+namespace Nalix.Client.Objects.Notifications;
 
 /// <summary>
 /// Đại diện cho một hộp thông báo trong giao diện người dùng của trò chơi.

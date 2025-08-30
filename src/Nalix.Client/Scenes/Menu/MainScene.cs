@@ -1,5 +1,4 @@
-﻿using Nalix.Client;
-using Nalix.Client.Objects;
+﻿using Nalix.Client.Objects.Controls;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Input;
@@ -11,7 +10,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Client.Scenes;
+namespace Nalix.Client.Scenes.Menu;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
@@ -206,7 +205,7 @@ internal class MainScene : Scene
 
             _icon = new Sprite(texture)
             {
-                Scale = new Vector2f(0.8f, 0.8f),
+                Scale = new Vector2f(0.6f, 0.6f),
                 // Canh phải trên màn hình
                 Position = new Vector2f(0, 0)
             };
