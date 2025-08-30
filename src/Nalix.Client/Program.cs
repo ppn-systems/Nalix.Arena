@@ -1,6 +1,6 @@
 ﻿using Nalix.Rendering.Runtime;
 
-namespace Nalix.Presentation;
+namespace Nalix.Client;
 
 /// <summary>
 /// Điểm khởi đầu của trò chơi. Khởi chạy cửa sổ trò chơi thông qua <see cref="GameEngine"/>.

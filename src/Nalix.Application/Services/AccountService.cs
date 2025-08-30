@@ -1,13 +1,13 @@
 ﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
+using Nalix.Communication.Commands;
+using Nalix.Communication.Packet.Collections;
+using Nalix.Communication.Security;
 using Nalix.Cryptography.Security;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
-using Nalix.NetCore.Commands;
-using Nalix.NetCore.Packet.Collections;
-using Nalix.NetCore.Security;
 using Nalix.Network.Connection;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;

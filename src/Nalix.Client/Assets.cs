@@ -1,6 +1,6 @@
 ﻿using Nalix.Rendering.Resources;
 
-namespace Nalix.Presentation;
+namespace Nalix.Client;
 
 /// <summary>
 /// Cung cấp quyền truy cập tập trung đến các bộ tải tài nguyên được sử dụng trong lớp trình bày của trò chơi.

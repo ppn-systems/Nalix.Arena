@@ -1,6 +1,8 @@
-﻿using Nalix.Common.Packets.Abstractions;
+﻿using Nalix.Client.Enums;
+using Nalix.Client.Objects;
+using Nalix.Client.Scenes;
+using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging.Extensions;
-using Nalix.Presentation.Enums;
 using Nalix.Presentation.Objects;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
@@ -9,7 +11,7 @@ using Nalix.SDK.Remote.Core;
 using Nalix.Shared.Injection;
 using SFML.Graphics;
 
-namespace Nalix.Presentation.Scenes.Systems;
+namespace Nalix.Client.Scenes.Systems;
 
 /// <summary>
 /// Cảnh chịu trách nhiệm xử lý quá trình kết nối mạng trước khi vào trò chơi chính.

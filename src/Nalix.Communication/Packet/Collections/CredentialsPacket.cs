@@ -5,16 +5,16 @@ using Nalix.Common.Packets.Enums;
 using Nalix.Common.Security.Cryptography.Enums;
 using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
+using Nalix.Communication.Commands;
+using Nalix.Communication.Messages;
+using Nalix.Communication.Security;
 using Nalix.Cryptography;
-using Nalix.NetCore.Commands;
-using Nalix.NetCore.Messages;
-using Nalix.NetCore.Security;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Serialization;
 using System;
 
-namespace Nalix.NetCore.Packet.Collections;
+namespace Nalix.Communication.Packet.Collections;
 
 /// <summary>
 /// Gói tin chứa thông tin đăng nhập từ client (username, mật khẩu băm, metadata),
@@ -27,20 +27,20 @@ public class CredentialsPacket : IPacket, IPacketTransformer<CredentialsPacket>
     /// Tổng độ dài gói tin (byte), gồm header và nội dung.
     /// </summary>
     [SerializeIgnore]
-    public System.UInt16 Length =>
-        (System.UInt16)(PacketConstants.HeaderSize + Credentials.EstimatedSerializedLength());
+    public UInt16 Length =>
+        (UInt16)(PacketConstants.HeaderSize + Credentials.EstimatedSerializedLength());
 
     /// <summary>
     /// Magic number định danh giao thức/loại gói tin.
     /// </summary>
     [SerializeOrder(0)]
-    public System.UInt32 MagicNumber { get; set; }
+    public UInt32 MagicNumber { get; set; }
 
     /// <summary>
     /// Mã lệnh (opcode) của gói tin.
     /// </summary>
     [SerializeOrder(4)]
-    public System.UInt16 OpCode { get; set; }
+    public UInt16 OpCode { get; set; }
 
     /// <summary>
     /// Cờ (flags) của gói tin.
@@ -79,10 +79,10 @@ public class CredentialsPacket : IPacket, IPacketTransformer<CredentialsPacket>
     /// <summary>
     /// Thiết lập OpCode và Credentials.
     /// </summary>
-    public void Initialize(System.UInt16 opCode, Credentials credentials)
+    public void Initialize(UInt16 opCode, Credentials credentials)
     {
         OpCode = opCode;
-        Credentials = credentials ?? throw new System.ArgumentNullException(nameof(credentials));
+        Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
     }
 
     /// <summary>
@@ -97,12 +97,12 @@ public class CredentialsPacket : IPacket, IPacketTransformer<CredentialsPacket>
     /// <summary>
     /// Tuần tự hoá packet thành mảng byte.
     /// </summary>
-    public System.Byte[] Serialize() => LiteSerializer.Serialize(this);
+    public Byte[] Serialize() => LiteSerializer.Serialize(this);
 
     /// <summary>
     /// Tuần tự hoá packet vào buffer cho sẵn.
     /// </summary>
-    public void Serialize(System.Span<System.Byte> buffer) => LiteSerializer.Serialize(this, buffer);
+    public void Serialize(Span<Byte> buffer) => LiteSerializer.Serialize(this, buffer);
 
     public static CredentialsPacket Encrypt(
     CredentialsPacket packet,
@@ -189,12 +189,12 @@ public class CredentialsPacket : IPacket, IPacketTransformer<CredentialsPacket>
         return packet;
     }
 
-    public static CredentialsPacket Deserialize(System.ReadOnlySpan<System.Byte> buffer)
+    public static CredentialsPacket Deserialize(ReadOnlySpan<Byte> buffer)
     {
         CredentialsPacket packet = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
                                                            .Get<CredentialsPacket>();
 
-        _ = LiteSerializer.Deserialize<CredentialsPacket>(buffer, ref packet);
+        _ = LiteSerializer.Deserialize(buffer, ref packet);
         return packet;
     }
 

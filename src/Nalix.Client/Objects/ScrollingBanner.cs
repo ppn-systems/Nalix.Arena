@@ -1,11 +1,12 @@
-﻿using Nalix.Presentation.Enums;
+﻿using Nalix.Client;
+using Nalix.Client.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Presentation.Objects;
+namespace Nalix.Client.Objects;
 
 /// <summary>
 /// Đại diện cho một banner cuộn liên tục từ phải sang trái trên màn hình.

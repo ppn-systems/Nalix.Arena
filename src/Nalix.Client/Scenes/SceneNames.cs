@@ -1,4 +1,4 @@
-﻿namespace Nalix.Presentation.Scenes;
+﻿namespace Nalix.Client.Scenes;
 
 /// <summary>
 /// Chứa tên của các cảnh (scene) trong trò chơi để dễ dàng quản lý.

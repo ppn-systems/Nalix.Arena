@@ -1,4 +1,4 @@
-﻿namespace Nalix.NetCore.Commands;
+﻿namespace Nalix.Communication.Commands;
 
 /// <summary>
 /// Chứa các hằng số opcode tương ứng với enum Command.

@@ -2,10 +2,10 @@
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
+using Nalix.Communication.Commands;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Logging;
-using Nalix.NetCore.Commands;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Control;

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nalix.NetCore.Security;
+namespace Nalix.Communication.Security;
 
 /// <summary>
 /// Đại diện cho thông tin đăng nhập gồm tên người dùng và mật khẩu.

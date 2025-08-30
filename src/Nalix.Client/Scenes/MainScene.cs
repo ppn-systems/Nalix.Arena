@@ -1,4 +1,5 @@
-﻿using Nalix.Presentation.Objects;
+﻿using Nalix.Client;
+using Nalix.Client.Objects;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Input;
@@ -10,7 +11,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Presentation.Scenes;
+namespace Nalix.Client.Scenes;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.

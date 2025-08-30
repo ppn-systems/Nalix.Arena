@@ -1,7 +1,7 @@
 ﻿using Nalix.Shared.LZ4;
 using System.Text;
 
-namespace Nalix.NetCore.Messages;
+namespace Nalix.Communication.Messages;
 
 public static class Base64
 {
