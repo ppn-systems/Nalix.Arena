@@ -1,9 +1,7 @@
 ﻿using Nalix.Client.Enums;
 using Nalix.Client.Objects;
-using Nalix.Client.Scenes;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging.Extensions;
-using Nalix.Presentation.Objects;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;

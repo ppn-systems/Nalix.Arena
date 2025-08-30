@@ -4,7 +4,7 @@
 		<IsTrimmable>true</IsTrimmable>
 		<TargetFramework>net9.0</TargetFramework>
 
-		<StartupObject>Nalix.Presentation.Program</StartupObject>
+		<StartupObject>Nalix.Client.Program</StartupObject>
 
 		<AssemblyName>Frontend</AssemblyName>
 	</PropertyGroup>
