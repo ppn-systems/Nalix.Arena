@@ -1,4 +1,4 @@
-﻿using Nalix.Common.Logging;
+﻿using Nalix.Common.Logging.Abstractions;
 using Nalix.Host.Assemblies;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Network;

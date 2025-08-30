@@ -2,8 +2,8 @@
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging;
+using Nalix.Network.Abstractions;
 using Nalix.Network.Connection;
-using Nalix.Network.Dispatch.Core.Interfaces;
 using Nalix.Network.Protocols;
 using Nalix.Shared.Injection;
 using System;

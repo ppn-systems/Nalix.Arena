@@ -1,11 +1,10 @@
 ﻿using Nalix.Client.Enums;
 using Nalix.Client.Objects;
-using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging.Extensions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
-using Nalix.SDK.Remote.Core;
+using Nalix.SDK.Remote;
 using Nalix.Shared.Injection;
 using SFML.Graphics;
 
@@ -88,7 +87,7 @@ public class NetworkScene : Scene
                 case ConnectState.Trying:
                     try
                     {
-                        _ = InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient<IPacket>>()
+                        _ = InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>()
                                                 .ConnectAsync(20000)
                                                 .ConfigureAwait(false);
 

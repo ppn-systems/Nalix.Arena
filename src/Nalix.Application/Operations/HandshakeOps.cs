@@ -8,7 +8,7 @@ using Nalix.Cryptography.Hashing;
 using Nalix.Logging;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
-using Nalix.Shared.Messaging.Control;
+using Nalix.Shared.Messaging.Controls;
 using Nalix.Shared.Messaging.Text;
 
 namespace Nalix.Application.Operations;
