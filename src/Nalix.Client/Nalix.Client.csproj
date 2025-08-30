@@ -13,7 +13,7 @@
 		<PackageReference Include="Nalix.SDK" Version="3.8.0" />
 
 		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
-		<ProjectReference Include="..\Nalix.NetCore\Nalix.NetCore.csproj" />
+		<ProjectReference Include="..\Nalix.Communication\Nalix.Communication.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

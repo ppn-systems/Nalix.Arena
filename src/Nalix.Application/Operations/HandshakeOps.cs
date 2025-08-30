@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Connection;
+using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.Cryptography.Asymmetric;
@@ -43,10 +44,18 @@ internal sealed class HandshakeOps
     [PacketOpcode((System.UInt16)Command.Handshake)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal static System.Memory<System.Byte> Handshake(
-        Handshake packet,
+    public static System.Memory<System.Byte> Handshake(
+        IPacket packet,
         IConnection connection)
     {
+        if (packet is not Handshake initPacket)
+        {
+            NLogix.Host.Instance.Error(
+                "Invalid packet type. Expected HandshakePacket from {0}",
+                connection.RemoteEndPoint);
+
+            return CreateResponse("Invalid packet type");
+        }
 
         // Nếu đã handshake, không cho phép lặp lại - theo security best practices
         if (connection.EncryptionKey is not null)
@@ -59,7 +68,7 @@ internal sealed class HandshakeOps
         }
 
         // Defensive programming - kiểm tra payload null
-        if (packet.Data is null)
+        if (initPacket.Data is null)
         {
             NLogix.Host.Instance.Error(
                 "Null payload in handshake packet from {0}",
@@ -69,13 +78,13 @@ internal sealed class HandshakeOps
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
-        if (packet.Data.Length != 32)
+        if (initPacket.Data.Length != 32)
         {
             NLogix.Host.Instance.Debug(
                 "Invalid public key length [Length={0}] from {1}",
-                packet.Data.Length, connection.RemoteEndPoint);
+                initPacket.Data.Length, connection.RemoteEndPoint);
 
-            return CreateResponse($"Invalid key length: expected 32, got {packet.Data.Length}");
+            return CreateResponse($"Invalid key length: expected 32, got {initPacket.Data.Length}");
         }
 
         // Tạo response packet chứa public key của server
@@ -88,7 +97,7 @@ internal sealed class HandshakeOps
             X25519.X25519KeyPair keyPair = X25519.GenerateKeyPair();
 
             // Tính toán shared secret từ private key của server và public key của client
-            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
+            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Data);
 
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
             connection.EncryptionKey = SHA256.HashData(secret);
