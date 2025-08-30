@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "Nalix.Game.sln",
+    "projects": [
+		"Nalix.Client\\Nalix.Client.csproj",
+		"Nalix.Rendering\\Nalix.Rendering.csproj",
+		"Nalix.Communication\\Nalix.Communication.csproj",
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "solution": {
+    "path": "Nalix.Game.sln",
+    "projects": [
+		"Nalix.Host\\Nalix.Host.csproj",
+		"Nalix.Domain\\Nalix.Domain.csproj",
+		"Nalix.Application\\Nalix.Application.csproj",
+		"Nalix.Communication\\Nalix.Communication.csproj",
+		"Nalix.Infrastructure\\Nalix.Infrastructure.csproj",
+    ]
+  }
+}
