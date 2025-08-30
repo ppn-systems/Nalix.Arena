@@ -1,6 +1,6 @@
 ﻿using Nalix.Domain.Common;
 using Nalix.Domain.Common.Enums;
-using Nalix.Domain.Entities;
+using Nalix.Domain.Entities.Player;
 
 namespace Nalix.Domain.Models.Maps;
 

@@ -1,4 +1,4 @@
-﻿using Nalix.Domain.Entities;
+﻿using Nalix.Domain.Entities.Player;
 
 namespace Nalix.Domain.Models.Combat;
 

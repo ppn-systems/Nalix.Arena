@@ -1,5 +1,6 @@
 ﻿using Nalix.Domain.Common;
-using Nalix.Domain.Entities;
+using Nalix.Domain.Entities.Economy;
+using Nalix.Domain.Entities.Player;
 using Nalix.Domain.Interface;
 using Nalix.Domain.Models.Attacks;
 using Nalix.Domain.Models.Combat;

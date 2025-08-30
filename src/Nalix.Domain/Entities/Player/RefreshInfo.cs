@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.Player;
 
 /// <summary>
 /// Lớp đại diện cho thông tin làm mới (refresh) của một đối tượng trong game.

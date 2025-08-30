@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.Player;
 
 /// <summary>
 /// Đại diện cho một vị trí 2D trên bản đồ trò chơi với tọa độ X và Y.

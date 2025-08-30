@@ -1,4 +1,4 @@
-﻿using Nalix.Domain.Entities;
+﻿using Nalix.Domain.Entities.World;
 
 namespace Nalix.Domain.Models.Maps;
 

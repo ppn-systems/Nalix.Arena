@@ -1,4 +1,5 @@
-﻿using Nalix.Domain.Entities;
+﻿using Nalix.Domain.Entities.Economy;
+using Nalix.Domain.Entities.Player;
 using Nalix.Domain.Models.Attacks;
 using Nalix.Domain.Models.Combat;
 using Nalix.Domain.Models.Monsters;

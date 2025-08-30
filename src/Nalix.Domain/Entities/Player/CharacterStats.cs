@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.Player;
 
 /// <summary>
 /// Lớp chứa các chỉ số nhân vật trong trò chơi.

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.World;
 
 /// <summary>
 /// Danh mục các loại ô (tile) trên bản đồ trong game.

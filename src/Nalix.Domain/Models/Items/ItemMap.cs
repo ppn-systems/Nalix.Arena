@@ -1,4 +1,4 @@
-﻿using Nalix.Domain.Entities;
+﻿using Nalix.Domain.Entities.Player;
 using Nalix.Framework.Time;
 
 namespace Nalix.Domain.Models.Items;

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.Player;
 
 /// <summary>
 /// Lớp đại diện cho thông tin cấp độ và kinh nghiệm của người chơi trong game.

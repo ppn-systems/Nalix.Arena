@@ -1,4 +1,4 @@
-﻿using Nalix.Domain.Entities;
+﻿using Nalix.Domain.Entities.Economy;
 using Nalix.Domain.Models.Tasks;
 using System.Collections.Generic;
 

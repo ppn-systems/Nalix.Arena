@@ -1,5 +1,5 @@
 ﻿using Nalix.Domain.Common;
-using Nalix.Domain.Entities;
+using Nalix.Domain.Entities.Economy;
 using Nalix.Domain.Interface;
 using System.Collections.Generic;
 

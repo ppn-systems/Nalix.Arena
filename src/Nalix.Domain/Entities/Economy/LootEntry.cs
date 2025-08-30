@@ -1,4 +1,4 @@
-﻿namespace Nalix.Domain.Entities;
+﻿namespace Nalix.Domain.Entities.Economy;
 
 /// <summary>
 /// Lớp đại diện cho một mục vật phẩm trong bảng vật phẩm rơi (loot table) của game.
