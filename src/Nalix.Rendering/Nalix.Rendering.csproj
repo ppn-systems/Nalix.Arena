@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Nalix.Logging" Version="4.0.0" />
-        <PackageReference Include="Nalix.Shared" Version="4.0.0" />
+        <PackageReference Include="Nalix.Logging" Version="4.2.2" />
+        <PackageReference Include="Nalix.Shared" Version="4.2.2" />
     </ItemGroup>
   
     <ItemGroup>
@@ -21,7 +21,6 @@
     </ItemGroup>
   
     <ItemGroup>
-      <Folder Include="Effects\Camera\" />
       <Folder Include="Effects\Visual\" />
       <Folder Include="Effects\Transitions\" />
     </ItemGroup>

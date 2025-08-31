@@ -45,6 +45,8 @@ public static class GameEngine
         );
         _window.Closed += (_, _) => _window.Close();
         _window.SetFramerateLimit(GraphicsConfig.FrameLimit);
+
+        Effects.Camera.Camera2D.Initialize(ScreenSize);
     }
 
     /// <summary>
@@ -102,6 +104,8 @@ public static class GameEngine
         SceneManager.ProcessDestroyQueue();
         SceneManager.ProcessSpawnQueue();
         SceneManager.UpdateSceneObjects(deltaTime);
+        Effects.Camera.Camera2D.Update(deltaTime);
+        Physics.CollisionManager.Update(deltaTime);
     }
 
     /// <summary>
@@ -112,11 +116,12 @@ public static class GameEngine
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static void Render(RenderTarget target)
     {
+        Effects.Camera.Camera2D.Apply(target);
         System.Collections.Generic.List<RenderObject> renderObjects = [.. SceneManager.AllObjects<RenderObject>()];
         renderObjects.Sort(RenderObject.CompareByZIndex);
         foreach (RenderObject r in renderObjects)
         {
-            if (r.Enabled || !r.Visible)
+            if (r.Enabled && r.Visible)
             {
                 r.Render(target);
             }

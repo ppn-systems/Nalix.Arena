@@ -139,6 +139,4 @@ public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket
         _ = LiteSerializer.Deserialize(buffer, ref packet);
         return packet;
     }
-
-    public static CredentialsPacket Deserialize(in ReadOnlySpan<Byte> buffer) => throw new NotImplementedException();
 }
