@@ -30,7 +30,6 @@ internal class MainScene : Scene
         AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
         AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
         AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
-        AddObject(new Menu());
     }
 
     #region Private Class

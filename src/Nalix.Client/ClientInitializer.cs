@@ -3,6 +3,7 @@ using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Nalix.Client;
 
@@ -15,6 +16,7 @@ internal static class ClientInitializer
     /// <summary>
     /// Initializes client components. Call this once at startup.
     /// </summary>
+    [RequiresUnreferencedCode("Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
     public static void Load()
     {
         // Register logger first so other components can use it.
