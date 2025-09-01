@@ -68,11 +68,9 @@ public sealed class ActionNotification : Notification
         Single btnTargetHeight = MathF.Round(lbBtn.Height + (btnPadY * 2f) + _border.Top + _border.Bottom);
         btnTargetHeight = MathF.Max(btnTargetHeight, 28f);
 
-        _buttonPanel = new NineSlicePanel(frameBut, _border)
-        {
-            Position = new Vector2f(0f, 0f),
-            Size = new Vector2f(btnTargetWidth * (scale - 0.1f), btnTargetHeight * scale)
-        };
+        _buttonPanel = new NineSlicePanel(frameBut, _border);
+        _ = _buttonPanel.SetPosition(new Vector2f(0f, 0f))
+                        .SetSize(new Vector2f(btnTargetWidth * (scale - 0.1f), btnTargetHeight * scale));
         _buttonPanel.Layout();
 
         // Position the button below the text
@@ -80,7 +78,7 @@ public sealed class ActionNotification : Notification
         Single buttonY = MathF.Round(textGB.Top + textGB.Height + VerticalGap) + ButtonExtraOffsetY;
 
         Single btnX = MathF.Round(innerCenterX - (_buttonPanel.Size.X / 2f));
-        _buttonPanel.Position = new Vector2f(btnX, buttonY);
+        _ = _buttonPanel.SetSize(new Vector2f(btnX, buttonY));
         _buttonPanel.Layout();
 
         Single btnCenterX = MathF.Round(btnX + (_buttonPanel.Size.X / 2f));
@@ -102,7 +100,7 @@ public sealed class ActionNotification : Notification
         Single buttonY = MathF.Round(textGB.Top + textGB.Height + VerticalGap) + ButtonExtraOffsetY;
 
         Single btnX = MathF.Round(innerCenterX - (_buttonPanel.Size.X / 2f));
-        _buttonPanel.Position = new Vector2f(btnX, buttonY);
+        _ = _buttonPanel.SetSize(new Vector2f(btnX, buttonY));
         _buttonPanel.Layout();
 
         Single btnCenterX = MathF.Round(btnX + (_buttonPanel.Size.X / 2f));
@@ -143,7 +141,7 @@ public sealed class ActionNotification : Notification
         _hoverAnim = Math.Clamp(_hoverAnim, 0f, 1f);
 
         // Visual feedback
-        _buttonPanel.SetColor(Lerp(_baseGray, _hoverGray, _hoverAnim));
+        _ = _buttonPanel.SetColor(Lerp(_baseGray, _hoverGray, _hoverAnim));
         _buttonText.FillColor = Lerp(Color.Black, Color.White, _hoverAnim);
 
         // Click -> conceal

@@ -10,6 +10,7 @@ using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
 
 namespace Nalix.Client.Scenes.Menu;
 
@@ -31,6 +32,10 @@ internal sealed class LoginSence : Scene
     [IgnoredLoad("RenderObject")]
     private sealed class LoginUi : RenderObject
     {
+        // nền mờ + panel nền
+        private readonly RectangleShape _backdrop;
+        private readonly NineSlicePanel _bgPanel;
+
         // Visuals
         private readonly Text _title, _uLabel, _pLabel;
         private readonly InputField _user;
@@ -41,7 +46,7 @@ internal sealed class LoginSence : Scene
         private readonly Vector2f _panelSize = new(520, 300);
         private readonly Vector2f _panelPos;
 
-        // 9-slice info cho InputField/PasswordField
+        // 9-slice info
         private readonly Texture _panelTex;
         private readonly Thickness _border = new(32, 32, 32, 32);
         private readonly IntRect _srcRect = default;
@@ -56,86 +61,87 @@ internal sealed class LoginSence : Scene
                 (GameEngine.ScreenSize.Y - _panelSize.Y) * 0.5f);
 
             // Assets
-            _panelTex = Assets.UiTextures.Load("panels/004"); // texture panel 9-slice
+            _panelTex = Assets.UiTextures.Load("panels/004");
             Font font = Assets.Font.Load("1");
 
+            // NEW: backdrop tối nhẹ toàn màn
+            _backdrop = new RectangleShape((Vector2f)GameEngine.ScreenSize)
+            {
+                FillColor = new Color(25, 25, 25, 110), // mờ 110/255
+                Position = new Vector2f(0, 0)
+            };
+
+            // NEW: panel nền phía sau controls
+            _bgPanel = new NineSlicePanel(Assets.UiTextures.Load("panels/020"), _border, _srcRect);
+            // Nếu bạn dùng bản NineSlicePanel có SetSize/SetPosition:
+            _ = _bgPanel
+                .SetSize(_panelSize * 1.3f)
+                .SetPosition(_panelPos * 0.8f)
+                .SetColor(new Color(20, 20, 20, 235));
+
             // Title + labels
-            _title = new Text("LOGIN", font, 26) { FillColor = new Color(25, 25, 25) };
-            _uLabel = new Text("Username", font, 16) { FillColor = new Color(60, 60, 60) };
-            _pLabel = new Text("Password", font, 16) { FillColor = new Color(60, 60, 60) };
+            _title = new Text("LOGIN", font, 26) { FillColor = new Color(250, 250, 250) };
+            _uLabel = new Text("Username", font, 16) { FillColor = new Color(240, 240, 240) };
+            _pLabel = new Text("Password", font, 16) { FillColor = new Color(240, 240, 240) };
 
             _title.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 6);
             _uLabel.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 70);
             _pLabel.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 130);
 
-            // Fields (dùng NineSlicePanel của bạn bên trong)
+            // Fields
             _user = new InputField(_panelTex, _border, _srcRect, font, 18,
                                   new Vector2f(340, 40),
                                   new Vector2f(_panelPos.X + 140, _panelPos.Y + 60));
-            _user.SetPanelColor(new Color(245, 245, 245));
+            _user.SetPanelColor(new Color(210, 210, 210));
             _user.SetTextColor(new Color(30, 30, 30));
             _user.Focused = true;
 
             _pass = new PasswordField(_panelTex, _border, _srcRect, font, 18,
                                       new Vector2f(340, 40),
                                       new Vector2f(_panelPos.X + 140, _panelPos.Y + 120));
-            _pass.SetPanelColor(new Color(245, 245, 245));
+            _pass.SetPanelColor(new Color(210, 210, 210));
             _pass.SetTextColor(new Color(30, 30, 30));
 
-            // Button (StretchableButton của bạn)
+            // Button
             _loginBtn = new StretchableButton("Sign in", 240f);
-            _loginBtn.SetColors(panelNormal: new Color(50, 50, 50), panelHover: new Color(70, 70, 70));
-            _loginBtn.SetZIndex(3);
+            _loginBtn.SetColors(panelNormal: new Color(210, 210, 210), panelHover: new Color(70, 70, 70));
+            _loginBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(240, 240, 240));
+            _loginBtn.SetZIndex(2);
 
-            // đặt vị trí theo trung tâm panel
             FloatRect btnBounds = _loginBtn.GetGlobalBounds();
-            System.Single btnX = _panelPos.X + ((_panelSize.X - btnBounds.Width) * 0.5f);
-            System.Single btnY = _panelPos.Y + _panelSize.Y - 70f;
+            Single btnX = _panelPos.X + ((_panelSize.X - btnBounds.Width) * 0.5f);
+            Single btnY = _panelPos.Y + _panelSize.Y - 70f;
             _loginBtn.SetPosition(new Vector2f(btnX, btnY));
 
-            // click -> submit
             _loginBtn.RegisterClickHandler(Submit);
         }
 
-        public override void Update(System.Single dt)
+        public override void Update(Single dt)
         {
-            // Tab: chuyển qua lại
             if (InputState.IsKeyPressed(Keyboard.Key.Tab))
             {
-                System.Boolean toPass = _user.Focused;
+                Boolean toPass = _user.Focused;
                 _user.Focused = !toPass;
                 _pass.Focused = toPass;
             }
 
-            // Enter: nếu đang ở Username -> nhảy xuống Password,
-            //        nếu đang ở Password -> Submit
             if (InputState.IsKeyPressed(Keyboard.Key.Enter))
             {
                 NLogix.Host.Instance.Info("Login: Enter pressed");
-                if (_user.Focused)
-                {
-                    _user.Focused = false;
-                    _pass.Focused = true;
-                }
-                else if (_pass.Focused)
-                {
-                    Submit();
-                }
+                if (_user.Focused) { _user.Focused = false; _pass.Focused = true; }
+                else if (_pass.Focused) { Submit(); }
             }
 
-            // Esc: hủy / quay lại
             if (InputState.IsKeyPressed(Keyboard.Key.Escape))
             {
                 SceneManager.ChangeScene(SceneNames.Main);
             }
 
-            // Toggle show password (F2 demo)
             if (InputState.IsKeyPressed(Keyboard.Key.F2))
             {
                 _pass.Toggle();
             }
 
-            // Forward updates
             _user.Update(dt);
             _pass.Update(dt);
             _loginBtn.Update(dt);
@@ -143,8 +149,11 @@ internal sealed class LoginSence : Scene
 
         public override void Render(RenderTarget target)
         {
-            // viền panel “ảo” (không cần panel lớn — chỉ các control đủ)
-            // Vẽ text + controls
+            // Vẽ nền TRƯỚC
+            target.Draw(_backdrop);
+            target.Draw(_bgPanel);
+
+            // Vẽ text + controls sau cùng
             target.Draw(_title);
             target.Draw(_uLabel);
             target.Draw(_pLabel);
@@ -160,11 +169,10 @@ internal sealed class LoginSence : Scene
         {
             _ = _user.Text;
             _ = _pass.Text;
-
-            // TODO: validate/gọi API đăng nhập
-            // … nếu ok:
             SceneManager.ChangeScene(SceneNames.Main);
         }
     }
+
+
     #endregion
 }

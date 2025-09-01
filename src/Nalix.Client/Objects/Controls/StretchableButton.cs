@@ -8,7 +8,7 @@ using SFML.Window;
 namespace Nalix.Client.Objects.Controls;
 
 /// <summary>
-/// Nút co giãn dùng NineSlicePanel (1 ảnh), hover đổi màu bằng tint.
+/// Nút co giãn dùng NineSlicePanel (1 ảnh), textHover đổi màu bằng tint.
 /// </summary>
 public class StretchableButton : RenderObject
 {
@@ -28,11 +28,11 @@ public class StretchableButton : RenderObject
     private Vector2f _position = new(0, 0);
 
     // colors
-    private Color _panelNormal = new(50, 50, 50);
-    private Color _panelHover = new(70, 70, 70);
+    private Color _panelNormal = new(30, 30, 30);
+    private Color _panelHover = new(60, 60, 60);
 
-    private Color _textNormal = Color.Black;
-    private Color _textHover = new(255, 255, 102);
+    private Color _textNormal = new(200, 200, 200);
+    private Color _textHover = new(255, 255, 255);
 
     private event System.Action OnClick;
 
@@ -87,6 +87,21 @@ public class StretchableButton : RenderObject
         if (panelHover.HasValue)
         {
             _panelHover = panelHover.Value;
+        }
+
+        ApplyHoverTint(_isHovered);
+    }
+
+    public void SetTextColors(Color? textNormal = null, Color? textHover = null)
+    {
+        if (textNormal.HasValue)
+        {
+            _textNormal = textNormal.Value;
+        }
+
+        if (textHover.HasValue)
+        {
+            _textHover = textHover.Value;
         }
 
         ApplyHoverTint(_isHovered);
@@ -164,8 +179,7 @@ public class StretchableButton : RenderObject
         System.Single totalHeight = DefaultHeight;
 
         // set panel geometry theo NineSlicePanel API của bạn
-        _panel.Position = _position;
-        _panel.Size = new Vector2f(totalWidth, totalHeight);
+        _ = _panel.SetPosition(_position).SetSize(new Vector2f(totalWidth, totalHeight));
         _panel.Layout(); // QUAN TRỌNG: phải gọi để áp transform/scale
 
         _totalBounds = new FloatRect(_position.X, _position.Y, totalWidth, totalHeight);
@@ -177,7 +191,7 @@ public class StretchableButton : RenderObject
         var tb = _label.GetLocalBounds();
         System.Single x = _position.X + ((totalWidth - tb.Width) / 2f) - tb.Left;
         System.Single y = _position.Y + ((totalHeight - tb.Height) / 2f) - tb.Top;
-        _label.Position = new Vector2f(x, y);
+        _label.Position = new Vector2f(x, y + 8);
     }
 
     #endregion
@@ -186,7 +200,7 @@ public class StretchableButton : RenderObject
 
     private void ApplyHoverTint(System.Boolean hovered)
     {
-        _panel.SetColor(hovered ? _panelHover : _panelNormal);
+        _ = _panel.SetColor(hovered ? _panelHover : _panelNormal);
         _label.FillColor = hovered ? _textHover : _textNormal;
     }
 

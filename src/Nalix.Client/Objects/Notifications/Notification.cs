@@ -44,11 +44,9 @@ public class Notification : RenderObject
         Single xCentered = MathF.Round((GameEngine.ScreenSize.X - targetWidth) / 2f);
 
         // Create panel (size will be finalized after measuring text)
-        _panel = new NineSlicePanel(frameTex, _border)
-        {
-            Position = new Vector2f(xCentered, floatY),
-            Size = new Vector2f(targetWidth, 64f)
-        };
+        _panel = new NineSlicePanel(frameTex, _border);
+        _ = _panel.SetPosition(new Vector2f(xCentered, floatY))
+                  .SetSize(new Vector2f(targetWidth, 64f));
         _panel.Layout();
 
         // Prepare wrapped text
@@ -70,7 +68,7 @@ public class Notification : RenderObject
         Single targetHeight = _border.Top + VerticalPadding + textHeight + VerticalPadding + _border.Bottom;
         targetHeight = MathF.Max(targetHeight, 72f);
 
-        _panel.Size = new Vector2f(targetWidth, MathF.Round(targetHeight));
+        _ = _panel.SetSize(new Vector2f(targetWidth, MathF.Round(targetHeight)));
         _panel.Layout();
 
         // Inner rect and text position

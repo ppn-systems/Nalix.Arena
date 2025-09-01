@@ -118,7 +118,7 @@ public class InputField : RenderObject
         get => _panel.Position;
         set
         {
-            _panel.Position = value;
+            _ = _panel.SetPosition(value);
             _panel.Layout();
             RelayoutText();
             UpdateHitBox();
@@ -132,7 +132,7 @@ public class InputField : RenderObject
         get => _panel.Size;
         set
         {
-            _panel.Size = EnsureMinSize(value, _panel.Border);
+            _ = _panel.SetSize(EnsureMinSize(value, _panel.Border));
             _panel.Layout();
             RelayoutText();
             UpdateHitBox();
@@ -194,11 +194,8 @@ public class InputField : RenderObject
     {
         _fontSize = fontSize;
 
-        _panel = new NineSlicePanel(panelTexture, border, sourceRect)
-        {
-            Position = position,
-            Size = EnsureMinSize(size, border)
-        };
+        _panel = new NineSlicePanel(panelTexture, border, sourceRect);
+        _ = _panel.SetPosition(position).SetSize(EnsureMinSize(size, border));
         _panel.Layout();
 
         // (VN) _measure chỉ dùng đo kích thước/khoảng cách glyph → tránh xê dịch do bearings
