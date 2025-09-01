@@ -1,6 +1,5 @@
-﻿using Nalix.Common.Logging.Abstractions;
-using Nalix.Common.Packets.Abstractions;
-using Nalix.Logging;
+﻿using Nalix.Common.Packets.Abstractions;
+using Nalix.Logging.Extensions;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
 using System.Diagnostics.CodeAnalysis;
@@ -20,9 +19,11 @@ internal static class ClientInitializer
     public static void Load()
     {
         // Register logger first so other components can use it.
-#if DEBUG
-        InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
-#endif
+        //#if DEBUG
+        //        InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
+        //#endif
+
+        NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
 
         // 1) Build packet catalog.
         var factory = new PacketCatalogFactory();

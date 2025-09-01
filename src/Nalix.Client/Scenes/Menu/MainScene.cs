@@ -167,13 +167,6 @@ internal class MainScene : Scene
                 return;
             }
 
-            // Phím tắt (key S) để vào phần thiết lập
-            //if (InputState.IsKeyDown(Keyboard.Key.S))
-            //{
-            //    _sound.Play();
-            //    SceneManager.ChangeScene(SceneNames.Settings);
-            //}
-
             // Click chuột trái vào biểu tượng thiết lập
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
