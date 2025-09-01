@@ -74,5 +74,6 @@ public abstract class RenderObject : SceneObject
     /// </returns>
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public static System.Int32 CompareByZIndex(RenderObject r1, RenderObject r2) => r1 == null && r2 == null ? 0 : r1 == null ? -1 : r2 == null ? 1 : r1._zIndex - r2._zIndex;
+    public static System.Int32 CompareByZIndex(RenderObject r1, RenderObject r2)
+        => r1 == null && r2 == null ? 0 : r1 == null ? -1 : r2 == null ? 1 : r1._zIndex - r2._zIndex;
 }
