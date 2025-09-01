@@ -11,6 +11,11 @@ internal static class SceneNames
     public const System.String Main = "main";
 
     /// <summary>
+    /// Cảnh đăng nhập (hiển thị form đăng nhập).
+    /// </summary>
+    public const System.String Login = "login";
+
+    /// <summary>
     /// Cảnh kết nối mạng (hiển thị khi đang cố gắng kết nối đến server).
     /// </summary>
     public const System.String Network = "network";

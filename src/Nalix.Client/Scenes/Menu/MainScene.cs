@@ -62,7 +62,7 @@ internal class MainScene : Scene
 
             _login.SetPosition(new Vector2f(posX, posY - 40));
 
-            _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Network));
+            _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
             _login.SetZIndex(ZIndex.Overlay.ToInt());
         }
 
@@ -91,7 +91,7 @@ internal class MainScene : Scene
     /// Lớp hiệu ứng nền parallax gồm nhiều lớp ảnh cuộn với tốc độ khác nhau.
     /// </summary>
     [IgnoredLoad("RenderObject")]
-    private class ParallaxLayer : RenderObject
+    internal class ParallaxLayer : RenderObject
     {
         private readonly ParallaxBackground _parallax;
 

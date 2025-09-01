@@ -97,7 +97,11 @@ public class InputState
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static System.Boolean IsKeyPressed(Keyboard.Key key)
-        => IsKeyDown(key) && !PreviousKeyState.ContainsKey(key);
+    {
+        System.Boolean wasDown = PreviousKeyState.TryGetValue(key, out System.Boolean prev) && prev;
+        System.Boolean isDown = IsKeyDown(key);
+        return isDown && !wasDown;
+    }
 
     /// <summary>
     /// Checks if a key was released for the first time this frame.
@@ -107,7 +111,11 @@ public class InputState
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static System.Boolean IsKeyReleased(Keyboard.Key key)
-        => !IsKeyDown(key) && PreviousKeyState.ContainsKey(key);
+    {
+        System.Boolean wasDown = PreviousKeyState.TryGetValue(key, out System.Boolean prev) && prev;
+        System.Boolean isDown = IsKeyDown(key);
+        return !isDown && wasDown;
+    }
 
     #endregion Keyboard
 
