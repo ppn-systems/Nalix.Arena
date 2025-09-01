@@ -16,7 +16,7 @@ public sealed class LoadingSpinner : RenderObject
 {
     private const System.Single MaxAlpha = 255f;
     private const System.Single BaseScale = 0.6f;
-    private const System.Single FadeSpeed = 300f;
+    private const System.Single FadeSpeed = 300;
     private const System.Single RotationSpeed = 150f;
     private const System.Single ScaleOscillation = 0.02f;
 
@@ -47,7 +47,7 @@ public sealed class LoadingSpinner : RenderObject
         };
 
         // Tải texture biểu tượng
-        Texture iconTexture = Assets.UiTextures.Load("icons/15");
+        Texture iconTexture = Assets.UiTextures.Load("icons/3");
 
         // Làm mịn texture
         iconTexture.Smooth = true;

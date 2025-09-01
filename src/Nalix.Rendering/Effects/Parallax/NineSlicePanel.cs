@@ -46,15 +46,15 @@ public sealed class NineSlicePanel : Drawable
 
         var src = new IntRect[9];
         // Corners
-        src[0] = new IntRect(sx, sy, L, T);                     // TL
-        src[2] = new IntRect(sx + sw - R, sy, R, T);                     // TR
-        src[6] = new IntRect(sx, sy + sh - B, L, B);                     // BL
-        src[8] = new IntRect(sx + sw - R, sy + sh - B, R, B);                     // BR
+        src[0] = new IntRect(sx, sy, L, T);                             // TL
+        src[2] = new IntRect(sx + sw - R, sy, R, T);                    // TR
+        src[6] = new IntRect(sx, sy + sh - B, L, B);                    // BL
+        src[8] = new IntRect(sx + sw - R, sy + sh - B, R, B);           // BR
         // Edges
-        src[1] = new IntRect(sx + L, sy, sw - L - R, T);            // Top
-        src[3] = new IntRect(sx, sy + T, L, sh - T - B);            // Left
-        src[5] = new IntRect(sx + sw - R, sy + T, R, sh - T - B);            // Right
-        src[7] = new IntRect(sx + L, sy + sh - B, sw - L - R, B);            // Bottom
+        src[1] = new IntRect(sx + L, sy, sw - L - R, T);                // Top
+        src[3] = new IntRect(sx, sy + T, L, sh - T - B);                // Left
+        src[5] = new IntRect(sx + sw - R, sy + T, R, sh - T - B);       // Right
+        src[7] = new IntRect(sx + L, sy + sh - B, sw - L - R, B);       // Bottom
         // Center
         src[4] = new IntRect(sx + L, sy + T, sw - L - R, sh - T - B);   // Center
 
@@ -73,8 +73,8 @@ public sealed class NineSlicePanel : Drawable
         dst[6] = new FloatRect(x, y + h - Bw, Lw, Bw);
         dst[8] = new FloatRect(x + w - Rw, y + h - Bw, Rw, Bw);
         // Edges
-        dst[1] = new FloatRect(x + Lw, y, w - Lw - Rw, Tw);     // Top (stretch X)
-        dst[3] = new FloatRect(x, y + Tw, Lw, h - Tw - Bw);     // Left (stretch Y)
+        dst[1] = new FloatRect(x + Lw, y, w - Lw - Rw, Tw);              // Top (stretch X)
+        dst[3] = new FloatRect(x, y + Tw, Lw, h - Tw - Bw);              // Left (stretch Y)
         dst[5] = new FloatRect(x + w - Rw, y + Tw, Rw, h - Tw - Bw);     // Right (stretch Y)
         dst[7] = new FloatRect(x + Lw, y + h - Bw, w - Lw - Rw, Bw);     // Bottom (stretch X)
         // Center

@@ -1,0 +1,5 @@
+Panel 👉 dùng để làm nền của thông báo (background hình vuông/chữ nhật, có viền, co giãn bằng 9-slice).
+Border 👉 chỉ là viền mỏng (nếu bạn muốn popup trông nhẹ, không có nền màu).
+Transparent border 👉 viền trong suốt ở giữa, thích hợp overlay.
+Transparent center 👉 chỉ hiện khung ngoài, giữa trống suốt (ít dùng cho popup).
+Divider / Divider Fade 👉 các đường kẻ ngăn cách nội dung trong panel (ví dụ gạch giữa title và body).

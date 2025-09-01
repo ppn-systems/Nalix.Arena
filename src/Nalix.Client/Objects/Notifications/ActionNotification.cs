@@ -11,14 +11,15 @@ namespace Nalix.Client.Objects.Notifications;
 /// <summary>
 /// Notification box with an action button. Adds hover/click feedback and conceal on click.
 /// </summary>
-public sealed class ActionNotificationBox : NotificationBox
+public sealed class ActionNotification : Notification
 {
     private readonly NineSlicePanel _buttonPanel;
     private readonly Text _buttonText;
 
-    private event Action _onClicked;
     private Boolean _isHovering;
     private Single _hoverAnim;
+
+    private event Action OnClicked;
 
     /// <summary>
     /// Gets or sets an extra Y offset applied to the button after layout.
@@ -37,7 +38,7 @@ public sealed class ActionNotificationBox : NotificationBox
     /// <param name="initialMessage">Initial message.</param>
     /// <param name="side">Top/Bottom placement.</param>
     /// <param name="buttonText">Caption of the button.</param>
-    public ActionNotificationBox(
+    public ActionNotification(
         String initialMessage = "", Side side = Side.Bottom, String buttonText = "OK")
         : base(initialMessage, side)
     {
@@ -148,7 +149,7 @@ public sealed class ActionNotificationBox : NotificationBox
         // Click -> conceal
         if (_isHovering && InputState.IsMouseButtonPressed(Mouse.Button.Left))
         {
-            _onClicked?.Invoke();
+            OnClicked?.Invoke();
             Conceal();
         }
     }
@@ -166,6 +167,6 @@ public sealed class ActionNotificationBox : NotificationBox
         target.Draw(_buttonText);
     }
 
-    public void RegisterAction(Action handler) => _onClicked += handler;
-    public void UnregisterAction(Action handler) => _onClicked -= handler;
+    public void RegisterAction(Action handler) => OnClicked += handler;
+    public void UnregisterAction(Action handler) => OnClicked -= handler;
 }

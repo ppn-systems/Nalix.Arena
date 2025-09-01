@@ -33,7 +33,7 @@ internal class MainScene : Scene
         AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
         AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
         AddObject(new Menu());           // Menu chính với nút đăng nhập
-        AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe.")); // Banner cuộn thông báo
+        AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe ⚠", 200f)); // Banner cuộn thông báo
     }
 
     #region Private Class
@@ -48,26 +48,22 @@ internal class MainScene : Scene
 
         public Menu()
         {
-            SetZIndex(1); // Ưu tiên vẽ sau nền
+            SetZIndex(2); // Ưu tiên vẽ sau nền
 
             _login = new StretchableButton("Login", 240f);
 
-            // Đặt vị trí tạm để force update layout (rất quan trọng)
+            // Đặt vị trí tạm để force update layout 
             _login.SetPosition(new Vector2f(0, 0));
-
-            // Gọi lại UpdateButtonSize nếu cần (không cần nếu SetPosition đã làm rồi)
-            // _login.ForceUpdateSize();
-
-            FloatRect bounds = _login.GetGlobalBounds(); // Bây giờ mới chính xác!
+            FloatRect bounds = _login.GetGlobalBounds();
 
             Vector2u screenSize = GameEngine.ScreenSize;
             System.Single posX = (screenSize.X - bounds.Width) / 2f;
             System.Single posY = (screenSize.Y - bounds.Height) / 2f;
 
-            _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
+            _login.SetPosition(new Vector2f(posX, posY - 40));
 
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Network));
-            _login.SetZIndex(ZIndex.Settings.ToInt());
+            _login.SetZIndex(ZIndex.Overlay.ToInt());
         }
 
         public override void Update(System.Single deltaTime)
@@ -146,19 +142,19 @@ internal class MainScene : Scene
             SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
             // Tải texture biểu tượng thiết lập
-            Texture texture = Assets.UiTextures.Load("icons/3");
+            Texture texture = Assets.UiTextures.Load("icons/1");
 
             _icon = new Sprite(texture)
             {
-                Scale = new Vector2f(2f, 2f),
-                Color = new Color(255, 255, 180), // Tông vàng nhẹ
+                Scale = new Vector2f(0.6f, 0.6f),
+                //Color = new Color(255, 255, 255), // Tông vàng nhẹ
             };
 
             FloatRect bounds = _icon.GetGlobalBounds();
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
 
             // Canh phải trên màn hình
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width, 5);
 
             // Âm thanh khi nhấn
             _sound = new Sound(buffer);
@@ -184,6 +180,7 @@ internal class MainScene : Scene
                 if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     _sound.Play();
+                    _sound.Dispose();
                     SceneManager.ChangeScene(SceneNames.Settings);
                 }
             }
@@ -202,7 +199,7 @@ internal class MainScene : Scene
             SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
 
             // Tải texture biểu tượng 12+
-            Texture texture = Assets.UiTextures.Load("icons/12+");
+            Texture texture = Assets.UiTextures.Load("icons/12");
 
             _icon = new Sprite(texture)
             {

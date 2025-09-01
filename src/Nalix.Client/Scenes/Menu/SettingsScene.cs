@@ -148,16 +148,16 @@ public class SettingsScene : Scene
         {
             SetZIndex(2);
 
-            Texture texture = Assets.UiTextures.Load("icons/1.png");
+            Texture texture = Assets.UiTextures.Load("icons/2");
 
             _icon = new Sprite(texture)
             {
-                Scale = new Vector2f(2f, 2f),
-                Color = new Color(255, 255, 180),
+                Scale = new Vector2f(0.6f, 0.6f),
+                //Color = new Color(255, 255, 180),
             };
 
             FloatRect bounds = _icon.GetGlobalBounds();
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width + 20, -10);
+            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width, 5);
 
             // Âm thanh click
             SoundBuffer buffer = Assets.Sounds.Load("1.wav");
@@ -174,17 +174,12 @@ public class SettingsScene : Scene
                 return;
             }
 
-            //if (InputState.IsKeyDown(Keyboard.Key.S))
-            //{
-            //    _sound.Play();
-            //    SceneManager.ChangeScene(SceneNames.Main);
-            //}
-
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {
                 if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
                     _sound.Play();
+                    _sound.Dispose();
                     SceneManager.ChangeScene(SceneNames.Main);
                 }
             }

@@ -13,7 +13,7 @@ namespace Nalix.Client.Objects.Notifications;
 /// Lightweight notification box without button. Renders a nine-slice panel with wrapped text.
 /// </summary>
 [IgnoredLoad("RenderObject")]
-public class NotificationBox : RenderObject
+public class Notification : RenderObject
 {
     protected readonly Text _messageText;
     protected readonly NineSlicePanel _panel;
@@ -31,7 +31,7 @@ public class NotificationBox : RenderObject
     /// </summary>
     /// <param name="initialMessage">Initial message.</param>
     /// <param name="side">Top/Bottom placement.</param>
-    public NotificationBox(String initialMessage = "", Side side = Side.Top)
+    public Notification(String initialMessage = "", Side side = Side.Top)
     {
         // Load assets
         Font font = Assets.Font.Load("1");

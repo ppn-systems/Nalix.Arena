@@ -29,7 +29,7 @@ public class ConnectScene : Scene
     {
         AddObject(new LoadingSpinner());
         AddObject(new NetworkHandler());
-        AddObject(new NotificationBox("Connecting to the server...", Side.Top));
+        AddObject(new Notification("Connecting to the server...", Side.Top));
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class ConnectScene : Scene
                     if (_timer >= RetryDelay)
                     {
                         _attempt++;
-                        SceneManager.FindByType<NotificationBox>()
+                        SceneManager.FindByType<Notification>()
                             ?.UpdateMessage($"Connecting… (attempt {_attempt}/{MaxAttempts})");
 
                         StartConnect();
@@ -97,7 +97,7 @@ public class ConnectScene : Scene
                         CleanupTask();
                         if (_attempt >= MaxAttempts)
                         {
-                            SceneManager.FindByType<NotificationBox>()
+                            SceneManager.FindByType<Notification>()
                                 ?.UpdateMessage("Lost connection to the server. Please try again.");
                             _state = ConnectState.Failed;
                         }
@@ -122,13 +122,13 @@ public class ConnectScene : Scene
 
                 case ConnectState.Failed:
                     // dừng lại, giữ thông báo; có nút Try now/Cancel cho user
-                    if (SceneManager.FindByType<NotificationBox>() != null)
+                    if (SceneManager.FindByType<Notification>() != null)
                     {
                         _state = ConnectState.ShowFail;
                     }
 
-                    SceneManager.FindByType<NotificationBox>()?.Destroy();
-                    ActionNotificationBox box = new("Lost connection to the server...")
+                    SceneManager.FindByType<Notification>()?.Destroy();
+                    ActionNotification box = new("Lost connection to the server...")
                     {
                         ButtonExtraOffsetY = 32f
                     };
