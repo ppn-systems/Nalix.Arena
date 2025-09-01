@@ -116,8 +116,8 @@ public class SettingsScene : Scene
 
             Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
 
-            System.Single posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
             _banner = new Sprite(panel)
             {
@@ -174,11 +174,11 @@ public class SettingsScene : Scene
                 return;
             }
 
-            if (InputState.IsKeyDown(Keyboard.Key.S))
-            {
-                _sound.Play();
-                SceneManager.ChangeScene(SceneNames.Main);
-            }
+            //if (InputState.IsKeyDown(Keyboard.Key.S))
+            //{
+            //    _sound.Play();
+            //    SceneManager.ChangeScene(SceneNames.Main);
+            //}
 
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
             {

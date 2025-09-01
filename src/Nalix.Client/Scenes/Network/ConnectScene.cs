@@ -1,7 +1,6 @@
 ﻿using Nalix.Client.Enums;
 using Nalix.Client.Objects.Indicators;
 using Nalix.Client.Objects.Notifications;
-using Nalix.Logging.Extensions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
@@ -39,68 +38,67 @@ public class ConnectScene : Scene
     [IgnoredLoad("RenderObject")]
     private class NetworkHandler : RenderObject
     {
-        private const System.Single RetryDelay = 3f; // thời gian chờ giữa các lần thử
+        private const System.Single RetryDelay = 3f;
+        private const System.Int32 MaxAttempts = 3;
 
-        /// <summary>
-        /// Trạng thái hiện tại của quá trình kết nối.
-        /// </summary>
-        private enum ConnectState
-        {
-            Waiting,
-            Trying,
-            Success,
-            Failed
-        }
+        private enum ConnectState { Waiting, Trying, Success, Failed, ShowFail, Done }
 
         private System.Int32 _attempt;
         private System.Single _timer;
         private ConnectState _state;
 
-        /// <summary>
-        /// Khởi tạo đối tượng xử lý mạng với trạng thái ban đầu là chờ kết nối.
-        /// </summary>
+        // quản lý async
+        private System.Threading.CancellationTokenSource _cts;
+        private System.Threading.Tasks.Task _connectTask;
+
         public NetworkHandler()
         {
             _timer = 0f;
             _attempt = 0;
-
             _state = ConnectState.Waiting;
         }
 
-        /// <summary>
-        /// Cập nhật trạng thái kết nối theo thời gian. Gồm các bước chờ, thử kết nối, thành công hoặc thất bại.
-        /// </summary>
-        /// <param name="deltaTime">Thời gian trôi qua từ lần cập nhật trước (giây).</param>
-        public override void Update(System.Single deltaTime)
+        public void ForceTryNow()
         {
-            _timer += deltaTime;
+            if (_state is ConnectState.Waiting)
+            {
+                _timer = RetryDelay; // ép sang Trying ở frame kế
+            }
+        }
+
+        public override void Update(System.Single dt)
+        {
+            _timer += dt;
 
             switch (_state)
             {
                 case ConnectState.Waiting:
                     if (_timer >= RetryDelay)
                     {
+                        _attempt++;
+                        SceneManager.FindByType<NotificationBox>()
+                            ?.UpdateMessage($"Connecting… (attempt {_attempt}/{MaxAttempts})");
+
+                        StartConnect();
                         _state = ConnectState.Trying;
                         _timer = 0f;
                     }
                     break;
 
                 case ConnectState.Trying:
-                    try
+                    if (_connectTask == null)
                     {
-                        _ = InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>()
-                                                .ConnectAsync(20000)
-                                                .ConfigureAwait(false);
-
-                        "Network attempt #{0} successful.".Info(_attempt.ToString());
-
-                        _state = ConnectState.Success;
+                        break;
                     }
-                    catch
+
+                    if (_connectTask.IsFaulted)
                     {
-                        _attempt++;
-                        if (_attempt >= 3)
+                        // lỗi kết nối
+                        CleanupTask();
+                        if (_attempt >= MaxAttempts)
                         {
+                            SceneManager.FindByType<NotificationBox>()
+                                ?.UpdateMessage("Lost connection to the server. Please try again.");
                             _state = ConnectState.Failed;
                         }
                         else
@@ -109,34 +107,78 @@ public class ConnectScene : Scene
                             _timer = 0f;
                         }
                     }
+                    else if (_connectTask.IsCompletedSuccessfully)
+                    {
+                        CleanupTask();
+                        _state = ConnectState.Success;
+                    }
                     break;
 
                 case ConnectState.Success:
                     SceneManager.QueueDestroy(this);
                     SceneManager.ChangeScene(SceneNames.Main);
+                    _state = ConnectState.Done;
                     break;
 
                 case ConnectState.Failed:
-                    SceneManager.FindByType<NotificationBox>()
-                                .UpdateMessage("Lost connection to the server...");
+                    // dừng lại, giữ thông báo; có nút Try now/Cancel cho user
+                    if (SceneManager.FindByType<NotificationBox>() != null)
+                    {
+                        _state = ConnectState.ShowFail;
+                    }
 
-                    _state = (ConnectState)(-1); // trạng thái kết thúc
+                    SceneManager.FindByType<NotificationBox>()?.Destroy();
+                    ActionNotificationBox box = new("Lost connection to the server...")
+                    {
+                        ButtonExtraOffsetY = 32f
+                    };
+
+                    // Khi bấm OK
+                    box.RegisterAction(() =>
+                    {
+                        box.Destroy();
+                        System.Environment.Exit(0);
+                    });
+                    box.Spawn();
+
+                    break;
+
+                case ConnectState.Done:
+                    // no-op
                     break;
             }
         }
 
-        /// <summary>
-        /// Không cần vẽ gì trong đối tượng này vì nó chỉ xử lý logic.
-        /// </summary>
-        /// <param name="target">Đối tượng đích để render.</param>
-        public override void Render(RenderTarget target)
+        private void StartConnect()
         {
-            // Không cần vẽ gì cho đối tượng này
+            CleanupTask();
+            _cts = new System.Threading.CancellationTokenSource();
+
+            try
+            {
+                RemoteStreamClient client = InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>();
+                // chạy connect async và giữ Task lại để polling trong Update
+                _connectTask = client.ConnectAsync(20000, _cts.Token);
+            }
+            catch (System.Exception)
+            {
+                // ctor DI fail, coi như lỗi ngay
+                _connectTask = System.Threading.Tasks.Task.FromException(new System.Exception("DI failed"));
+            }
         }
 
-        /// <summary>
-        /// Trả về Drawable null vì đối tượng này không có thành phần hiển thị.
-        /// </summary>
+        private void CleanupTask()
+        {
+            try { _cts?.Cancel(); } catch { }
+            _cts?.Dispose();
+            _cts = null;
+            _connectTask = null;
+        }
+
+        public override void BeforeDestroy() => CleanupTask();
+
+        public override void Render(RenderTarget target) { }
         protected override Drawable GetDrawable() => null;
     }
+
 }

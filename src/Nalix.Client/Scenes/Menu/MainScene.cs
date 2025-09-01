@@ -1,4 +1,6 @@
-﻿using Nalix.Client.Objects.Controls;
+﻿using Nalix.Client.Enums;
+using Nalix.Client.Objects.Controls;
+using Nalix.Client.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Input;
@@ -31,6 +33,7 @@ internal class MainScene : Scene
         AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
         AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
         AddObject(new Menu());           // Menu chính với nút đăng nhập
+        AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe.")); // Banner cuộn thông báo
     }
 
     #region Private Class
@@ -63,13 +66,8 @@ internal class MainScene : Scene
 
             _login.SetPosition(new Vector2f(posX, posY - 40)); // Vị trí chính thức
 
-            _login.RegisterClickHandler(() => System.Console.WriteLine("Button clicked!"));
-
-            // Log lại đúng kích thước
-            bounds = _login.GetGlobalBounds();
-            System.Console.WriteLine(
-                $"Bounds [FloatRect] Left({bounds.Left}) Top({bounds.Top}) Width({bounds.Width}) Height({bounds.Height})");
-            System.Console.WriteLine($"nameof(Menu) initialized at position: {posX}, {posY}");
+            _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Network));
+            _login.SetZIndex(ZIndex.Settings.ToInt());
         }
 
         public override void Update(System.Single deltaTime)
@@ -82,7 +80,7 @@ internal class MainScene : Scene
             _login.Update(deltaTime);
 
             // Nếu mất kết nối → trở về cảnh Network để kết nối lại
-            //if (!NetClient<Packet>.Instance.IsConnected)
+            //if (!InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>().IsConnected)
             //{
             //    SceneManager.ChangeScene(SceneNames.Network);
             //}
