@@ -30,6 +30,7 @@ internal class MainScene : Scene
         AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
         AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
         AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
+        AddObject(new Menu());           // Menu chính với nút đăng nhập
     }
 
     #region Private Class
@@ -77,6 +78,8 @@ internal class MainScene : Scene
             {
                 return;
             }
+
+            _login.Update(deltaTime);
 
             // Nếu mất kết nối → trở về cảnh Network để kết nối lại
             //if (!NetClient<Packet>.Instance.IsConnected)
@@ -171,11 +174,11 @@ internal class MainScene : Scene
             }
 
             // Phím tắt (key S) để vào phần thiết lập
-            if (InputState.IsKeyDown(Keyboard.Key.S))
-            {
-                _sound.Play();
-                SceneManager.ChangeScene(SceneNames.Settings);
-            }
+            //if (InputState.IsKeyDown(Keyboard.Key.S))
+            //{
+            //    _sound.Play();
+            //    SceneManager.ChangeScene(SceneNames.Settings);
+            //}
 
             // Click chuột trái vào biểu tượng thiết lập
             if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
@@ -191,6 +194,7 @@ internal class MainScene : Scene
         protected override Drawable GetDrawable() => _icon;
     }
 
+    [IgnoredLoad("RenderObject")]
     private class TwelveIcon : RenderObject
     {
         private readonly Sprite _icon;
