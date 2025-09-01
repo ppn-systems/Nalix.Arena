@@ -1,6 +1,6 @@
 ﻿using Nalix.Client.Enums;
 using Nalix.Rendering.Attributes;
-using Nalix.Rendering.Effects.Parallax;
+using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;

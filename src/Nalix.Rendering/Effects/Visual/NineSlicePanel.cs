@@ -1,7 +1,7 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Rendering.Effects.Parallax;
+namespace Nalix.Rendering.Effects.Visual;
 
 /// <summary>
 /// Simple 9-slice panel for crisp, scalable UI frames.

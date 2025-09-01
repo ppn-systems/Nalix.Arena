@@ -13,11 +13,11 @@ internal static class Program
     /// <param name="args">Các đối số dòng lệnh (chưa được sử dụng).</param>
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Style", "IDE0060:Remove unused parameter", Justification = "<Pending>")]
-    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Calls Nalix.Client.ClientInitializer.Load()")]
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Calls Nalix.Client.Registry.Load()")]
     public static void Main(System.String[] args)
     {
         // Initialize client-side services and registrations.
-        ClientInitializer.Load();
+        Registry.Load();
 
         // Open the game window.
         GameEngine.OpenWindow();

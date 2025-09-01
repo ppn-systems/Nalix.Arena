@@ -1,5 +1,4 @@
 ﻿using Nalix.Common.Packets.Abstractions;
-using Nalix.Logging.Extensions;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
 using System.Diagnostics.CodeAnalysis;
@@ -10,7 +9,7 @@ namespace Nalix.Client;
 /// Performs client-side initialization such as packet registrations
 /// and service wiring using the existing InstanceManager.
 /// </summary>
-internal static class ClientInitializer
+internal static class Registry
 {
     /// <summary>
     /// Initializes client components. Call this once at startup.
@@ -19,11 +18,13 @@ internal static class ClientInitializer
     public static void Load()
     {
         // Register logger first so other components can use it.
-        //#if DEBUG
-        //        InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
-        //#endif
+#if DEBUG
+        InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
+#else
+        Logging.Extensions.NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
+#endif
 
-        NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
+
 
         // 1) Build packet catalog.
         var factory = new PacketCatalogFactory();

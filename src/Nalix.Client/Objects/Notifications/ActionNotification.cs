@@ -1,5 +1,5 @@
 ﻿using Nalix.Client.Enums;
-using Nalix.Rendering.Effects.Parallax;
+using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Input;
 using SFML.Graphics;
 using SFML.System;

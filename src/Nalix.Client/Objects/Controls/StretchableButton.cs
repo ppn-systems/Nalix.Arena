@@ -1,4 +1,4 @@
-﻿using Nalix.Rendering.Effects.Parallax; // NineSlicePanel + Thickness
+﻿using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using SFML.Graphics;
@@ -28,11 +28,11 @@ public class StretchableButton : RenderObject
     private Vector2f _position = new(0, 0);
 
     // colors
-    private Color _panelNormal = new(245, 245, 245);
-    private Color _panelHover = new(230, 230, 230);
+    private Color _panelNormal = new(50, 50, 50);
+    private Color _panelHover = new(70, 70, 70);
 
     private Color _textNormal = Color.Black;
-    private Color _textHover = new(25, 25, 112);
+    private Color _textHover = new(255, 255, 102);
 
     private event System.Action OnClick;
 
