@@ -1,5 +1,6 @@
 ﻿using Nalix.Application.Extensions;
 using Nalix.Common.Connection;
+using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.Communication.Collections;
@@ -12,8 +13,6 @@ using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
-using System;
-using System.Threading.Tasks;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -41,20 +40,20 @@ internal sealed class AccountOps
     /// <summary>
     /// Handles user registration.
     /// </summary>
-    [PacketOpcode((UInt16)Command.REGISTER)]
-    [PacketPermission(PermissionLevel.Guest)]
     [PacketEncryption(true)]
+    [PacketPermission(PermissionLevel.Guest)]
+    [PacketOpcode((System.UInt16)Command.REGISTER)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async Task RegisterAsync(CredentialsPacket packet, IConnection connection)
+    internal async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
     {
-        const UInt16 Op = (UInt16)Command.REGISTER;
+        const System.UInt16 Op = (System.UInt16)Command.REGISTER;
 
-        // Validate packet type (defensive even though signature is CredentialsPacket)
-        if (packet is not CredentialsPacket credentialsPacket)
+        // Validate p type (defensive even though signature is CredentialsPacket)
+        if (p is not CredentialsPacket packet)
         {
             NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected CredentialsPacket from {0}",
+                "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
             await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
@@ -62,21 +61,21 @@ internal sealed class AccountOps
         }
 
         // Null payload
-        if (credentialsPacket.Credentials is null)
+        if (packet.Credentials is null)
         {
             NLogix.Host.Instance.Error(
-                "Null credentials in register packet from {0}",
+                "Null credentials in register p from {0}",
                 connection.RemoteEndPoint);
 
             await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
-        Credentials credentials = credentialsPacket.Credentials;
+        Credentials credentials = packet.Credentials;
 
         // Basic input validation
-        if (String.IsNullOrWhiteSpace(credentials.Username) ||
-            String.IsNullOrWhiteSpace(credentials.Password))
+        if (System.String.IsNullOrWhiteSpace(credentials.Username) ||
+            System.String.IsNullOrWhiteSpace(credentials.Password))
         {
             NLogix.Host.Instance.Debug(
                 "Empty username or password in register attempt from {0}",
@@ -102,8 +101,8 @@ internal sealed class AccountOps
             // Derive salt/hash
             SecureCredentials.GenerateCredentialHash(
                 credentials.Password,
-                out Byte[] salt,
-                out Byte[] hash);
+                out System.Byte[] salt,
+                out System.Byte[] hash);
 
             Credentials newAccount = new()
             {
@@ -111,7 +110,7 @@ internal sealed class AccountOps
                 Salt = salt,
                 Hash = hash,
                 Role = PermissionLevel.User,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = System.DateTime.UtcNow,
                 IsActive = true,
                 FailedLoginCount = 0
             };
@@ -120,8 +119,8 @@ internal sealed class AccountOps
             _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
 
             // Clear sensitive
-            Array.Clear(salt, 0, salt.Length);
-            Array.Clear(hash, 0, hash.Length);
+            System.Array.Clear(salt, 0, salt.Length);
+            System.Array.Clear(hash, 0, hash.Length);
 
             NLogix.Host.Instance.Info(
                 "Account {0} registered successfully from connection {1}",
@@ -129,7 +128,7 @@ internal sealed class AccountOps
 
             await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             NLogix.Host.Instance.Error(
                 "Failed to register account {0} from connection {1}: {2}",
@@ -142,36 +141,36 @@ internal sealed class AccountOps
     /// <summary>
     /// Handles user login.
     /// </summary>
-    [PacketOpcode((UInt16)Command.LOGIN)]
-    [PacketPermission(PermissionLevel.Guest)]
     [PacketEncryption(true)]
+    [PacketPermission(PermissionLevel.Guest)]
+    [PacketOpcode((System.UInt16)Command.LOGIN)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async Task LoginAsync(CredentialsPacket packet, IConnection connection)
+    internal async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
     {
-        const UInt16 Op = (UInt16)Command.LOGIN;
+        const System.UInt16 Op = (System.UInt16)Command.LOGIN;
 
-        if (packet is not CredentialsPacket credentialsPacket)
+        if (p is not CredentialsPacket packet)
         {
             NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected CredentialsPacket from {0}",
+                "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
             await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
             return;
         }
 
-        if (credentialsPacket.Credentials is null)
+        if (packet.Credentials is null)
         {
             NLogix.Host.Instance.Error(
-                "Null credentials in login packet from {0}",
+                "Null credentials in login p from {0}",
                 connection.RemoteEndPoint);
 
             await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
-        Credentials credentials = credentialsPacket.Credentials;
+        Credentials credentials = packet.Credentials;
 
         try
         {
@@ -192,7 +191,7 @@ internal sealed class AccountOps
             // Lockout window
             if (account.FailedLoginCount >= 5 &&
                 account.LastFailedLoginAt.HasValue &&
-                DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
+                System.DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
             {
                 NLogix.Host.Instance.Warn(
                     "Account {0} locked due to too many failed attempts from connection {1}",
@@ -207,7 +206,7 @@ internal sealed class AccountOps
                     credentials.Password, account.Salt, account.Hash))
             {
                 account.FailedLoginCount++;
-                account.LastFailedLoginAt = DateTime.UtcNow;
+                account.LastFailedLoginAt = System.DateTime.UtcNow;
                 _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
 
                 NLogix.Host.Instance.Warn(
@@ -232,7 +231,7 @@ internal sealed class AccountOps
             // Reset counters and update last login
             account.FailedLoginCount = 0;
             account.LastFailedLoginAt = null;
-            account.LastLoginAt = DateTime.UtcNow;
+            account.LastLoginAt = System.DateTime.UtcNow;
             _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
 
             // Update connection state
@@ -246,7 +245,7 @@ internal sealed class AccountOps
 
             await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             NLogix.Host.Instance.Error(
                 "LOGIN failed for {0} from connection {1}: {2}",
@@ -259,18 +258,18 @@ internal sealed class AccountOps
     /// <summary>
     /// Handles user logout.
     /// </summary>
-    [PacketOpcode((UInt16)Command.LOGOUT)]
-    [PacketPermission(PermissionLevel.User)]
     [PacketEncryption(false)]
+    [PacketPermission(PermissionLevel.User)]
+    [PacketOpcode((System.UInt16)Command.LOGOUT)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async Task LogoutAsync(CredentialsPacket ___, IConnection connection)
+    internal async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
     {
-        const UInt16 Op = (UInt16)Command.LOGOUT;
+        System.ArgumentNullException.ThrowIfNull(p);
+        const System.UInt16 Op = (System.UInt16)Command.LOGOUT;
 
-        String username = InstanceManager.Instance
-                                         .GetOrCreateInstance<ConnectionHub>()
-                                         .GetUsername(connection.Id);
+        System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
+                                                  .GetUsername(connection.Id);
 
         if (username is null)
         {
@@ -285,14 +284,15 @@ internal sealed class AccountOps
 
         try
         {
-            Credentials account = await _accounts.GetFirstOrDefaultAsync(
-                a => a.Username == username).ConfigureAwait(false);
+            Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username)
+                                                 .ConfigureAwait(false);
 
             if (account is not null)
             {
                 account.IsActive = false;
-                account.LastLogoutAt = DateTime.UtcNow;
-                _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
+                account.LastLogoutAt = System.DateTime.UtcNow;
+                _ = await _accounts.SaveChangesAsync()
+                                   .ConfigureAwait(false);
             }
 
             // Reset connection state
@@ -304,18 +304,21 @@ internal sealed class AccountOps
                 "User {0} logged out successfully from connection {1}",
                 username, connection.RemoteEndPoint);
 
-            // Send response first, then disconnect so client receives the packet
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            // Send response first, then disconnect so client receives the p
+            await connection.SendAsync(Op, ResponseStatus.OK)
+                            .ConfigureAwait(false);
+
             connection.Disconnect();
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             NLogix.Host.Instance.Error(
                 "LOGOUT failed for {0} from connection {1}: {2}",
                 username, connection.RemoteEndPoint, ex.Message);
 
             // Try to inform client about error, then disconnect
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
+                            .ConfigureAwait(false);
 
             connection.Level = PermissionLevel.Guest;
             connection.Disconnect();
