@@ -46,12 +46,12 @@ internal sealed class HandshakeOps
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static async System.Threading.Tasks.Task Handshake(
-        IPacket packet,
+        IPacket p,
         IConnection connection)
     {
         const UInt16 Op = (UInt16)Command.HANDSHAKE;
 
-        if (packet is not Handshake initPacket)
+        if (p is not Handshake packet)
         {
             NLogix.Host.Instance.Error(
                 "Invalid packet type. Expected HandshakePacket from {0}",
@@ -73,7 +73,7 @@ internal sealed class HandshakeOps
         }
 
         // Defensive programming - kiểm tra payload null
-        if (initPacket.Data is null)
+        if (packet.Data is null)
         {
             NLogix.Host.Instance.Error(
                 "Null payload in handshake packet from {0}",
@@ -84,11 +84,11 @@ internal sealed class HandshakeOps
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
-        if (initPacket.Data.Length != 32)
+        if (packet.Data.Length != 32)
         {
             NLogix.Host.Instance.Debug(
                 "Invalid public key length [Length={0}] from {1}",
-                initPacket.Data.Length, connection.RemoteEndPoint);
+                packet.Data.Length, connection.RemoteEndPoint);
 
             await connection.SendAsync(Op, ResponseStatus.INVALID_KEY_LENGTH).ConfigureAwait(false);
             return;
@@ -104,7 +104,7 @@ internal sealed class HandshakeOps
             X25519.X25519KeyPair keyPair = X25519.GenerateKeyPair();
 
             // Tính toán shared secret từ private key của server và public key của client
-            Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Data);
+            Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
 
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
             connection.EncryptionKey = SHA256.HashData(secret);
