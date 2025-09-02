@@ -2,11 +2,25 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<IsTrimmable>true</IsTrimmable>
-		<TargetFramework>net9.0</TargetFramework>
+		<TargetFrameworks>net9.0-windows;net9.0</TargetFrameworks>
 
 		<StartupObject>Nalix.Client.Program</StartupObject>
 
 		<AssemblyName>Frontend</AssemblyName>
+
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
+
+		<PublishSingleFile>true</PublishSingleFile>
+		<SelfContained>true</SelfContained>
+		<UseAppHost>true</UseAppHost>
+
+		<PublishReadyToRun>false</PublishReadyToRun>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFramework)'=='net9.0-windows'">
+		<OutputType>WinExe</OutputType>
 	</PropertyGroup>
 
 	<ItemGroup>
