@@ -1,4 +1,5 @@
-﻿using Nalix.Common.Packets;
+﻿using Nalix.Common.Attributes;
+using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Enums;
 using Nalix.Common.Security.Enums;
@@ -21,6 +22,7 @@ namespace Nalix.Communication.Packet.Collections;
 /// dùng trong quá trình xác thực sau handshake.
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
+[MagicNumber((UInt32)MagicNumbers.Credentials)]
 public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket>
 {
     /// <summary>
@@ -41,8 +43,8 @@ public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket
     /// </summary>
     public CredentialsPacket()
     {
-        OpCode = 0;
-        MagicNumber = CommandCodes.MagicNumber;
+        OpCode = Command.None.AsUInt16();
+        MagicNumber = MagicNumbers.Credentials.AsUInt32();
         Credentials = new Credentials();
     }
 
@@ -60,7 +62,7 @@ public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = 0;
+        OpCode = Command.None.AsUInt16();
         Credentials = new Credentials();
     }
 

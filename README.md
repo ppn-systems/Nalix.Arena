@@ -1,4 +1,4 @@
-# 🕹️ Nalix.Game
+# 🕹️ Nalix.Arena
 
 Nalix.Game is a 2D game project designed for both server and client sides, built using modern .NET technologies. It leverages custom libraries from the Nalix ecosystem (developed in-house), along with other powerful tools such as Entity Framework (EF) for data access and SFML for rendering and multimedia.
 

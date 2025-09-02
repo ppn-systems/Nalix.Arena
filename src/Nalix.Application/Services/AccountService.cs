@@ -11,7 +11,6 @@ using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
-using Nalix.Shared.Messaging.Text;
 
 namespace Nalix.Application.Services;
 
@@ -50,7 +49,7 @@ internal sealed class AccountService
     [PacketEncryption(true)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> RegisterAsync(
+    internal async System.Threading.Tasks.Task RegisterAsync(
         CredentialsPacket packet, IConnection connection)
     {
         // Pattern matching theo SOLID principles
@@ -60,7 +59,8 @@ internal sealed class AccountService
                 "Invalid packet type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Invalid packet type");
+            _ = await connection.Tcp.SendAsync("Invalid packet type");
+            return;
         }
 
         // Defensive programming
@@ -70,7 +70,8 @@ internal sealed class AccountService
                 "Null credentials in register packet from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Invalid credentials");
+            _ = await connection.Tcp.SendAsync("Invalid credentials");
+            return;
         }
 
         Credentials credentials = credentialsPacket.Credentials;
@@ -83,13 +84,12 @@ internal sealed class AccountService
                 "Empty username or password in register attempt from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Username and password cannot be empty");
+            _ = await connection.Tcp.SendAsync("Username and password cannot be empty");
+            return;
         }
 
         try
         {
-
-
             // Kiểm tra username đã tồn tại
             if (await _accounts.AnyAsync(a => a.Username == credentials.Username))
             {
@@ -97,7 +97,8 @@ internal sealed class AccountService
                     "Username {0} already exists from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                return CreateResponse("Username already exists");
+                _ = await connection.Tcp.SendAsync("Username already exists");
+                return;
             }
 
             // Tạo hash và salt cho mật khẩu
@@ -129,7 +130,7 @@ internal sealed class AccountService
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return CreateResponse("Registration successful");
+            _ = await connection.Tcp.SendAsync("Registration successful");
         }
         catch (System.Exception ex)
         {
@@ -137,7 +138,7 @@ internal sealed class AccountService
                 "Failed to register account {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            return CreateResponse("Registration failed due to internal error");
+            _ = await connection.Tcp.SendAsync("Registration failed due to internal error");
         }
     }
 
@@ -149,8 +150,9 @@ internal sealed class AccountService
     [PacketEncryption(true)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> LoginAsync(
-        CredentialsPacket packet, IConnection connection)
+    internal async System.Threading.Tasks.Task LoginAsync(
+        CredentialsPacket packet,
+        IConnection connection)
     {
         if (packet is not CredentialsPacket credentialsPacket)
         {
@@ -158,7 +160,8 @@ internal sealed class AccountService
                 "Invalid packet type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Invalid packet type");
+            _ = await connection.Tcp.SendAsync("Invalid packet type");
+            return;
         }
 
         if (credentialsPacket.Credentials is null)
@@ -167,7 +170,8 @@ internal sealed class AccountService
                 "Null credentials in login packet from {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Invalid credentials");
+            _ = await connection.Tcp.SendAsync("Invalid credentials");
+            return;
         }
 
         Credentials credentials = credentialsPacket.Credentials;
@@ -184,7 +188,8 @@ internal sealed class AccountService
                     "Login attempt with non-existent username {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                return CreateResponse("Invalid username or password");
+                _ = await connection.Tcp.SendAsync("Invalid username or password");
+                return;
             }
 
             // Kiểm tra account lockout
@@ -195,7 +200,8 @@ internal sealed class AccountService
                     "Account {0} locked due to too many failed attempts from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                return CreateResponse("Account temporarily locked. Try again later.");
+                _ = await connection.Tcp.SendAsync("Account temporarily locked. Try again later.");
+                return;
             }
 
             // Xác thực mật khẩu
@@ -211,7 +217,8 @@ internal sealed class AccountService
                     "Incorrect password for {0}, attempt {1} from connection {2}",
                     credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
 
-                return CreateResponse("Invalid username or password");
+                _ = await connection.Tcp.SendAsync("Invalid username or password");
+                return;
             }
 
             // Kiểm tra account active
@@ -221,7 +228,8 @@ internal sealed class AccountService
                     "Login attempt on disabled account {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                return CreateResponse("Account is disabled");
+                _ = await connection.Tcp.SendAsync("Account is disabled");
+                return;
             }
 
             // Reset failed login count và update trạng thái
@@ -239,7 +247,7 @@ internal sealed class AccountService
                 "User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            return CreateResponse("Login successful");
+            _ = await connection.Tcp.SendAsync("Login successful");
         }
         catch (System.Exception ex)
         {
@@ -247,7 +255,7 @@ internal sealed class AccountService
                 "Login failed for {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            return CreateResponse("Login failed due to internal error");
+            _ = await connection.Tcp.SendAsync("Login failed due to internal error");
         }
     }
 
@@ -259,7 +267,7 @@ internal sealed class AccountService
     [PacketEncryption(false)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task<System.Memory<System.Byte>> LogoutAsync(
+    internal async System.Threading.Tasks.Task LogoutAsync(
         CredentialsPacket ___, IConnection connection)
     {
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
@@ -271,7 +279,8 @@ internal sealed class AccountService
                 "Logout attempt without valid session from connection {0}",
                 connection.RemoteEndPoint);
 
-            return CreateResponse("Invalid session");
+            _ = await connection.Tcp.SendAsync("Invalid session");
+            return;
         }
 
         try
@@ -298,7 +307,7 @@ internal sealed class AccountService
             // Disconnect after successful logout
             connection.Disconnect();
 
-            return CreateResponse("Logout successful");
+            _ = await connection.Tcp.SendAsync("Logout successful");
         }
         catch (System.Exception ex)
         {
@@ -310,29 +319,7 @@ internal sealed class AccountService
             connection.Level = PermissionLevel.Guest;
             connection.Disconnect();
 
-            return CreateResponse("Logout completed with warnings");
-        }
-    }
-
-    /// <summary>
-    /// Tạo error response packet sử dụng StringPacket với object pooling.
-    /// </summary>
-    [System.Runtime.CompilerServices.MethodImpl(
-        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    private static System.Memory<System.Byte> CreateResponse(System.String message)
-    {
-        Text256 packet = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
-                                                 .Get<Text256>();
-
-        try
-        {
-            packet.Initialize(message);
-            return new System.Memory<System.Byte>(packet.Serialize());
-        }
-        finally
-        {
-            InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
-                                        .Return<Text256>(packet);
+            _ = await connection.Tcp.SendAsync("Logout completed with warnings");
         }
     }
 }
