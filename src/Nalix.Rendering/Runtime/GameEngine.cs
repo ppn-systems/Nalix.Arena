@@ -1,5 +1,6 @@
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
+using Nalix.Rendering.Resources.Manager;
 using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
@@ -91,7 +92,12 @@ public static class GameEngine
         _window.Dispose();
     }
 
-    public static void CloseWindow() => _window.Close();
+    public static void CloseWindow()
+    {
+        _window.Close();
+
+        MusicManager.Dispose();
+    }
 
     /// <summary>
     /// Updates all game components, including input, scene management, and scene objects.

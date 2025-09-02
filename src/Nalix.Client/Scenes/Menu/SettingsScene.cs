@@ -3,7 +3,6 @@ using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
-using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -138,7 +137,6 @@ public class SettingsScene : Scene
     [IgnoredLoad("RenderObject")]
     internal class CloseIcon : RenderObject
     {
-        private readonly Sound _sound;
         private readonly Sprite _icon;
 
         /// <summary>
@@ -158,10 +156,6 @@ public class SettingsScene : Scene
 
             FloatRect bounds = _icon.GetGlobalBounds();
             _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width, 5);
-
-            // Âm thanh click
-            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-            _sound = new Sound(buffer);
         }
 
         /// <summary>
@@ -178,8 +172,7 @@ public class SettingsScene : Scene
             {
                 if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
                 {
-                    _sound.Play();
-                    _sound.Dispose();
+                    Assets.Sfx.Play("1");
                     SceneManager.ChangeScene(SceneNames.Main);
                 }
             }

@@ -3,14 +3,13 @@ using Nalix.Client.Objects.Controls;
 using Nalix.Client.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
-using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
+using System.Collections.Generic;
 
 namespace Nalix.Client.Scenes.Menu;
 
@@ -20,6 +19,8 @@ namespace Nalix.Client.Scenes.Menu;
 /// </summary>
 internal class MainScene : Scene
 {
+    private static readonly List<Sound> _activeSounds = [];
+
     public MainScene() : base(SceneNames.Main)
     {
     }
@@ -94,9 +95,16 @@ internal class MainScene : Scene
             _exit.SetTextOutline(new Color(0, 0, 0, 180), 2f);
 
             // Đăng ký handler
+            _login.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
+
+            _settings.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _settings.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Settings));
+
+            _credits.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _credits.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Credits));
+
+            _exit.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _exit.RegisterClickHandler(GameEngine.CloseWindow);
 
             foreach (var btn in _buttons)
@@ -196,60 +204,6 @@ internal class MainScene : Scene
 
             _parallax.Draw(target);
         }
-    }
-
-    /// <summary>
-    /// Biểu tượng thiết lập cho phép chuyển đến Scene Settings.
-    /// </summary>
-    [IgnoredLoad("RenderObject")]
-    private class SettingIcon : RenderObject
-    {
-        private readonly Sound _sound;
-        private readonly Sprite _icon;
-
-        public SettingIcon()
-        {
-            SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
-
-            // Tải texture biểu tượng thiết lập
-            Texture texture = Assets.UiTextures.Load("icons/1");
-
-            _icon = new Sprite(texture)
-            {
-                Scale = new Vector2f(0.6f, 0.6f),
-                //Color = new Color(255, 255, 255), // Tông vàng nhẹ
-            };
-
-            FloatRect bounds = _icon.GetGlobalBounds();
-            SoundBuffer buffer = Assets.Sounds.Load("1.wav");
-
-            // Canh phải trên màn hình
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width, 5);
-
-            // Âm thanh khi nhấn
-            _sound = new Sound(buffer);
-        }
-
-        public override void Update(System.Single deltaTime)
-        {
-            if (!Visible)
-            {
-                return;
-            }
-
-            // Click chuột trái vào biểu tượng thiết lập
-            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
-            {
-                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
-                {
-                    _sound.Play();
-                    _sound.Dispose();
-                    SceneManager.ChangeScene(SceneNames.Settings);
-                }
-            }
-        }
-
-        protected override Drawable GetDrawable() => _icon;
     }
 
     [IgnoredLoad("RenderObject")]

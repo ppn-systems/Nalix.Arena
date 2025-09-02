@@ -1,4 +1,6 @@
 ﻿using Nalix.Rendering.Resources;
+using Nalix.Rendering.Resources.Manager;
+using Nalix.Rendering.Runtime;
 
 namespace Nalix.Client;
 
@@ -15,10 +17,19 @@ internal static class Assets
     /// <summary>
     /// Tải các hiệu ứng âm thanh từ thư mục <c>assets/sounds</c>.
     /// </summary>
-    public static readonly SfxLoader Sounds = new("assets/sounds");
+    public static readonly SfxLoader SfxLoader = new("assets/sounds");
 
     /// <summary>
     /// Tải các kết cấu giao diện người dùng (UI) từ thư mục <c>assets/ui</c>.
     /// </summary>
     public static readonly TextureLoader UiTextures = new("assets/ui");
+
+    /// <summary>
+    /// Cung cấp quản lý hiệu ứng âm thanh với mức âm lượng được lấy từ cấu hình đồ họa của trò chơi.
+    /// </summary>
+    public static readonly SfxManager Sfx = new(Assets.SfxLoader, () => (System.Int32)GameEngine.GraphicsConfig.SoundVolume);
+
+    static Assets() =>
+        // Khởi tạo tĩnh để đảm bảo các bộ tải tài nguyên được thiết lập đúng cách.
+        Sfx.AddToLibrary("1", 1);
 }

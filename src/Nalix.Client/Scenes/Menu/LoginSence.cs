@@ -123,6 +123,7 @@ internal sealed class LoginSence : Scene
             Single btnY = _panelPos.Y + _panelSize.Y - 70f;
 
             _loginBtn.SetPosition(new Vector2f(btnX + 150, btnY));
+            _loginBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _loginBtn.RegisterClickHandler(Submit);
 
             _backBtn = new StretchableButton("Back", 280f);
@@ -134,6 +135,8 @@ internal sealed class LoginSence : Scene
             Single backX = _panelPos.X - 30f;
             Single backY = _panelPos.Y + _panelSize.Y - 70f; // same Y as login button for a clean row
             _backBtn.SetPosition(new Vector2f(backX, backY));
+
+            _backBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _backBtn.RegisterClickHandler(GoBack);
         }
 
