@@ -12,7 +12,6 @@ using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Injection;
-using System.Threading.Tasks;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -37,15 +36,15 @@ internal sealed class PasswordOps
     /// - Clear sensitive buffers.
     /// </summary>
     [PacketEncryption(true)]
-    [PacketOpcode((System.UInt16)Command.CHANGE_PASSWORD)]
     [PacketPermission(PermissionLevel.User)]
+    [PacketOpcode((System.UInt16)Command.CHANGE_PASSWORD)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async Task ChangePasswordAsync(IPacket p, IConnection connection)
+    internal async System.Threading.Tasks.Task ChangePasswordAsync(IPacket p, IConnection connection)
     {
         const System.UInt16 Op = (System.UInt16)Command.CHANGE_PASSWORD;
 
-        if (p is not ChangePasswordPacket packet)
+        if (p is not CredsUpdatePacket packet)
         {
             NLogix.Host.Instance.Error(
                 "Invalid packet type. Expected HandshakePacket from {0}",
