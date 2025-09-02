@@ -13,7 +13,7 @@ namespace Nalix.Client.Objects.Controls;
 public class StretchableButton : RenderObject
 {
     private static readonly System.Single DefaultHeight = 50f;
-    private static readonly System.Single DefaultWidth = 320f;
+    private static readonly System.Single DefaultWidth = 0f;
     private static readonly System.Single HorizontalPadding = 16f;
 
     private readonly Text _label;

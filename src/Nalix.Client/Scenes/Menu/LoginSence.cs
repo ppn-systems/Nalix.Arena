@@ -40,6 +40,7 @@ internal sealed class LoginSence : Scene
         private readonly Text _title, _uLabel, _pLabel;
         private readonly InputField _user;
         private readonly PasswordField _pass;
+        private readonly StretchableButton _backBtn;
         private readonly StretchableButton _loginBtn;
 
         // Layout
@@ -48,8 +49,8 @@ internal sealed class LoginSence : Scene
 
         // 9-slice info
         private readonly Texture _panelTex;
-        private readonly Thickness _border = new(32, 32, 32, 32);
         private readonly IntRect _srcRect = default;
+        private readonly Thickness _border = new(32, 32, 32, 32);
 
         public LoginUi()
         {
@@ -80,7 +81,7 @@ internal sealed class LoginSence : Scene
                 .SetColor(new Color(20, 20, 20, 235));
 
             // Title + labels
-            _title = new Text("LOGIN", font, 26) { FillColor = new Color(250, 250, 250) };
+            _title = new Text("LOGIN", font, 26) { FillColor = new Color(255, 255, 255) };
             _uLabel = new Text("Username", font, 16) { FillColor = new Color(240, 240, 240) };
             _pLabel = new Text("Password", font, 16) { FillColor = new Color(240, 240, 240) };
 
@@ -89,31 +90,51 @@ internal sealed class LoginSence : Scene
             _pLabel.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 130);
 
             // Fields
-            _user = new InputField(_panelTex, _border, _srcRect, font, 18,
-                                  new Vector2f(340, 40),
-                                  new Vector2f(_panelPos.X + 140, _panelPos.Y + 60));
-            _user.SetPanelColor(new Color(210, 210, 210));
+            _user = new InputField(
+                _panelTex,
+                _border,
+                _srcRect,
+                font, 18,
+                new Vector2f(340, 40),
+                new Vector2f(_panelPos.X + 140, _panelPos.Y + 60));
+
+            _user.SetPanelColor(new Color(180, 180, 180));
             _user.SetTextColor(new Color(30, 30, 30));
             _user.Focused = true;
 
-            _pass = new PasswordField(_panelTex, _border, _srcRect, font, 18,
-                                      new Vector2f(340, 40),
-                                      new Vector2f(_panelPos.X + 140, _panelPos.Y + 120));
-            _pass.SetPanelColor(new Color(210, 210, 210));
+            _pass = new PasswordField(
+                _panelTex,
+                _border,
+                _srcRect,
+                font, 18,
+                new Vector2f(340, 40),
+                new Vector2f(_panelPos.X + 140, _panelPos.Y + 120));
+            _pass.SetPanelColor(new Color(180, 180, 180));
             _pass.SetTextColor(new Color(30, 30, 30));
 
             // Button
-            _loginBtn = new StretchableButton("Sign in", 240f);
-            _loginBtn.SetColors(panelNormal: new Color(210, 210, 210), panelHover: new Color(70, 70, 70));
-            _loginBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(240, 240, 240));
+            _loginBtn = new StretchableButton("Sign in", 280f);
+            _loginBtn.SetColors(panelNormal: new Color(180, 180, 180), panelHover: new Color(70, 70, 70));
+            _loginBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(255, 255, 255));
             _loginBtn.SetZIndex(2);
 
             FloatRect btnBounds = _loginBtn.GetGlobalBounds();
             Single btnX = _panelPos.X + ((_panelSize.X - btnBounds.Width) * 0.5f);
             Single btnY = _panelPos.Y + _panelSize.Y - 70f;
-            _loginBtn.SetPosition(new Vector2f(btnX, btnY));
 
+            _loginBtn.SetPosition(new Vector2f(btnX + 150, btnY));
             _loginBtn.RegisterClickHandler(Submit);
+
+            _backBtn = new StretchableButton("Back", 280f);
+            _backBtn.SetColors(panelNormal: new Color(160, 160, 160), panelHover: new Color(70, 70, 70));
+            _backBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(255, 255, 255));
+            _backBtn.SetZIndex(2);
+
+            // Place it at bottom-left of the login panel area (aligned with padding)
+            Single backX = _panelPos.X - 30f;
+            Single backY = _panelPos.Y + _panelSize.Y - 70f; // same Y as login button for a clean row
+            _backBtn.SetPosition(new Vector2f(backX, backY));
+            _backBtn.RegisterClickHandler(GoBack);
         }
 
         public override void Update(Single dt)
@@ -144,6 +165,8 @@ internal sealed class LoginSence : Scene
 
             _user.Update(dt);
             _pass.Update(dt);
+
+            _backBtn.Update(dt);
             _loginBtn.Update(dt);
         }
 
@@ -160,10 +183,17 @@ internal sealed class LoginSence : Scene
 
             _user.Render(target);
             _pass.Render(target);
+
+            _backBtn.Render(target);
             _loginBtn.Render(target);
         }
 
         protected override Drawable GetDrawable() => _title;
+
+        /// <summary>
+        /// Navigates back to the main scene.
+        /// </summary>
+        private void GoBack() => SceneManager.ChangeScene(SceneNames.Main);
 
         private void Submit()
         {

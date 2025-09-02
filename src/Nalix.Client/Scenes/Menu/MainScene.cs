@@ -50,7 +50,7 @@ internal class MainScene : Scene
         {
             SetZIndex(2); // Ưu tiên vẽ sau nền
 
-            _login = new StretchableButton("Login", 240f);
+            _login = new StretchableButton("Login", 320f);
 
             // Đặt vị trí tạm để force update layout 
             _login.SetPosition(new Vector2f(0, 0));

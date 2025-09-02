@@ -317,7 +317,7 @@ public class InputField : RenderObject
         // Basic punctuation
         if (InputState.IsKeyPressed(Keyboard.Key.Space))
         {
-            AppendChar(' ');
+            //AppendChar(' ');
         }
 
         if (InputState.IsKeyPressed(Keyboard.Key.Period))
@@ -327,17 +327,17 @@ public class InputField : RenderObject
 
         if (InputState.IsKeyPressed(Keyboard.Key.Comma))
         {
-            AppendChar(',');
+            //AppendChar(',');
         }
 
         if (InputState.IsKeyPressed(Keyboard.Key.Hyphen))
         {
-            AppendChar('-');
+            //AppendChar('-');
         }
 
         if (InputState.IsKeyPressed(Keyboard.Key.Apostrophe))
         {
-            AppendChar('\'');
+            //AppendChar('\'');
         }
 
         // Backspace/Delete: edge + repeat
