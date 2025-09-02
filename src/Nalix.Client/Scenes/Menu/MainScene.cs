@@ -6,95 +6,131 @@ using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
-using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
-using System.Collections.Generic;
 
 namespace Nalix.Client.Scenes.Menu;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
-/// Bao gồm nền parallax và nút thiết lập.
+/// Bao gồm nền parallax và menu.
 /// </summary>
 internal class MainScene : Scene
 {
-    private static readonly List<Sound> _activeSounds = [];
+    #region Ctor
 
-    public MainScene() : base(SceneNames.Main)
-    {
-    }
+    public MainScene() : base(SceneNames.Main) { }
 
-    /// <summary>
-    /// Tải các đối tượng hiển thị trong cảnh chính.
-    /// </summary>
+    #endregion Ctor
+
+    #region Scene lifecycle
+
     protected override void LoadObjects()
     {
-        AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
-        //AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
-        AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
-        AddObject(new Menu());           // Menu chính với nút đăng nhập
-        AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe ⚠", 200f)); // Banner cuộn thông báo
+        AddObject(new ParallaxLayer());                              // nền
+        AddObject(new TwelveIcon());                                 // góc 12+
+        AddObject(new Menu());                                       // menu
+        AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe ⚠", 200f));
     }
 
-    #region Private Class
+    #endregion Scene lifecycle
 
-    /// <summary>
-    /// Đối tượng Menu (hiện tại chưa xử lý gì – placeholder).
-    /// </summary>
+    #region Private Types
+
+    /// <summary>Menu chính: Login / Settings / Credits / Exit</summary>
     [IgnoredLoad("RenderObject")]
-    public class Menu : RenderObject
+    private class Menu : RenderObject
     {
-        private static readonly Color PanelDark = new(36, 36, 36);  // #242424
-        private static readonly Color PanelHover = new(58, 58, 58);  // #3A3A3A
-        private static readonly Color PanelAlt = new(46, 46, 46);  // #2E2E2E
-        private static readonly Color PanelAltHv = new(74, 74, 74);  // #4A4A4A
+        #region Colors
 
-        private static readonly Color TextWhite = Color.White;          // #FFFFFF
-        private static readonly Color TextSoft = new(220, 220, 220);   // #DCDCDC
-        private static readonly Color TextNeon = new(255, 255, 102);   // #FFFF66  (hover)
-        private static readonly Color ExitNormal = new(255, 180, 180);   // đỏ nhạt
-        private static readonly Color ExitHover = new(255, 120, 120);   // đỏ sáng
+        private static readonly Color PanelDark = new(36, 36, 36);     // #242424
+        private static readonly Color PanelHover = new(58, 58, 58);     // #3A3A3A
+        private static readonly Color PanelAlt = new(46, 46, 46);     // #2E2E2E
+        private static readonly Color PanelAltHv = new(74, 74, 74);     // #4A4A4A
+
+        private static readonly Color TextWhite = Color.White;         // #FFFFFF
+        private static readonly Color TextSoft = new(220, 220, 220);  // #DCDCDC
+        private static readonly Color TextNeon = new(255, 255, 102);  // #FFFF66
+
+        private static readonly Color ExitNormal = new(255, 180, 180);
+        private static readonly Color ExitHover = new(255, 120, 120);
+
+        #endregion Colors
+
+        #region UI Controls
 
         private readonly StretchableButton _login;
         private readonly StretchableButton _settings;
         private readonly StretchableButton _credits;
         private readonly StretchableButton _exit;
-
         private readonly StretchableButton[] _buttons;
+
+        #endregion UI Controls
+
+        #region Layout config
+
+        private const System.Single ButtonWidth = 380f;
+        private const System.Single VerticalSpacing = 25f;
+
+        #endregion Layout config
+
+        #region Ctor
 
         public Menu()
         {
             SetZIndex(2);
-
-            _login = new StretchableButton("Login", 380f, "panels/005");
-            _settings = new StretchableButton("Settings", 380f, "panels/005");
-            _credits = new StretchableButton("Credits", 380f, "panels/005");
-            _exit = new StretchableButton("Exit", 380f, "panels/005");
-
+            _login = NewButton("Login");
+            _settings = NewButton("Settings");
+            _credits = NewButton("Credits");
+            _exit = NewButton("Exit");
             _buttons = [_login, _settings, _credits, _exit];
 
+            ApplyStyles();
+            WireHandlers();
+            PromoteZIndex();
+            LayoutButtons(); // initial layout
+        }
+
+        #endregion Ctor
+
+        #region Build helpers
+
+        private static StretchableButton NewButton(System.String text)
+            => new(text, ButtonWidth, "panels/005");
+
+        #endregion Build helpers
+
+        #region Styling
+
+        private void ApplyStyles()
+        {
             // Login
             _login.SetColors(PanelDark, PanelHover);
             _login.SetTextColors(TextWhite, TextNeon);
             _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            // Settings (xen kẽ panel nhạt hơn + chữ xám nhạt)
+            // Settings
             _settings.SetColors(PanelAlt, PanelAltHv);
             _settings.SetTextColors(TextSoft, TextNeon);
             _settings.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            // Credits (quay lại tông đậm cho nhịp thị giác)
+            // Credits
             _credits.SetColors(PanelDark, PanelHover);
             _credits.SetTextColors(TextSoft, TextNeon);
             _credits.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            // Exit (accent đỏ nhạt)
+            // Exit
             _exit.SetColors(PanelAlt, PanelAltHv);
             _exit.SetTextColors(ExitNormal, ExitHover);
             _exit.SetTextOutline(new Color(0, 0, 0, 180), 2f);
+        }
 
-            // Đăng ký handler
+        #endregion Styling
+
+        #region Handlers
+
+        private void WireHandlers()
+        {
             _login.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
 
@@ -106,80 +142,97 @@ internal class MainScene : Scene
 
             _exit.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _exit.RegisterClickHandler(GameEngine.CloseWindow);
-
-            foreach (var btn in _buttons)
-            {
-                btn.SetZIndex(ZIndex.Overlay.ToInt());
-            }
-
-            LayoutButtons();
         }
+
+        #endregion Handlers
+
+        #region Layout
 
         private void LayoutButtons()
         {
-            Vector2u screenSize = GameEngine.ScreenSize;
-            System.Single totalHeight = 0f;
-            System.Single spacing = 25f;
+            Vector2u screen = GameEngine.ScreenSize;
 
-            // tính tổng chiều cao
-            foreach (var btn in _buttons)
+            // tổng chiều cao (bao gồm spacing giữa các nút)
+            System.Single total = 0f;
+            foreach (var b in _buttons)
             {
-                FloatRect bounds = btn.GetGlobalBounds();
-                totalHeight += bounds.Height + spacing;
+                total += b.GetGlobalBounds().Height + VerticalSpacing;
             }
-            totalHeight -= spacing; // bỏ spacing cuối
 
-            System.Single startY = (screenSize.Y - totalHeight) / 2f;
+            total -= VerticalSpacing; // bỏ khoảng cách cuối
+
+            System.Single y = (screen.Y - total) / 2f;
 
             // căn giữa theo X
-            foreach (var btn in _buttons)
+            foreach (var b in _buttons)
             {
-                FloatRect bounds = btn.GetGlobalBounds();
-                System.Single posX = (screenSize.X - bounds.Width) / 2f;
-                btn.SetPosition(new Vector2f(posX, startY));
-                startY += bounds.Height + spacing;
+                var r = b.GetGlobalBounds();
+                System.Single x = (screen.X - r.Width) / 2f;
+                b.SetPosition(new Vector2f(x, y));
+                y += r.Height + VerticalSpacing;
             }
         }
 
-        public override void Update(System.Single deltaTime)
+        #endregion Layout
+
+        #region Util
+
+        private void PromoteZIndex()
+        {
+            foreach (var b in _buttons)
+            {
+                b.SetZIndex(ZIndex.Overlay.ToInt());
+            }
+        }
+
+        #endregion Util
+
+        #region Render loop
+
+        public override void Update(System.Single dt)
         {
             if (!Visible)
             {
                 return;
             }
 
-            foreach (var btn in _buttons)
+            foreach (var b in _buttons)
             {
-                btn.Update(deltaTime);
+                b.Update(dt);
             }
         }
 
         public override void Render(RenderTarget target)
         {
-            foreach (var btn in _buttons)
+            foreach (var b in _buttons)
             {
-                btn.Render(target);
+                b.Render(target);
             }
         }
 
         protected override Drawable GetDrawable() => null;
+
+        #endregion Render loop
     }
 
-    /// <summary>
-    /// Lớp hiệu ứng nền parallax gồm nhiều lớp ảnh cuộn với tốc độ khác nhau.
-    /// </summary>
+    /// <summary>Nền parallax nhiều lớp</summary>
     [IgnoredLoad("RenderObject")]
     internal class ParallaxLayer : RenderObject
     {
+        #region Fields
+
         private readonly ParallaxBackground _parallax;
+
+        #endregion
+
+        #region Ctor
 
         public ParallaxLayer()
         {
             SetZIndex(1);
-
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
-            // Thêm các lớp nền từ xa đến gần (xa cuộn chậm, gần cuộn nhanh)
+            // xa -> gần
             _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 00f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/8"), 15f, true);
             _parallax.AddLayer(Assets.UiTextures.Load("bg/2"), 25f, true);
@@ -190,11 +243,11 @@ internal class MainScene : Scene
             _parallax.AddLayer(Assets.UiTextures.Load("bg/7"), 50f, true);
         }
 
-        public override void Update(System.Single deltaTime) => _parallax.Update(deltaTime);
+        #endregion
 
-        protected override Drawable GetDrawable()
-            => throw new System.NotSupportedException("Use the Render() method instead of GetDrawable().");
+        #region Render loop
 
+        public override void Update(System.Single dt) => _parallax.Update(dt);
         public override void Render(RenderTarget target)
         {
             if (!Visible)
@@ -204,30 +257,43 @@ internal class MainScene : Scene
 
             _parallax.Draw(target);
         }
+        protected override Drawable GetDrawable()
+            => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
+
+        #endregion Render loop
     }
 
+    /// <summary>Biểu tượng 12+ góc màn hình</summary>
     [IgnoredLoad("RenderObject")]
     private class TwelveIcon : RenderObject
     {
+        #region Fields
+
         private readonly Sprite _icon;
+
+        #endregion Fields
+
+        #region Ctor
 
         public TwelveIcon()
         {
-            SetZIndex(2); // Luôn hiển thị phía trên các lớp nền
-
-            // Tải texture biểu tượng 12+
-            Texture texture = Assets.UiTextures.Load("icons/12");
-
-            _icon = new Sprite(texture)
+            SetZIndex(2);
+            Texture tex = Assets.UiTextures.Load("icons/12");
+            _icon = new Sprite(tex)
             {
                 Scale = new Vector2f(0.6f, 0.6f),
-                // Canh phải trên màn hình
-                Position = new Vector2f(0, 0)
+                Position = new Vector2f(0, 0) // top-left
             };
         }
 
+        #endregion Ctor
+
+        #region Render
+
         protected override Drawable GetDrawable() => _icon;
+
+        #endregion Render
     }
 
-    #endregion Private Class
+    #endregion Private Types
 }
