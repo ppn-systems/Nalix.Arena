@@ -20,7 +20,7 @@ namespace Nalix.Application.Operations.Security;
 /// User account management service: register, login, logout with secure practices and pooling.
 /// </summary>
 [PacketController]
-internal sealed class AccountOps
+public sealed class AccountOps
 {
     private readonly Repository<Credentials> _accounts;
 

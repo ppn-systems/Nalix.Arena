@@ -20,7 +20,10 @@ public static class Registry
     {
         // REGISTER logger first so other components can use it.
 #if DEBUG
-        InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
+        if (InstanceManager.Instance.GetExistingInstance<Common.Logging.Abstractions.ILogger>() == null)
+        {
+            InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
+        }
 #else
         Logging.Extensions.NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
 #endif

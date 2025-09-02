@@ -20,7 +20,7 @@ namespace Nalix.Application.Operations.Security;
 /// Lớp này chịu trách nhiệm khởi tạo bắt tay, tạo cặp khóa, và tính toán khóa mã hóa chung.
 /// </summary>
 [PacketController]
-internal sealed class HandshakeOps
+public sealed class HandshakeOps
 {
     static HandshakeOps()
     {

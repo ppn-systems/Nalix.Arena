@@ -20,7 +20,7 @@ namespace Nalix.Application.Operations.Security;
 /// Requires the user to provide the current password and a new strong password.
 /// </summary>
 [PacketController]
-internal sealed class PasswordOps
+public sealed class PasswordOps
 {
     private readonly Repository<Credentials> _accounts;
 
