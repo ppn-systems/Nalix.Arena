@@ -2,20 +2,20 @@
 using Nalix.Communication.Collections;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Nalix.Desktop;
+namespace Nalix.Communication;
 
 /// <summary>
 /// Performs client-side initialization such as packet registrations
 /// and service wiring using the existing InstanceManager.
 /// </summary>
-internal static class Registry
+public static class Registry
 {
     /// <summary>
     /// Initializes client components. Call this once at startup.
     /// </summary>
-    [RequiresUnreferencedCode("Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
+    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode(
+        "Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
     public static void Load()
     {
         // REGISTER logger first so other components can use it.
@@ -24,8 +24,6 @@ internal static class Registry
 #else
         Logging.Extensions.NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
 #endif
-
-
 
         // 1) Build packet catalog.
         var factory = new PacketCatalogFactory();

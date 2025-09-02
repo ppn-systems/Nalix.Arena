@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Nalix.Communication.Security;
+using Nalix.Communication.Models;
 
 namespace Nalix.Infrastructure.Database;
 

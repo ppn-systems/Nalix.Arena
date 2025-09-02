@@ -7,7 +7,7 @@ using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
-using Nalix.Communication.Security;
+using Nalix.Communication.Models;
 using Nalix.Cryptography.Extensions;
 using Nalix.Shared.Injection;
 using Nalix.Shared.LZ4.Extensions;

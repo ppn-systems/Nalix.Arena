@@ -17,7 +17,7 @@ internal static class Program
     public static void Main(System.String[] args)
     {
         // Initialize client-side services and registrations.
-        Registry.Load();
+        Nalix.Communication.Registry.Load();
 
         // Open the game window.
         GameEngine.OpenWindow();

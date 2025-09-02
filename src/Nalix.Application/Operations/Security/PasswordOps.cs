@@ -5,7 +5,7 @@ using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
-using Nalix.Communication.Security;
+using Nalix.Communication.Models;
 using Nalix.Cryptography.Security;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Repositories;
