@@ -22,5 +22,4 @@ internal static class Program
         // Open the game window.
         GameEngine.OpenWindow();
     }
-
 }

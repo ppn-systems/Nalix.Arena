@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<IsTrimmable>true</IsTrimmable>
 		<TargetFrameworks>net9.0-windows;net9.0</TargetFrameworks>
 
 		<StartupObject>Nalix.Client.Program</StartupObject>
