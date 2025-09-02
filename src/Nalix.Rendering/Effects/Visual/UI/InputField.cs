@@ -296,48 +296,41 @@ public class InputField : RenderObject
         }
 
         // Letters A..Z
-        for (Keyboard.Key k = Keyboard.Key.A; k <= Keyboard.Key.Z; k++)
+        if (_buffer.Length < (MaxLength ?? System.Int32.MaxValue) && TryKeyToChar(out System.Char ch, shift))
         {
-            if (InputState.IsKeyPressed(k))
+            if (ch == ' ')
             {
-                System.Char c = (System.Char)('a' + (k - Keyboard.Key.A));
-                AppendChar(shift ? System.Char.ToUpperInvariant(c) : c);
+                return;
             }
-        }
 
-        // Digits 0..9 (row numbers)
-        for (Keyboard.Key k = Keyboard.Key.Num0; k <= Keyboard.Key.Num9; k++)
-        {
-            if (InputState.IsKeyPressed(k))
+            if (PasswordMode)
             {
-                AppendChar((System.Char)('0' + (k - Keyboard.Key.Num0)));
+                if (ch > 0x7F)
+                {
+                    return;
+                }
+
+                if (System.Char.IsControl(ch))
+                {
+                    return;
+                }
+
+                if (ch is '\'' or '\"' or '\\' or '/')
+                {
+                    return; // disallow quotes and slashes in password mode
+                }
+
+                if (!System.Char.IsLetterOrDigit(ch) && ch != '_' && ch != '-' && ch != '.' && ch != '#')
+                {
+                    return;
+                }
             }
-        }
+            else
+            {
+                ch = System.Char.ToLowerInvariant(ch);
+            }
 
-        // Basic punctuation
-        if (InputState.IsKeyPressed(Keyboard.Key.Space))
-        {
-            //AppendChar(' ');
-        }
-
-        if (InputState.IsKeyPressed(Keyboard.Key.Period))
-        {
-            AppendChar('.');
-        }
-
-        if (InputState.IsKeyPressed(Keyboard.Key.Comma))
-        {
-            //AppendChar(',');
-        }
-
-        if (InputState.IsKeyPressed(Keyboard.Key.Hyphen))
-        {
-            //AppendChar('-');
-        }
-
-        if (InputState.IsKeyPressed(Keyboard.Key.Apostrophe))
-        {
-            //AppendChar('\'');
+            AppendChar(ch);
         }
 
         // Backspace/Delete: edge + repeat
@@ -480,6 +473,71 @@ public class InputField : RenderObject
     #endregion
 
     #region ===== Helpers =====
+
+    private static readonly System.Collections.Generic.Dictionary<Keyboard.Key, (System.Char normal, System.Char shift)> _map = new()
+    {
+        // row digits
+        [Keyboard.Key.Num0] = ('0', ')'),
+        [Keyboard.Key.Num1] = ('1', '!'),
+        [Keyboard.Key.Num2] = ('2', '@'),
+        [Keyboard.Key.Num3] = ('3', '#'),
+        [Keyboard.Key.Num4] = ('4', '$'),
+        [Keyboard.Key.Num5] = ('5', '%'),
+        [Keyboard.Key.Num6] = ('6', '^'),
+        [Keyboard.Key.Num7] = ('7', '&'),
+        [Keyboard.Key.Num8] = ('8', '*'),
+        [Keyboard.Key.Num9] = ('9', '('),
+
+        // punctuation
+        [Keyboard.Key.Hyphen] = ('-', '_'),
+        [Keyboard.Key.Equal] = ('=', '+'),
+        [Keyboard.Key.LBracket] = ('[', '{'),
+        [Keyboard.Key.RBracket] = (']', '}'),
+        [Keyboard.Key.Backslash] = ('\\', '|'),
+        [Keyboard.Key.Semicolon] = (';', ':'),
+        [Keyboard.Key.Apostrophe] = ('\'', '"'),
+        [Keyboard.Key.Comma] = (',', '<'),
+        [Keyboard.Key.Period] = ('.', '>'),
+        [Keyboard.Key.Slash] = ('/', '?'),
+        [Keyboard.Key.Space] = (' ', ' ')
+    };
+
+    private static System.Boolean TryKeyToChar(out System.Char c, System.Boolean shift)
+    {
+        c = '\0';
+
+        // A..Z
+        for (var k = Keyboard.Key.A; k <= Keyboard.Key.Z; k++)
+        {
+            if (InputState.IsKeyPressed(k))
+            {
+                c = (System.Char)((shift ? 'A' : 'a') + (k - Keyboard.Key.A));
+                return true;
+            }
+        }
+
+        // numpad 0..9
+        for (var k = Keyboard.Key.Numpad0; k <= Keyboard.Key.Numpad9; k++)
+        {
+            if (InputState.IsKeyPressed(k))
+            {
+                c = (System.Char)('0' + (k - Keyboard.Key.Numpad0));
+                return true;
+            }
+        }
+
+        // row digits + punctuation
+        foreach (var kv in _map)
+        {
+            if (InputState.IsKeyPressed(kv.Key))
+            {
+                c = shift ? kv.Value.shift : kv.Value.normal;
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Append a char with MaxLength enforcement and change notification.
