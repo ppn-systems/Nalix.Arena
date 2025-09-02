@@ -91,6 +91,8 @@ public static class GameEngine
         _window.Dispose();
     }
 
+    public static void CloseWindow() => _window.Close();
+
     /// <summary>
     /// Updates all game components, including input, scene management, and scene objects.
     /// </summary>

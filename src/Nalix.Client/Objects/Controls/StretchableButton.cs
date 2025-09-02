@@ -107,6 +107,17 @@ public class StretchableButton : RenderObject
         ApplyHoverTint(_isHovered);
     }
 
+    public void SetTextOutline(Color outlineColor, System.Single thickness)
+    {
+        if (_label == null)
+        {
+            return;
+        }
+
+        _label.OutlineColor = outlineColor;
+        _label.OutlineThickness = thickness;
+    }
+
     public void RegisterClickHandler(System.Action handler) => OnClick += handler;
     public void UnregisterClickHandler(System.Action handler) => OnClick -= handler;
 

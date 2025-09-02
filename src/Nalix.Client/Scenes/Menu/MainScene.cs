@@ -30,7 +30,7 @@ internal class MainScene : Scene
     protected override void LoadObjects()
     {
         AddObject(new ParallaxLayer());  // Hiệu ứng nền chuyển động nhiều lớp
-        AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
+        //AddObject(new SettingIcon());    // Biểu tượng thiết lập (setting)
         AddObject(new TwelveIcon());    // Biểu tượng thiết lập (12+)
         AddObject(new Menu());           // Menu chính với nút đăng nhập
         AddObject(new ScrollingBanner("⚠ Chơi quá 180 phút mỗi ngày sẽ ảnh hưởng xấu đến sức khỏe ⚠", 200f)); // Banner cuộn thông báo
@@ -44,26 +44,93 @@ internal class MainScene : Scene
     [IgnoredLoad("RenderObject")]
     public class Menu : RenderObject
     {
+        private static readonly Color PanelDark = new(36, 36, 36);  // #242424
+        private static readonly Color PanelHover = new(58, 58, 58);  // #3A3A3A
+        private static readonly Color PanelAlt = new(46, 46, 46);  // #2E2E2E
+        private static readonly Color PanelAltHv = new(74, 74, 74);  // #4A4A4A
+
+        private static readonly Color TextWhite = Color.White;          // #FFFFFF
+        private static readonly Color TextSoft = new(220, 220, 220);   // #DCDCDC
+        private static readonly Color TextNeon = new(255, 255, 102);   // #FFFF66  (hover)
+        private static readonly Color ExitNormal = new(255, 180, 180);   // đỏ nhạt
+        private static readonly Color ExitHover = new(255, 120, 120);   // đỏ sáng
+
         private readonly StretchableButton _login;
+        private readonly StretchableButton _settings;
+        private readonly StretchableButton _credits;
+        private readonly StretchableButton _exit;
+
+        private readonly StretchableButton[] _buttons;
 
         public Menu()
         {
-            SetZIndex(2); // Ưu tiên vẽ sau nền
+            SetZIndex(2);
 
-            _login = new StretchableButton("Login", 320f);
+            _login = new StretchableButton("Login", 380f, "panels/005");
+            _settings = new StretchableButton("Settings", 380f, "panels/005");
+            _credits = new StretchableButton("Credits", 380f, "panels/005");
+            _exit = new StretchableButton("Exit", 380f, "panels/005");
 
-            // Đặt vị trí tạm để force update layout 
-            _login.SetPosition(new Vector2f(0, 0));
-            FloatRect bounds = _login.GetGlobalBounds();
+            _buttons = [_login, _settings, _credits, _exit];
 
-            Vector2u screenSize = GameEngine.ScreenSize;
-            System.Single posX = (screenSize.X - bounds.Width) / 2f;
-            System.Single posY = (screenSize.Y - bounds.Height) / 2f;
+            // Login
+            _login.SetColors(PanelDark, PanelHover);
+            _login.SetTextColors(TextWhite, TextNeon);
+            _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            _login.SetPosition(new Vector2f(posX, posY - 40));
+            // Settings (xen kẽ panel nhạt hơn + chữ xám nhạt)
+            _settings.SetColors(PanelAlt, PanelAltHv);
+            _settings.SetTextColors(TextSoft, TextNeon);
+            _settings.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
+            // Credits (quay lại tông đậm cho nhịp thị giác)
+            _credits.SetColors(PanelDark, PanelHover);
+            _credits.SetTextColors(TextSoft, TextNeon);
+            _credits.SetTextOutline(new Color(0, 0, 0, 160), 2f);
+
+            // Exit (accent đỏ nhạt)
+            _exit.SetColors(PanelAlt, PanelAltHv);
+            _exit.SetTextColors(ExitNormal, ExitHover);
+            _exit.SetTextOutline(new Color(0, 0, 0, 180), 2f);
+
+            // Đăng ký handler
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
-            _login.SetZIndex(ZIndex.Overlay.ToInt());
+            _settings.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Settings));
+            _credits.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Credits));
+            _exit.RegisterClickHandler(GameEngine.CloseWindow);
+
+            foreach (var btn in _buttons)
+            {
+                btn.SetZIndex(ZIndex.Overlay.ToInt());
+            }
+
+            LayoutButtons();
+        }
+
+        private void LayoutButtons()
+        {
+            Vector2u screenSize = GameEngine.ScreenSize;
+            System.Single totalHeight = 0f;
+            System.Single spacing = 25f;
+
+            // tính tổng chiều cao
+            foreach (var btn in _buttons)
+            {
+                FloatRect bounds = btn.GetGlobalBounds();
+                totalHeight += bounds.Height + spacing;
+            }
+            totalHeight -= spacing; // bỏ spacing cuối
+
+            System.Single startY = (screenSize.Y - totalHeight) / 2f;
+
+            // căn giữa theo X
+            foreach (var btn in _buttons)
+            {
+                FloatRect bounds = btn.GetGlobalBounds();
+                System.Single posX = (screenSize.X - bounds.Width) / 2f;
+                btn.SetPosition(new Vector2f(posX, startY));
+                startY += bounds.Height + spacing;
+            }
         }
 
         public override void Update(System.Single deltaTime)
@@ -73,16 +140,19 @@ internal class MainScene : Scene
                 return;
             }
 
-            _login.Update(deltaTime);
-
-            // Nếu mất kết nối → trở về cảnh Network để kết nối lại
-            //if (!InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>().IsConnected)
-            //{
-            //    SceneManager.ChangeScene(SceneNames.Network);
-            //}
+            foreach (var btn in _buttons)
+            {
+                btn.Update(deltaTime);
+            }
         }
 
-        public override void Render(RenderTarget target) => _login.Render(target);
+        public override void Render(RenderTarget target)
+        {
+            foreach (var btn in _buttons)
+            {
+                btn.Render(target);
+            }
+        }
 
         protected override Drawable GetDrawable() => null;
     }

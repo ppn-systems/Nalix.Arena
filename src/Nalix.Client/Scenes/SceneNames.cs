@@ -16,6 +16,11 @@ internal static class SceneNames
     public const System.String Login = "login";
 
     /// <summary>
+    /// Cảnh hiện thị thông tin về nhóm phát triển trò chơi.
+    /// </summary>
+    public const System.String Credits = "credits";
+
+    /// <summary>
     /// Cảnh kết nối mạng (hiển thị khi đang cố gắng kết nối đến server).
     /// </summary>
     public const System.String Network = "network";
