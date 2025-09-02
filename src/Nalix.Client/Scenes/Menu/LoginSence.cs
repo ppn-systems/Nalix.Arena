@@ -29,174 +29,271 @@ internal sealed class LoginSence : Scene
     }
 
     #region Login UI
+
     [IgnoredLoad("RenderObject")]
     private sealed class LoginUi : RenderObject
     {
-        // nền mờ + panel nền
+        #region Config
+
+        private static readonly Vector2f PanelSize = new(520, 300);
+        private static readonly Thickness Border = new(32, 32, 32, 32);
+        private static readonly IntRect SrcRect = default;
+
+        // Colors
+        private static readonly Color BackdropColor = new(25, 25, 25, 110);
+        private static readonly Color BgPanelColor = new(20, 20, 20, 235);
+        private static readonly Color LabelColor = new(240, 240, 240);
+        private static readonly Color TitleColor = Color.White;
+        private static readonly Color FieldPanel = new(180, 180, 180);
+        private static readonly Color FieldText = new(30, 30, 30);
+        private static readonly Color BtnPanel = new(180, 180, 180);
+        private static readonly Color BtnPanelHover = new(70, 70, 70);
+        private static readonly Color BtnText = new(30, 30, 30);
+        private static readonly Color BtnTextHover = new(255, 255, 255);
+        private static readonly Color BackPanel = new(160, 160, 160);
+
+        // Layout numbers
+        private const Single TitleFont = 26f;
+        private const Single LabelFont = 16f;
+        private const Single FieldFont = 18f;
+        private const Single FieldWidth = 340f;
+        private const Single FieldHeight = 40f;
+        private const Single TitleOffsetX = 10f;
+        private const Single TitleOffsetY = 6f;
+        private const Single LabelUserY = 70f;
+        private const Single LabelPassY = 130f;
+        private const Single FieldLeft = 140f;
+        private const Single FieldUserTop = 60f;
+        private const Single FieldPassTop = 120f;
+        private const Single BtnRowY = 70f; // khoảng cách đáy panel -> hàng nút
+        private const Single BtnWidth = 280f;
+        private const Single LoginBtnExtraX = 150f; // như code gốc
+        private const Single BackBtnOffsetLeft = -30f; // như code gốc (ra ngoài 1 chút)
+
+        #endregion
+
+        #region Fields
+
+        // backdrop + panel nền
         private readonly RectangleShape _backdrop;
         private readonly NineSlicePanel _bgPanel;
 
-        // Visuals
+        // visuals & controls
         private readonly Text _title, _uLabel, _pLabel;
         private readonly InputField _user;
         private readonly PasswordField _pass;
         private readonly StretchableButton _backBtn;
         private readonly StretchableButton _loginBtn;
 
-        // Layout
-        private readonly Vector2f _panelSize = new(520, 300);
+        // assets
+        private readonly Texture _panelTex;
+        private readonly Font _font;
+
+        // layout
         private readonly Vector2f _panelPos;
 
-        // 9-slice info
-        private readonly Texture _panelTex;
-        private readonly IntRect _srcRect = default;
-        private readonly Thickness _border = new(32, 32, 32, 32);
+        #endregion
+
+        #region Ctor
 
         public LoginUi()
         {
             SetZIndex(2);
 
-            // Center panel area
-            _panelPos = new Vector2f(
-                (GameEngine.ScreenSize.X - _panelSize.X) * 0.5f,
-                (GameEngine.ScreenSize.Y - _panelSize.Y) * 0.5f);
-
-            // Assets
+            _panelPos = Centered(PanelSize);
+            _font = Assets.Font.Load("1");
             _panelTex = Assets.UiTextures.Load("panels/004");
-            Font font = Assets.Font.Load("1");
 
-            // NEW: backdrop tối nhẹ toàn màn
-            _backdrop = new RectangleShape((Vector2f)GameEngine.ScreenSize)
+            _backdrop = BuildBackdrop();
+            _bgPanel = BuildBackgroundPanel();
+
+            (_title, _uLabel, _pLabel) = BuildTexts();
+            (_user, _pass) = BuildFields();
+            (_loginBtn, _backBtn) = BuildButtons();
+
+            WireHandlers();
+            DoInitialLayout();
+        }
+
+        #endregion
+
+        #region Build helpers
+
+        private static RectangleShape BuildBackdrop()
+            => new((Vector2f)GameEngine.ScreenSize)
             {
-                FillColor = new Color(25, 25, 25, 110), // mờ 110/255
+                FillColor = BackdropColor,
                 Position = new Vector2f(0, 0)
             };
 
-            // NEW: panel nền phía sau controls
-            _bgPanel = new NineSlicePanel(Assets.UiTextures.Load("panels/020"), _border, _srcRect);
-            // Nếu bạn dùng bản NineSlicePanel có SetSize/SetPosition:
-            _ = _bgPanel
-                .SetSize(_panelSize * 1.3f)
+        private NineSlicePanel BuildBackgroundPanel()
+            => new NineSlicePanel(Assets.UiTextures.Load("panels/020"), Border, SrcRect)
+                .SetSize(PanelSize * 1.3f)
                 .SetPosition(_panelPos * 0.8f)
-                .SetColor(new Color(20, 20, 20, 235));
+                .SetColor(BgPanelColor);
 
-            // Title + labels
-            _title = new Text("LOGIN", font, 26) { FillColor = new Color(255, 255, 255) };
-            _uLabel = new Text("Username", font, 16) { FillColor = new Color(240, 240, 240) };
-            _pLabel = new Text("Password", font, 16) { FillColor = new Color(240, 240, 240) };
+        private (Text title, Text u, Text p) BuildTexts()
+        {
+            var title = new Text("LOGIN", _font, (UInt32)TitleFont) { FillColor = TitleColor };
+            var u = new Text("Username", _font, (UInt32)LabelFont) { FillColor = LabelColor };
+            var p = new Text("Password", _font, (UInt32)LabelFont) { FillColor = LabelColor };
+            return (title, u, p);
+        }
 
-            _title.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 6);
-            _uLabel.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 70);
-            _pLabel.Position = new Vector2f(_panelPos.X + 10, _panelPos.Y + 130);
+        private (InputField user, PasswordField pass) BuildFields()
+        {
+            var user = new InputField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
+                                      new Vector2f(FieldWidth, FieldHeight),
+                                      new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldUserTop));
+            user.SetPanelColor(FieldPanel);
+            user.SetTextColor(FieldText);
+            user.Focused = true;
 
-            // Fields
-            _user = new InputField(
-                _panelTex,
-                _border,
-                _srcRect,
-                font, 18,
-                new Vector2f(340, 40),
-                new Vector2f(_panelPos.X + 140, _panelPos.Y + 60));
+            var pass = new PasswordField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
+                                         new Vector2f(FieldWidth, FieldHeight),
+                                         new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldPassTop));
+            pass.SetPanelColor(FieldPanel);
+            pass.SetTextColor(FieldText);
 
-            _user.SetPanelColor(new Color(180, 180, 180));
-            _user.SetTextColor(new Color(30, 30, 30));
-            _user.Focused = true;
+            return (user, pass);
+        }
 
-            _pass = new PasswordField(
-                _panelTex,
-                _border,
-                _srcRect,
-                font, 18,
-                new Vector2f(340, 40),
-                new Vector2f(_panelPos.X + 140, _panelPos.Y + 120));
-            _pass.SetPanelColor(new Color(180, 180, 180));
-            _pass.SetTextColor(new Color(30, 30, 30));
+        private static (StretchableButton login, StretchableButton back) BuildButtons()
+        {
+            var login = new StretchableButton("Sign in", BtnWidth)
+                .SetColors(BtnPanel, BtnPanelHover)
+                .SetTextColors(BtnText, BtnTextHover);
+            login.SetZIndex(2);
 
-            // Button
-            _loginBtn = new StretchableButton("Sign in", 280f);
-            _loginBtn.SetColors(panelNormal: new Color(180, 180, 180), panelHover: new Color(70, 70, 70));
-            _loginBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(255, 255, 255));
-            _loginBtn.SetZIndex(2);
+            var back = new StretchableButton("Back", BtnWidth)
+                .SetColors(BackPanel, BtnPanelHover)
+                .SetTextColors(BtnText, BtnTextHover);
+            back.SetZIndex(2);
 
-            FloatRect btnBounds = _loginBtn.GetGlobalBounds();
-            Single btnX = _panelPos.X + ((_panelSize.X - btnBounds.Width) * 0.5f);
-            Single btnY = _panelPos.Y + _panelSize.Y - 70f;
+            return (login, back);
+        }
 
-            _loginBtn.SetPosition(new Vector2f(btnX + 150, btnY));
+        private void WireHandlers()
+        {
             _loginBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _loginBtn.RegisterClickHandler(Submit);
-
-            _backBtn = new StretchableButton("Back", 280f);
-            _backBtn.SetColors(panelNormal: new Color(160, 160, 160), panelHover: new Color(70, 70, 70));
-            _backBtn.SetTextColors(textNormal: new Color(30, 30, 30), textHover: new Color(255, 255, 255));
-            _backBtn.SetZIndex(2);
-
-            // Place it at bottom-left of the login panel area (aligned with padding)
-            Single backX = _panelPos.X - 30f;
-            Single backY = _panelPos.Y + _panelSize.Y - 70f; // same Y as login button for a clean row
-            _backBtn.SetPosition(new Vector2f(backX, backY));
 
             _backBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _backBtn.RegisterClickHandler(GoBack);
         }
 
+        #endregion
+
+        #region Layout
+
+        private void DoInitialLayout()
+        {
+            // Title & labels
+            _title.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + TitleOffsetY);
+            _uLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelUserY);
+            _pLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelPassY);
+
+            // Fields: đã set khi build
+
+            // Buttons (giữa đáy panel)
+            var r = _loginBtn.GetGlobalBounds();
+            Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
+            Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
+
+            _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
+            _backBtn.SetPosition(new Vector2f(_panelPos.X + BackBtnOffsetLeft, btnBaseY));
+        }
+
+        private static Vector2f Centered(Vector2f size)
+            => new(
+                (GameEngine.ScreenSize.X - size.X) * 0.5f,
+                (GameEngine.ScreenSize.Y - size.Y) * 0.5f
+            );
+
+        #endregion
+
+        #region Input
+
         public override void Update(Single dt)
         {
-            if (InputState.IsKeyPressed(Keyboard.Key.Tab))
-            {
-                Boolean toPass = _user.Focused;
-                _user.Focused = !toPass;
-                _pass.Focused = toPass;
-            }
-
-            if (InputState.IsKeyPressed(Keyboard.Key.Enter))
-            {
-                NLogix.Host.Instance.Info("Login: Enter pressed");
-                if (_user.Focused) { _user.Focused = false; _pass.Focused = true; }
-                else if (_pass.Focused) { Submit(); }
-            }
-
-            if (InputState.IsKeyPressed(Keyboard.Key.Escape))
-            {
-                SceneManager.ChangeScene(SceneNames.Main);
-            }
-
-            if (InputState.IsKeyPressed(Keyboard.Key.F2))
-            {
-                _pass.Toggle();
-            }
+            HandleTabToggle();
+            HandleEnter();
+            HandleEscape();
+            HandleOtherShortcuts();
 
             _user.Update(dt);
             _pass.Update(dt);
-
             _backBtn.Update(dt);
             _loginBtn.Update(dt);
         }
 
+        private void HandleTabToggle()
+        {
+            if (!InputState.IsKeyPressed(Keyboard.Key.Tab))
+            {
+                return;
+            }
+
+            Boolean toPass = _user.Focused;
+            _user.Focused = !toPass;
+            _pass.Focused = toPass;
+        }
+
+        private void HandleEnter()
+        {
+            if (!InputState.IsKeyPressed(Keyboard.Key.Enter))
+            {
+                return;
+            }
+
+            NLogix.Host.Instance.Info("Login: Enter pressed");
+            if (_user.Focused) { _user.Focused = false; _pass.Focused = true; }
+            else if (_pass.Focused) { Submit(); }
+        }
+
+        private static void HandleEscape()
+        {
+            if (InputState.IsKeyPressed(Keyboard.Key.Escape))
+            {
+                SceneManager.ChangeScene(SceneNames.Main);
+            }
+        }
+
+        private void HandleOtherShortcuts()
+        {
+            if (InputState.IsKeyPressed(Keyboard.Key.F2))
+            {
+                _pass.Toggle();
+            }
+        }
+
+        #endregion
+
+        #region Render
+
         public override void Render(RenderTarget target)
         {
-            // Vẽ nền TRƯỚC
+            // nền
             target.Draw(_backdrop);
             target.Draw(_bgPanel);
 
-            // Vẽ text + controls sau cùng
+            // text + controls
             target.Draw(_title);
             target.Draw(_uLabel);
             target.Draw(_pLabel);
-
             _user.Render(target);
             _pass.Render(target);
-
             _backBtn.Render(target);
             _loginBtn.Render(target);
         }
 
         protected override Drawable GetDrawable() => _title;
 
-        /// <summary>
-        /// Navigates back to the main scene.
-        /// </summary>
-        private void GoBack() => SceneManager.ChangeScene(SceneNames.Main);
+        #endregion
+
+        #region Actions
+
+        private static void GoBack() => SceneManager.ChangeScene(SceneNames.Main);
 
         private void Submit()
         {
@@ -204,8 +301,9 @@ internal sealed class LoginSence : Scene
             _ = _pass.Text;
             SceneManager.ChangeScene(SceneNames.Main);
         }
-    }
 
+        #endregion
+    }
 
     #endregion
 }

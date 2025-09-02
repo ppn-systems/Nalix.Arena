@@ -77,7 +77,7 @@ public class StretchableButton : RenderObject
         UpdateLayout();
     }
 
-    public void SetColors(Color? panelNormal = null, Color? panelHover = null)
+    public StretchableButton SetColors(Color? panelNormal = null, Color? panelHover = null)
     {
         if (panelNormal.HasValue)
         {
@@ -90,9 +90,11 @@ public class StretchableButton : RenderObject
         }
 
         ApplyHoverTint(_isHovered);
+
+        return this;
     }
 
-    public void SetTextColors(Color? textNormal = null, Color? textHover = null)
+    public StretchableButton SetTextColors(Color? textNormal = null, Color? textHover = null)
     {
         if (textNormal.HasValue)
         {
@@ -105,6 +107,8 @@ public class StretchableButton : RenderObject
         }
 
         ApplyHoverTint(_isHovered);
+
+        return this;
     }
 
     public void SetTextOutline(Color outlineColor, System.Single thickness)
