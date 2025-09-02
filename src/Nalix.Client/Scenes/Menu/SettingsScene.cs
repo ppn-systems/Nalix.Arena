@@ -14,53 +14,74 @@ namespace Nalix.Client.Scenes.Menu;
 /// </summary>
 public class SettingsScene : Scene
 {
-    /// <summary>
-    /// Khởi tạo cảnh thiết lập với tên từ <see cref="SceneNames.Settings"/>.
-    /// </summary>
-    public SettingsScene() : base(SceneNames.Settings)
-    {
-    }
+    #region Ctor
 
-    /// <summary>
-    /// Tải các đối tượng của cảnh thiết lập như nền và biểu tượng đóng.
-    /// </summary>
+    /// <summary>Khởi tạo cảnh thiết lập với tên từ <see cref="SceneNames.Settings"/>.</summary>
+    public SettingsScene() : base(SceneNames.Settings) { }
+
+    #endregion
+
+    #region Scene lifecycle
+
+    /// <summary>Tải các đối tượng của cảnh thiết lập như nền, banner và biểu tượng đóng.</summary>
     protected override void LoadObjects()
     {
         AddObject(new Background());
+        AddObject(new Banner());      // trước đây chưa Add — giờ add để hiển thị
         AddObject(new CloseIcon());
     }
 
-    /// <summary>
-    /// Hiển thị nền mờ cho cảnh thiết lập.
-    /// </summary>
+    #endregion
+
+    #region Private types
+
+    /// <summary>Nền mờ phủ toàn màn hình.</summary>
     [IgnoredLoad("RenderObject")]
     private class Background : RenderObject
     {
+        #region Config
+
+        private const System.String BgTextureKey = "bg/0";
+        private const System.Byte BackgroundAlpha = 180; // mờ nhẹ
+
+        #endregion
+
+        #region Fields
+
         private readonly Sprite _background;
 
-        /// <summary>
-        /// Khởi tạo đối tượng nền với kích thước và độ mờ thích hợp.
-        /// </summary>
+        #endregion
+
+        #region Ctor
+
         public Background()
         {
             SetZIndex(0); // Hiển thị phía sau
+            _background = BuildBackgroundSprite();
+        }
 
-            Texture bg = Assets.UiTextures.Load("bg/0");
+        #endregion
 
+        #region Build helpers
+
+        private static Sprite BuildBackgroundSprite()
+        {
+            Texture bg = Assets.UiTextures.Load(BgTextureKey);
             System.Single scaleX = (System.Single)GameEngine.ScreenSize.X / bg.Size.X;
             System.Single scaleY = (System.Single)GameEngine.ScreenSize.Y / bg.Size.Y;
 
-            _background = new Sprite(bg)
+            return new Sprite(bg)
             {
                 Position = new Vector2f(0, 0),
                 Scale = new Vector2f(scaleX, scaleY),
-                Color = new Color(255, 255, 255, 180) // Mờ nhẹ
+                Color = new Color(255, 255, 255, BackgroundAlpha)
             };
         }
 
-        /// <summary>
-        /// Vẽ nền lên màn hình.
-        /// </summary>
+        #endregion
+
+        #region Render loop
+
         public override void Render(RenderTarget target)
         {
             if (!Visible)
@@ -71,96 +92,142 @@ public class SettingsScene : Scene
             target.Draw(_background);
         }
 
-        /// <summary>
-        /// Không hỗ trợ sử dụng GetDrawable() cho lớp này.
-        /// </summary>
         protected override Drawable GetDrawable()
             => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
+
+        #endregion
     }
 
-    /// <summary>
-    /// Banner trung tâm hiển thị trên màn hình thiết lập.
-    /// </summary>
+    /// <summary>Banner trung tâm hiển thị trên màn hình thiết lập.</summary>
     [IgnoredLoad("RenderObject")]
     private class Banner : RenderObject
     {
+        #region Config
+
+        private const System.String PanelTextureKey = "panels/007";
+        private const System.Single ScaleXFactor = 2f;
+        private const System.Single ScaleYFactor = 1.2f;
+
+        #endregion
+
+        #region Fields
+
         private readonly Sprite _banner;
 
-        /// <summary>
-        /// Lấy vị trí hiển thị của panel.
-        /// </summary>
+        #endregion
+
+        #region Public props
+
+        /// <summary>Vị trí hiển thị của panel.</summary>
         public Vector2f PanelPosition => _banner.Position;
 
-        /// <summary>
-        /// Lấy kích thước hiển thị của panel sau khi scale.
-        /// </summary>
+        /// <summary>Kích thước hiển thị sau scale.</summary>
         public Vector2f PanelSize => new(
             _banner.Texture.Size.X * _banner.Scale.X,
-            _banner.Texture.Size.Y * _banner.Scale.Y
-        );
+            _banner.Texture.Size.Y * _banner.Scale.Y);
 
-        /// <summary>
-        /// Khởi tạo banner với tỷ lệ và vị trí phù hợp màn hình.
-        /// </summary>
+        #endregion
+
+        #region Ctor
+
         public Banner()
         {
             SetZIndex(2);
+            _banner = BuildBannerSprite();
+        }
 
-            Texture panel = Assets.UiTextures.Load("tiles/7.png");
+        #endregion
 
-            System.Single scaleFactor = System.Math.Min(
-                GameEngine.ScreenSize.X / panel.Size.X,
-                GameEngine.ScreenSize.Y / panel.Size.Y
-            );
+        #region Build helpers
 
-            Vector2f scale = new(scaleFactor * 2f, scaleFactor * 1.2f);
+        private static Sprite BuildBannerSprite()
+        {
+            Texture panel = Assets.UiTextures.Load(PanelTextureKey);
+
+            System.Single scaleFit = System.Math.Min(
+                (System.Single)GameEngine.ScreenSize.X / panel.Size.X,
+                (System.Single)GameEngine.ScreenSize.Y / panel.Size.Y);
+
+            Vector2f scale = new(scaleFit * ScaleXFactor, scaleFit * ScaleYFactor);
 
             System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
             System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
-            _banner = new Sprite(panel)
+            return new Sprite(panel)
             {
                 Scale = scale,
                 Position = new Vector2f(posX, posY)
             };
         }
 
-        /// <summary>
-        /// Trả về sprite của banner để vẽ.
-        /// </summary>
+        #endregion
+
+        #region Render
+
         protected override Drawable GetDrawable() => _banner;
+
+        #endregion
     }
 
-    /// <summary>
-    /// Biểu tượng đóng (nút) ở góc màn hình, cho phép người chơi quay lại màn hình chính.
-    /// </summary>
+    /// <summary>Biểu tượng đóng (góc trên phải) để quay lại màn hình chính.</summary>
     [IgnoredLoad("RenderObject")]
     internal class CloseIcon : RenderObject
     {
+        #region Config
+
+        private const System.String IconTextureKey = "icons/2";
+        private const System.Single IconScale = 0.6f;
+        private const System.Single PaddingTop = 5f;
+        private const System.Single PaddingRight = 0f; // căn sát phải, đã trừ theo width
+
+        #endregion
+
+        #region Fields
+
         private readonly Sprite _icon;
 
-        /// <summary>
-        /// Khởi tạo nút đóng với hình ảnh và âm thanh tương ứng.
-        /// </summary>
+        #endregion
+
+        #region Ctor
+
         public CloseIcon()
         {
             SetZIndex(2);
-
-            Texture texture = Assets.UiTextures.Load("icons/2");
-
-            _icon = new Sprite(texture)
-            {
-                Scale = new Vector2f(0.6f, 0.6f),
-                //Color = new Color(255, 255, 180),
-            };
-
-            FloatRect bounds = _icon.GetGlobalBounds();
-            _icon.Position = new Vector2f(GameEngine.ScreenSize.X - bounds.Width, 5);
+            _icon = BuildIconSprite();
+            PlaceTopRight();
         }
 
-        /// <summary>
-        /// Xử lý sự kiện phím và chuột để điều hướng trở về màn hình chính.
-        /// </summary>
+        #endregion
+
+        #region Build & layout
+
+        private static Sprite BuildIconSprite()
+        {
+            Texture texture = Assets.UiTextures.Load(IconTextureKey);
+            return new Sprite(texture)
+            {
+                Scale = new Vector2f(IconScale, IconScale),
+            };
+        }
+
+        private void PlaceTopRight()
+        {
+            FloatRect bounds = _icon.GetGlobalBounds();
+            System.Single x = GameEngine.ScreenSize.X - bounds.Width - PaddingRight;
+            _icon.Position = new Vector2f(x, PaddingTop);
+        }
+
+        #endregion
+
+        #region Input helpers
+
+        private System.Boolean IsMouseOver()
+            => _icon.GetGlobalBounds().Contains(InputState.GetMousePosition());
+
+        #endregion
+
+        #region Render loop
+
         public override void Update(System.Single deltaTime)
         {
             if (!Visible)
@@ -168,19 +235,25 @@ public class SettingsScene : Scene
                 return;
             }
 
-            if (InputState.IsMouseButtonPressed(Mouse.Button.Left))
+            // Click chuột
+            if (InputState.IsMouseButtonPressed(Mouse.Button.Left) && IsMouseOver())
             {
-                if (_icon.GetGlobalBounds().Contains(InputState.GetMousePosition()))
-                {
-                    Assets.Sfx.Play("1");
-                    SceneManager.ChangeScene(SceneNames.Main);
-                }
+                Assets.Sfx.Play("1");
+                SceneManager.ChangeScene(SceneNames.Main);
+            }
+
+            // Thoát bằng phím Esc (tiện UX)
+            if (InputState.IsKeyPressed(Keyboard.Key.Escape))
+            {
+                Assets.Sfx.Play("1");
+                SceneManager.ChangeScene(SceneNames.Main);
             }
         }
 
-        /// <summary>
-        /// Trả về sprite của nút đóng để vẽ.
-        /// </summary>
         protected override Drawable GetDrawable() => _icon;
+
+        #endregion
     }
+
+    #endregion Private types
 }
