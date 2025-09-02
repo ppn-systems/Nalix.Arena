@@ -1,4 +1,6 @@
-﻿using Nalix.Rendering.Attributes;
+﻿using Nalix.Desktop;
+using Nalix.Desktop.Scenes;
+using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -7,7 +9,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Client.Scenes.Menu;
+namespace Nalix.Desktop.Scenes.Menu;
 
 /// <summary>
 /// Cảnh thiết lập trò chơi, nơi người dùng có thể thực hiện các tùy chỉnh.
@@ -150,8 +152,8 @@ public class SettingsScene : Scene
 
             Vector2f scale = new(scaleFit * ScaleXFactor, scaleFit * ScaleYFactor);
 
-            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
 
             return new Sprite(panel)
             {

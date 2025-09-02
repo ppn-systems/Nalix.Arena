@@ -1,4 +1,4 @@
-﻿namespace Nalix.Client.Enums;
+﻿namespace Nalix.Desktop.Enums;
 
 /// <summary>
 /// Biểu thị một hướng trong bối cảnh trò chơi 2D.

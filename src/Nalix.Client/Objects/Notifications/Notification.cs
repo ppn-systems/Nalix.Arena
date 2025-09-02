@@ -1,122 +1,123 @@
-﻿using Nalix.Client.Enums;
+﻿using Nalix.Desktop.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
-using System;
 
-namespace Nalix.Client.Objects.Notifications;
+namespace Nalix.Desktop.Objects.Notifications;
 
 /// <summary>
-/// Lightweight notification box without button. Renders a nine-slice panel with wrapped text.
+/// Hộp thông báo nhẹ (không có nút bấm). Vẽ panel 9-slice với văn bản tự động xuống dòng.
 /// </summary>
 [IgnoredLoad("RenderObject")]
 public class Notification : RenderObject
 {
+    #region Constants
+
+    /// <summary>Kích thước ký tự mặc định của văn bản (px).</summary>
+    protected const System.Single TextCharSizePx = 20f;
+
+    /// <summary>Khoảng đệm ngang (px).</summary>
+    protected const System.Single HorizontalPaddingPx = 12f;
+
+    /// <summary>Khoảng đệm dọc (px).</summary>
+    protected const System.Single VerticalPaddingPx = 30f;
+
+    /// <summary>Tỷ lệ Y khi đặt ở phía trên màn hình.</summary>
+    private const System.Single TopYRatio = 0.10f;
+
+    /// <summary>Tỷ lệ Y khi đặt ở phía dưới màn hình.</summary>
+    private const System.Single BottomYRatio = 0.60f;
+
+    /// <summary>Tỷ lệ chiều rộng tối đa so với màn hình.</summary>
+    private const System.Single MaxWidthFraction = 0.85f;
+
+    /// <summary>Ngưỡng trần chiều rộng (px).</summary>
+    private const System.Single MaxWidthCapPx = 720f;
+
+    /// <summary>Chiều cao panel khởi tạo (px).</summary>
+    private const System.Single InitialPanelHeightPx = 64f;
+
+    /// <summary>Chiều cao panel tối thiểu (px).</summary>
+    private const System.Single MinPanelHeightPx = 72f;
+
+    /// <summary>Chiều rộng bên trong tối thiểu (px).</summary>
+    private const System.Single MinInnerWidthPx = 50f;
+
+    #endregion
+
+    #region Fields
+
     protected readonly Text _messageText;
     protected readonly NineSlicePanel _panel;
-
-    protected Vector2f _textAnchor;
     protected readonly Thickness _border = new(32);
 
-    // Layout constants shared with derived classes
-    protected const Single TextCharSize = 20f;
-    protected const Single HorizontalPadding = 12f;
-    protected const Single VerticalPadding = 30f;
+    protected Vector2f _textAnchor;
+
+    #endregion
+
+    #region Ctors
 
     /// <summary>
-    /// Initializes a notification box with text only.
+    /// Khởi tạo một hộp thông báo chỉ có văn bản.
     /// </summary>
-    /// <param name="initialMessage">Initial message.</param>
-    /// <param name="side">Top/Bottom placement.</param>
-    public Notification(String initialMessage = "", Side side = Side.Top)
+    /// <param name="initialMessage">Thông điệp ban đầu.</param>
+    /// <param name="side">Vị trí hiển thị (Trên/Dưới).</param>
+    public Notification(System.String initialMessage = "", Side side = Side.Top)
     {
-        // Load assets
-        Font font = Assets.Font.Load("1");
-        Texture frameTex = Assets.UiTextures.Load("transparent_center/010");
-        frameTex.Smooth = false;
+        LoadAssets(out var font, out var frameTex);
 
-        // Compute basic layout
-        Single floatY = side == Side.Bottom ? GameEngine.ScreenSize.Y * 0.60f : GameEngine.ScreenSize.Y * 0.10f;
-        Single targetWidth = MathF.Round(MathF.Min(GameEngine.ScreenSize.X * 0.85f, 720f));
-        Single xCentered = MathF.Round((GameEngine.ScreenSize.X - targetWidth) / 2f);
+        ComputeBasicLayout(side, out System.Single floatY, out System.Single targetWidth, out System.Single xCentered);
 
-        // Create panel (size will be finalized after measuring text)
-        _panel = new NineSlicePanel(frameTex, _border);
-        _ = _panel.SetPosition(new Vector2f(xCentered, floatY))
-                  .SetSize(new Vector2f(targetWidth, 64f));
-        _panel.Layout();
+        _panel = CreatePanel(frameTex, xCentered, floatY, targetWidth);
 
-        // Prepare wrapped text
-        Single innerWidth = targetWidth - (_border.Left + _border.Right) - (HorizontalPadding * 2f);
-        if (innerWidth < 50f)
-        {
-            innerWidth = 50f;
-        }
+        System.Single innerWidth = ComputeInnerWidth(targetWidth);
+        _messageText = PrepareWrappedText(font, initialMessage, (System.UInt32)TextCharSizePx, innerWidth);
 
-        String wrapped = WrapText(font, initialMessage, (UInt32)TextCharSize, innerWidth);
-        _messageText = new Text(wrapped, font, (UInt32)TextCharSize) { FillColor = Color.Black };
+        System.Single textHeight = CenterTextOriginAndMeasure(_messageText);
+        System.Single targetHeight = ComputeTargetHeight(textHeight);
 
-        // Center origin and measure
-        var lb = _messageText.GetLocalBounds();
-        _messageText.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
-        Single textHeight = _messageText.GetGlobalBounds().Height;
+        ResizeAndLayoutPanel(_panel, targetWidth, targetHeight);
+        PositionTextInsidePanel(_panel, textHeight, out _textAnchor);
 
-        // Final panel height
-        Single targetHeight = _border.Top + VerticalPadding + textHeight + VerticalPadding + _border.Bottom;
-        targetHeight = MathF.Max(targetHeight, 72f);
-
-        _ = _panel.SetSize(new Vector2f(targetWidth, MathF.Round(targetHeight)));
-        _panel.Layout();
-
-        // Inner rect and text position
-        Single innerLeft = MathF.Round(_panel.Position.X + _border.Left + HorizontalPadding);
-        Single innerRight = MathF.Round(_panel.Position.X + _panel.Size.X - _border.Right - HorizontalPadding);
-        Single innerCenterX = MathF.Round((innerLeft + innerRight) / 2f);
-        Single innerTop = MathF.Round(_panel.Position.Y + _border.Top + VerticalPadding);
-
-        _messageText.Position = new Vector2f(innerCenterX, innerTop + (textHeight / 2f));
-        _textAnchor = _messageText.Position;
-
-        Reveal();
-        SetZIndex(ZIndex.Notification.ToInt());
+        RevealAndOrder();
     }
 
-    /// <summary>
-    /// Updates the message keeping the same anchor point.
-    /// </summary>
-    /// <param name="newMessage">New text.</param>
-    public virtual void UpdateMessage(String newMessage)
-    {
-        Single innerWidth = _panel.Size.X - (_border.Left + _border.Right) - (HorizontalPadding * 2f);
-        if (innerWidth < 50f)
-        {
-            innerWidth = 50f;
-        }
+    #endregion
 
-        String wrapped = WrapText(_messageText.Font, newMessage, _messageText.CharacterSize, innerWidth);
+    #region Public API
+
+    /// <summary>
+    /// Cập nhật thông điệp và giữ nguyên anchor point.
+    /// </summary>
+    public virtual void UpdateMessage(System.String newMessage)
+    {
+        System.Single innerWidth = ComputeInnerWidth(_panel.Size.X);
+
+        System.String wrapped = WrapText(_messageText.Font, newMessage, _messageText.CharacterSize, innerWidth);
         _messageText.DisplayedString = wrapped;
 
+        // Re-center origin cho bounds mới nhưng vẫn giữ anchor.
         var lb = _messageText.GetLocalBounds();
         _messageText.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
-
-        // Keep fixed anchor
         _messageText.Position = _textAnchor;
     }
 
-    /// <inheritdoc />
-    public override void Update(Single deltaTime)
+    #endregion
+
+    #region Update/Render
+
+    public override void Update(System.Single deltaTime)
     {
         if (!Visible)
         {
             return;
         }
-        // No-op for the base (text-only) box
+        // Base notification: không có state update
     }
 
-    /// <inheritdoc />
     public override void Render(RenderTarget target)
     {
         if (!Visible)
@@ -128,27 +129,134 @@ public class Notification : RenderObject
         target.Draw(_messageText);
     }
 
-    /// <inheritdoc />
     protected override Drawable GetDrawable()
         => throw new System.NotSupportedException("Use Render() instead.");
 
-    /// <summary>
-    /// Word-wrap helper that fits text into a max width.
-    /// </summary>
-    protected static String WrapText(Font font, String text, UInt32 characterSize, Single maxWidth)
-    {
-        String result = "";
-        String currentLine = "";
-        String[] words = text.Split(' ');
+    #endregion
 
-        foreach (var word in words)
+    #region Layout Construction
+
+    private static void LoadAssets(out Font font, out Texture frameTex)
+    {
+        font = Assets.Font.Load("1");
+        frameTex = Assets.UiTextures.Load("transparent_center/010");
+        frameTex.Smooth = false;
+    }
+
+    private static void ComputeBasicLayout(
+        Side side,
+        out System.Single floatY,
+        out System.Single targetWidth,
+        out System.Single xCentered)
+    {
+        System.Single ratio = side == Side.Bottom ? BottomYRatio : TopYRatio;
+        System.Single screenW = GameEngine.ScreenSize.X;
+
+        System.Single rawWidth = screenW * MaxWidthFraction;
+        targetWidth = System.MathF.Round(System.MathF.Min(rawWidth, MaxWidthCapPx));
+
+        xCentered = System.MathF.Round((screenW - targetWidth) / 2f);
+        floatY = GameEngine.ScreenSize.Y * ratio;
+    }
+
+    private NineSlicePanel CreatePanel(Texture frameTex, System.Single x, System.Single y, System.Single width)
+    {
+        var p = new NineSlicePanel(frameTex, _border)
+            .SetPosition(new Vector2f(x, y))
+            .SetSize(new Vector2f(width, InitialPanelHeightPx));
+
+        p.Layout();
+        return p;
+    }
+
+    private static System.Single ComputeInnerWidth(System.Single targetWidth)
+    {
+        System.Single w = targetWidth - (2f * HorizontalPaddingPx);
+        return System.MathF.Max(MinInnerWidthPx, w);
+    }
+
+    private static Text PrepareWrappedText(Font font, System.String message, System.UInt32 charSize, System.Single innerWidth)
+    {
+        System.String wrapped = WrapText(font, message, charSize, innerWidth);
+        return new Text(wrapped, font, charSize) { FillColor = Color.Black };
+    }
+
+    private static System.Single CenterTextOriginAndMeasure(Text text)
+    {
+        var lb = text.GetLocalBounds();
+        text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
+        return text.GetGlobalBounds().Height;
+    }
+
+    private static System.Single ComputeTargetHeight(System.Single textHeight)
+    {
+        System.Single h = VerticalPaddingPx + textHeight + VerticalPaddingPx;
+        return System.MathF.Max(MinPanelHeightPx, System.MathF.Round(h));
+    }
+
+    private static void ResizeAndLayoutPanel(NineSlicePanel panel, System.Single width, System.Single height)
+    {
+        _ = panel.SetSize(new Vector2f(width, height));
+        panel.Layout();
+    }
+
+    private void PositionTextInsidePanel(NineSlicePanel panel, System.Single textHeight, out Vector2f anchorOut)
+    {
+        System.Single innerLeft = System.MathF.Round(panel.Position.X + _border.Left + HorizontalPaddingPx);
+        System.Single innerRight = System.MathF.Round(panel.Position.X + panel.Size.X - _border.Right - HorizontalPaddingPx);
+        System.Single innerCenterX = System.MathF.Round((innerLeft + innerRight) * 0.5f);
+        System.Single innerTop = System.MathF.Round(panel.Position.Y + _border.Top + VerticalPaddingPx);
+
+        _messageText.Position = new Vector2f(innerCenterX, innerTop + (textHeight * 0.5f));
+        anchorOut = _messageText.Position;
+    }
+
+    private void RevealAndOrder()
+    {
+        Reveal();
+        SetZIndex(ZIndex.Notification.ToInt());
+    }
+
+    #endregion
+
+    #region Helpers
+
+    /// <summary>
+    /// Helper word-wrap: chia văn bản thành nhiều dòng dựa trên maxWidth.
+    /// Tái sử dụng 1 instance <see cref="Text"/> để đo, tránh cấp phát thừa.
+    /// </summary>
+    protected static System.String WrapText(Font font, System.String text, System.UInt32 characterSize, System.Single maxWidth)
+    {
+        if (System.String.IsNullOrEmpty(text))
         {
-            String testLine = currentLine.Length > 0 ? currentLine + " " + word : word;
-            Text temp = new(testLine, font, characterSize);
-            if (temp.GetLocalBounds().Width > maxWidth)
+            return System.String.Empty;
+        }
+
+        System.String result = "";
+        System.String currentLine = "";
+        System.String[] words = text.Split(' ');
+
+        var measurer = new Text("", font, characterSize);
+
+        for (System.Int32 i = 0; i < words.Length; i++)
+        {
+            System.String word = words[i];
+            System.String testLine = currentLine.Length > 0 ? currentLine + " " + word : word;
+
+            measurer.DisplayedString = testLine;
+            if (measurer.GetLocalBounds().Width > maxWidth)
             {
-                result += currentLine + "\n";
-                currentLine = word;
+                if (currentLine.Length > 0)
+                {
+                    result += currentLine + "\n";
+                    currentLine = word;
+                }
+                else
+                {
+                    // Trường hợp từ đơn dài hơn maxWidth → buộc xuống dòng
+                    result += word + "\n";
+                    currentLine = System.String.Empty;
+                }
             }
             else
             {
@@ -161,12 +269,13 @@ public class Notification : RenderObject
     }
 
     /// <summary>
-    /// Color lerp helper.
+    /// Helper nội suy màu.
     /// </summary>
-    protected static Color Lerp(Color a, Color b, Single t)
+    protected static Color Lerp(Color a, Color b, System.Single t)
     {
-        Byte L(Byte x, Byte y) => (Byte)(x + ((y - x) * t));
+        System.Byte L(System.Byte x, System.Byte y) => (System.Byte)(x + ((y - x) * t));
         return new Color(L(a.R, b.R), L(a.G, b.G), L(a.B, b.B), L(a.A, b.A));
     }
-}
 
+    #endregion
+}

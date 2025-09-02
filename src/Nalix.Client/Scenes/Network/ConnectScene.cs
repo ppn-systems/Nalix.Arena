@@ -1,6 +1,6 @@
-﻿using Nalix.Client.Enums;
-using Nalix.Client.Objects.Indicators;
-using Nalix.Client.Objects.Notifications;
+﻿using Nalix.Desktop.Enums;
+using Nalix.Desktop.Objects.Indicators;
+using Nalix.Desktop.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
@@ -8,7 +8,7 @@ using Nalix.SDK.Remote;
 using Nalix.Shared.Injection;
 using SFML.Graphics;
 
-namespace Nalix.Client.Scenes.Network;
+namespace Nalix.Desktop.Scenes.Network;
 
 /// <summary>
 /// Cảnh chịu trách nhiệm xử lý quá trình kết nối mạng trước khi vào trò chơi chính.

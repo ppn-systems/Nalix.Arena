@@ -1,6 +1,6 @@
-﻿using Nalix.Client.Enums;
-using Nalix.Client.Objects.Controls;
-using Nalix.Client.Objects.Notifications;
+﻿using Nalix.Desktop.Enums;
+using Nalix.Desktop.Objects.Controls;
+using Nalix.Desktop.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Objects;
@@ -9,7 +9,7 @@ using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Client.Scenes.Menu;
+namespace Nalix.Desktop.Scenes.Menu;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
@@ -105,23 +105,23 @@ internal class MainScene : Scene
         private void ApplyStyles()
         {
             // Login
-            _login.SetColors(PanelDark, PanelHover);
-            _login.SetTextColors(TextWhite, TextNeon);
+            _ = _login.SetColors(PanelDark, PanelHover);
+            _ = _login.SetTextColors(TextWhite, TextNeon);
             _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Settings
-            _settings.SetColors(PanelAlt, PanelAltHv);
-            _settings.SetTextColors(TextSoft, TextNeon);
+            _ = _settings.SetColors(PanelAlt, PanelAltHv);
+            _ = _settings.SetTextColors(TextSoft, TextNeon);
             _settings.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Credits
-            _credits.SetColors(PanelDark, PanelHover);
-            _credits.SetTextColors(TextSoft, TextNeon);
+            _ = _credits.SetColors(PanelDark, PanelHover);
+            _ = _credits.SetTextColors(TextSoft, TextNeon);
             _credits.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Exit
-            _exit.SetColors(PanelAlt, PanelAltHv);
-            _exit.SetTextColors(ExitNormal, ExitHover);
+            _ = _exit.SetColors(PanelAlt, PanelAltHv);
+            _ = _exit.SetTextColors(ExitNormal, ExitHover);
             _exit.SetTextOutline(new Color(0, 0, 0, 180), 2f);
         }
 

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Client.Enums;
+﻿namespace Nalix.Desktop.Enums;
 
 /// <summary>
 /// Định nghĩa các mức độ ưu tiên vẽ (Z-Index) cho các đối tượng trong trò chơi.

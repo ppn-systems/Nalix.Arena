@@ -3,7 +3,7 @@ using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Nalix.Client;
+namespace Nalix.Desktop;
 
 /// <summary>
 /// Performs client-side initialization such as packet registrations
@@ -37,7 +37,7 @@ internal static class Registry
         IPacketCatalog catalog = factory.CreateCatalog();
 
         // 2) Expose catalog through your current service locator.
-        InstanceManager.Instance.Register<IPacketCatalog>(catalog);
+        InstanceManager.Instance.Register(catalog);
 
         // 3) (Optional) Add more client init steps here later:
         // - Preload assets

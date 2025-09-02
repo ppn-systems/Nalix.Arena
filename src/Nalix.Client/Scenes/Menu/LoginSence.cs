@@ -1,4 +1,6 @@
-﻿using Nalix.Client.Objects.Controls;
+﻿using Nalix.Desktop;
+using Nalix.Desktop.Objects.Controls;
+using Nalix.Desktop.Scenes;
 using Nalix.Logging;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
@@ -12,7 +14,7 @@ using SFML.System;
 using SFML.Window;
 using System;
 
-namespace Nalix.Client.Scenes.Menu;
+namespace Nalix.Desktop.Scenes.Menu;
 
 /// <summary>
 /// Màn hình đăng nhập: nền parallax + Username/Password + nút Login.
@@ -197,7 +199,7 @@ internal sealed class LoginSence : Scene
 
             // Buttons (giữa đáy panel)
             var r = _loginBtn.GetGlobalBounds();
-            Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
+            Single btnBaseX = _panelPos.X + (PanelSize.X - r.Width) * 0.5f;
             Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
 
             _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
