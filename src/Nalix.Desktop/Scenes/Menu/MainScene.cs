@@ -37,7 +37,7 @@ internal class MainScene : Scene
 
     #region Private Types
 
-    /// <summary>Menu chính: Login / Settings / Credits / Exit</summary>
+    /// <summary>Menu chính: LOGIN / Settings / Credits / Exit</summary>
     [IgnoredLoad("RenderObject")]
     private class Menu : RenderObject
     {
@@ -79,7 +79,7 @@ internal class MainScene : Scene
         public Menu()
         {
             SetZIndex(2);
-            _login = NewButton("Login");
+            _login = NewButton("LOGIN");
             _settings = NewButton("Settings");
             _credits = NewButton("Credits");
             _exit = NewButton("Exit");
@@ -104,7 +104,7 @@ internal class MainScene : Scene
 
         private void ApplyStyles()
         {
-            // Login
+            // LOGIN
             _ = _login.SetColors(PanelDark, PanelHover);
             _ = _login.SetTextColors(TextWhite, TextNeon);
             _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);

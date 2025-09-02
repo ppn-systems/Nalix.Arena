@@ -1,16 +1,18 @@
-﻿using Nalix.Common.Connection;
+﻿using Nalix.Application.Extensions;
+using Nalix.Common.Connection;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Security.Types;
-using Nalix.Communication.Commands;
+using Nalix.Communication.Enums;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
 using Nalix.Logging;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Controls;
+using System;
 
-namespace Nalix.Application.Operations;
+namespace Nalix.Application.Operations.Security;
 
 /// <summary>
 /// Quản lý quá trình bắt tay bảo mật để thiết lập kết nối mã hóa an toàn với client.
@@ -40,20 +42,22 @@ internal sealed class HandshakeOps
     /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
     [PacketPermission(PermissionLevel.Guest)]
-    [PacketOpcode((System.UInt16)Command.Handshake)]
+    [PacketOpcode((UInt16)Command.HANDSHAKE)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static async System.Threading.Tasks.Task Handshake(
         IPacket packet,
         IConnection connection)
     {
+        const UInt16 Op = (UInt16)Command.HANDSHAKE;
+
         if (packet is not Handshake initPacket)
         {
             NLogix.Host.Instance.Error(
                 "Invalid packet type. Expected HandshakePacket from {0}",
                 connection.RemoteEndPoint);
 
-            _ = await connection.Tcp.SendAsync("Invalid packet type");
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
             return;
         }
 
@@ -61,10 +65,10 @@ internal sealed class HandshakeOps
         if (connection.EncryptionKey is not null)
         {
             NLogix.Host.Instance.Warn(
-                "Handshake already completed for {0}",
+                "HANDSHAKE already completed for {0}",
                 connection.RemoteEndPoint);
 
-            _ = await connection.Tcp.SendAsync("Handshake already completed");
+            await connection.SendAsync(Op, ResponseStatus.ALREADY_HANDSHAKED).ConfigureAwait(false);
             return;
         }
 
@@ -75,7 +79,7 @@ internal sealed class HandshakeOps
                 "Null payload in handshake packet from {0}",
                 connection.RemoteEndPoint);
 
-            _ = await connection.Tcp.SendAsync("Invalid payload");
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
@@ -86,7 +90,7 @@ internal sealed class HandshakeOps
                 "Invalid public key length [Length={0}] from {1}",
                 initPacket.Data.Length, connection.RemoteEndPoint);
 
-            _ = await connection.Tcp.SendAsync($"Invalid key length: expected 32, got {initPacket.Data.Length}");
+            await connection.SendAsync(Op, ResponseStatus.INVALID_KEY_LENGTH).ConfigureAwait(false);
             return;
         }
 
@@ -100,44 +104,44 @@ internal sealed class HandshakeOps
             X25519.X25519KeyPair keyPair = X25519.GenerateKeyPair();
 
             // Tính toán shared secret từ private key của server và public key của client
-            System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Data);
+            Byte[] secret = X25519.Agreement(keyPair.PrivateKey, initPacket.Data);
 
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
             connection.EncryptionKey = SHA256.HashData(secret);
 
             // Security: Clear sensitive data từ memory
-            System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
-            System.Array.Clear(secret, 0, secret.Length);
+            Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
+            Array.Clear(secret, 0, secret.Length);
 
             // Nâng cấp quyền truy cập của client lên mức User
             connection.Level = PermissionLevel.User;
 
             // Log successful handshake
             NLogix.Host.Instance.Info(
-                "Handshake completed successfully for {0}",
+                "HANDSHAKE completed successfully for {0}",
                 connection.RemoteEndPoint);
 
             response.Initialize(keyPair.PublicKey);
 
             _ = await connection.Tcp.SendAsync(response.Serialize());
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             // Error handling theo security best practices
             NLogix.Host.Instance.Error(
-                "Handshake failed for {0}: {1}",
+                "HANDSHAKE failed for {0}: {1}",
                 connection.RemoteEndPoint, ex.Message);
 
             // Reset connection state nếu có lỗi
             connection.EncryptionKey = null;
             connection.Level = PermissionLevel.Guest;
 
-            _ = await connection.Tcp.SendAsync("Handshake processing failed");
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
         }
         finally
         {
             InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
-                                    .Return<Handshake>(response);
+                                    .Return(response);
         }
     }
 }

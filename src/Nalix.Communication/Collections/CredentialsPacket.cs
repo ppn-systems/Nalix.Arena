@@ -5,7 +5,8 @@ using Nalix.Common.Packets.Enums;
 using Nalix.Common.Security.Enums;
 using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
-using Nalix.Communication.Commands;
+using Nalix.Communication.Enums;
+using Nalix.Communication.Extensions;
 using Nalix.Communication.Security;
 using Nalix.Cryptography.Extensions;
 using Nalix.Shared.Injection;
@@ -15,14 +16,14 @@ using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
 using System;
 
-namespace Nalix.Communication.Packet.Collections;
+namespace Nalix.Communication.Collections;
 
 /// <summary>
 /// Gói tin chứa thông tin đăng nhập từ client (username, mật khẩu băm, metadata),
 /// dùng trong quá trình xác thực sau handshake.
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
-[MagicNumber((UInt32)MagicNumbers.Credentials)]
+[MagicNumber((UInt32)PacketMagic.CREDENTIALS)]
 public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket>
 {
     /// <summary>
@@ -39,17 +40,17 @@ public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket
     public Credentials Credentials { get; set; }
 
     /// <summary>
-    /// Khởi tạo mặc định với MagicNumber và Credentials rỗng.
+    /// Khởi tạo mặc định với MagicNumber và CREDENTIALS rỗng.
     /// </summary>
     public CredentialsPacket()
     {
-        OpCode = Command.None.AsUInt16();
-        MagicNumber = MagicNumbers.Credentials.AsUInt32();
+        OpCode = Command.NONE.AsUInt16();
+        MagicNumber = PacketMagic.CREDENTIALS.AsUInt32();
         Credentials = new Credentials();
     }
 
     /// <summary>
-    /// Thiết lập OpCode và Credentials.
+    /// Thiết lập OpCode và CREDENTIALS.
     /// </summary>
     public void Initialize(UInt16 opCode, Credentials credentials)
     {
@@ -62,7 +63,7 @@ public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = Command.None.AsUInt16();
+        OpCode = Command.NONE.AsUInt16();
         Credentials = new Credentials();
     }
 

@@ -11,8 +11,4 @@
 		<PackageReference Include="Nalix.Cryptography" Version="4.2.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Packet\Primitives\" />
-	</ItemGroup>
-
 </Project>

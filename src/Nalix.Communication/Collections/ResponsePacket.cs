@@ -4,22 +4,22 @@ using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Enums;
 using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
-using Nalix.Communication.Commands;
 using Nalix.Communication.Enums;
+using Nalix.Communication.Extensions;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
 using System;
 
-namespace Nalix.Communication.Packet.Collections;
+namespace Nalix.Communication.Collections;
 
 /// <summary>
 /// Gói phản hồi siêu nhẹ từ server.
 /// Chỉ gồm StatusCode (1 byte), không có chuỗi message để tiết kiệm băng thông.
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
-[MagicNumber((UInt32)MagicNumbers.Response)]
+[MagicNumber((UInt32)PacketMagic.RESPONSE)]
 public sealed class ResponsePacket : FrameBase, IPacketDeserializer<ResponsePacket>
 {
     /// <summary>
@@ -41,9 +41,9 @@ public sealed class ResponsePacket : FrameBase, IPacketDeserializer<ResponsePack
     /// </summary>
     public ResponsePacket()
     {
-        OpCode = Command.None.AsUInt16();
-        Status = ResponseStatus.InternalError;
-        MagicNumber = MagicNumbers.Response.AsUInt32();
+        OpCode = Command.NONE.AsUInt16();
+        Status = ResponseStatus.INTERNAL_ERROR;
+        MagicNumber = PacketMagic.RESPONSE.AsUInt32();
     }
 
     /// <summary>
@@ -60,8 +60,8 @@ public sealed class ResponsePacket : FrameBase, IPacketDeserializer<ResponsePack
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = Command.None.AsUInt16();
-        Status = ResponseStatus.InternalError;
+        OpCode = Command.NONE.AsUInt16();
+        Status = ResponseStatus.INTERNAL_ERROR;
     }
 
     /// <summary>

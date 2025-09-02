@@ -79,7 +79,7 @@ internal static class AppConfig
                    .WithLogging(Logger)
                    .WithErrorHandling((exception, command) =>
                         Logger.Error($"Error handling command: {command}", exception))
-        //.WithHandler(() => new AccountService(context))
+        //.WithHandler(() => new AccountOps(context))
         )));
     }
 }

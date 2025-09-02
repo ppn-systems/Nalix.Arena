@@ -1,6 +1,8 @@
-﻿namespace Nalix.Communication.Commands;
+﻿using Nalix.Communication.Enums;
 
-public static class Extensions
+namespace Nalix.Communication.Extensions;
+
+public static class CommandExtensions
 {
     /// <summary>
     /// Chuyển một giá trị enum Command sang ushort.
@@ -14,5 +16,5 @@ public static class Extensions
     /// </summary>
     /// <param name="command">Giá trị enum Command.</param>
     /// <returns>Giá trị ushort tương ứng.</returns>
-    public static System.UInt16 AsUInt32(this MagicNumbers command) => (System.UInt16)command;
+    public static System.UInt16 AsUInt32(this PacketMagic command) => (System.UInt16)command;
 }

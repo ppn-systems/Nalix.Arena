@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Packets.Abstractions;
+using Nalix.Communication.Collections;
 using Nalix.Shared.Injection;
 using Nalix.Shared.Messaging.Catalog;
 using System.Diagnostics.CodeAnalysis;
@@ -17,7 +18,7 @@ internal static class Registry
     [RequiresUnreferencedCode("Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
     public static void Load()
     {
-        // Register logger first so other components can use it.
+        // REGISTER logger first so other components can use it.
 #if DEBUG
         InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
 #else
@@ -29,10 +30,9 @@ internal static class Registry
         // 1) Build packet catalog.
         var factory = new PacketCatalogFactory();
 
-        // Register packets here (single source of truth).
-        //_ = factory.RegisterPacket<CredentialsPacket>();
-        // _ = factory.RegisterPacket<PasswordChangePacket>();
-        // _ = factory.RegisterPacket<...>();
+        // REGISTER packets here (single source of truth).
+        _ = factory.RegisterPacket<ResponsePacket>();
+        _ = factory.RegisterPacket<CredentialsPacket>();
 
         IPacketCatalog catalog = factory.CreateCatalog();
 

@@ -15,7 +15,7 @@ using System;
 namespace Nalix.Desktop.Scenes.Menu;
 
 /// <summary>
-/// Màn hình đăng nhập: nền parallax + Username/Password + nút Login.
+/// Màn hình đăng nhập: nền parallax + Username/Password + nút LOGIN.
 /// Enter/Click để submit, Esc để hủy.
 /// </summary>
 internal sealed class LoginSence : Scene
@@ -246,7 +246,7 @@ internal sealed class LoginSence : Scene
                 return;
             }
 
-            NLogix.Host.Instance.Info("Login: Enter pressed");
+            NLogix.Host.Instance.Info("LOGIN: Enter pressed");
             if (_user.Focused) { _user.Focused = false; _pass.Focused = true; }
             else if (_pass.Focused) { Submit(); }
         }
