@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Desktop", "Nalix.Client\Nalix.Desktop.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Desktop", "Nalix.Desktop\Nalix.Desktop.csproj", "{DF3C2997-BCA2-4030-809B-EBCB68F171A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nalix.Application", "Nalix.Application\Nalix.Application.csproj", "{B57C99FD-1060-4DD2-AD21-F247BC5A03A0}"
 EndProject

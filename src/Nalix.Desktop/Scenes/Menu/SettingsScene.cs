@@ -1,6 +1,4 @@
-﻿using Nalix.Desktop;
-using Nalix.Desktop.Scenes;
-using Nalix.Rendering.Attributes;
+﻿using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -152,8 +150,8 @@ public class SettingsScene : Scene
 
             Vector2f scale = new(scaleFit * ScaleXFactor, scaleFit * ScaleYFactor);
 
-            System.Single posX = (GameEngine.ScreenSize.X - panel.Size.X * scale.X) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - panel.Size.Y * scale.Y) / 2f;
+            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
+            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
 
             return new Sprite(panel)
             {

@@ -29,7 +29,5 @@ internal static class Assets
     /// </summary>
     public static readonly SfxManager Sfx = new(SfxLoader, () => (System.Int32)GameEngine.GraphicsConfig.SoundVolume);
 
-    static Assets() =>
-        // Khởi tạo tĩnh để đảm bảo các bộ tải tài nguyên được thiết lập đúng cách.
-        Sfx.AddToLibrary("1", 1);
+    static Assets() => Sfx.AddToLibrary("1", 1);
 }
