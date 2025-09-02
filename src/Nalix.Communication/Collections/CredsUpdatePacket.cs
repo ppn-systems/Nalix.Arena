@@ -23,7 +23,7 @@ namespace Nalix.Communication.Collections;
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
 [MagicNumber((System.UInt32)PacketMagic.CHANGE_PASSWORD)]
-public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangePasswordPacket>
+public sealed class CredsUpdatePacket : FrameBase, IPacketTransformer<CredsUpdatePacket>
 {
     /// <summary>
     /// Max allowed bytes (UTF-8) for each password field to limit abuse/DoS.
@@ -67,7 +67,7 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Default ctor: set defaults for opcode/magic.
     /// </summary>
-    public ChangePasswordPacket()
+    public CredsUpdatePacket()
     {
         OpCode = Command.NONE.AsUInt16();
         // Prefer a dedicated magic if available:
@@ -116,8 +116,8 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Encrypts sensitive fields (OldPassword/NewPassword) to Base64 using the given key/algorithm.
     /// </summary>
-    public static ChangePasswordPacket Encrypt(
-        ChangePasswordPacket packet,
+    public static CredsUpdatePacket Encrypt(
+        CredsUpdatePacket packet,
         System.Byte[] key,
         SymmetricAlgorithmType algorithm)
     {
@@ -131,8 +131,8 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Decrypts sensitive fields from Base64 using the given key/algorithm.
     /// </summary>
-    public static ChangePasswordPacket Decrypt(
-        ChangePasswordPacket packet,
+    public static CredsUpdatePacket Decrypt(
+        CredsUpdatePacket packet,
         System.Byte[] key,
         SymmetricAlgorithmType algorithm)
     {
@@ -157,7 +157,7 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Compresses fields (LZ4) and encodes as Base64.
     /// </summary>
-    public static ChangePasswordPacket Compress(ChangePasswordPacket packet)
+    public static CredsUpdatePacket Compress(CredsUpdatePacket packet)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 
@@ -169,7 +169,7 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Decompresses fields from Base64 (LZ4).
     /// </summary>
-    public static ChangePasswordPacket Decompress(ChangePasswordPacket packet)
+    public static CredsUpdatePacket Decompress(CredsUpdatePacket packet)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 
@@ -181,11 +181,11 @@ public sealed class ChangePasswordPacket : FrameBase, IPacketTransformer<ChangeP
     /// <summary>
     /// Deserialize a packet from buffer via object pool.
     /// </summary>
-    public static ChangePasswordPacket Deserialize(System.ReadOnlySpan<System.Byte> buffer)
+    public static CredsUpdatePacket Deserialize(System.ReadOnlySpan<System.Byte> buffer)
     {
-        ChangePasswordPacket packet = InstanceManager.Instance
+        CredsUpdatePacket packet = InstanceManager.Instance
             .GetOrCreateInstance<ObjectPoolManager>()
-            .Get<ChangePasswordPacket>();
+            .Get<CredsUpdatePacket>();
 
         _ = LiteSerializer.Deserialize(buffer, ref packet);
         return packet;

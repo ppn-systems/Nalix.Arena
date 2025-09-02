@@ -33,6 +33,7 @@ internal static class Registry
         // REGISTER packets here (single source of truth).
         _ = factory.RegisterPacket<ResponsePacket>();
         _ = factory.RegisterPacket<CredentialsPacket>();
+        _ = factory.RegisterPacket<CredsUpdatePacket>();
 
         IPacketCatalog catalog = factory.CreateCatalog();
 
