@@ -9,7 +9,6 @@
 		<PackageReference Include="Nalix.Common" Version="4.2.3" />
 		<PackageReference Include="Nalix.Logging" Version="4.2.3" />
 		<PackageReference Include="Nalix.Cryptography" Version="4.2.3" />
-		<PackageReference Include="Nalix.Network.Package" Version="2.1.7" />
 	</ItemGroup>
 
 	<ItemGroup>
