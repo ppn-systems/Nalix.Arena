@@ -4,6 +4,7 @@ using Nalix.Communication;
 using Nalix.Host.Assemblies;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Network;
+using Nalix.Logging;
 using Nalix.Network.Dispatch;
 using Nalix.Shared.Injection;
 using System;
@@ -16,12 +17,6 @@ namespace Nalix.Host;
 
 internal static class AppConfig
 {
-    // Lazy thread-safe, không side-effect ngoài khởi tạo
-    private static readonly Lazy<ILogger> s_log = new(
-        () => InstanceManager.Instance.GetExistingInstance<ILogger>()
-              ?? throw new InvalidOperationException("ILogger is not registered."),
-        LazyThreadSafetyMode.ExecutionAndPublication);
-
     private static readonly Lazy<GameDbContext> s_db = new(
         CreateDbContextCore,
         LazyThreadSafetyMode.ExecutionAndPublication);
@@ -62,7 +57,7 @@ internal static class AppConfig
         }
         catch (Exception ex)
         {
-            s_log.Value.Error(Evt("DB_INIT_FAIL"), "Failed to initialize database.", ex);
+            NLogix.Host.Instance.Error(Evt("DB_INIT_FAIL") + "Failed to initialize database.", ex);
             ctx = null;
             return false;
         }
@@ -73,7 +68,7 @@ internal static class AppConfig
     /// </summary>
     public static ServerListener BuildServer(GameDbContext? dbOverride = null, ILogger? loggerOverride = null)
     {
-        var log = loggerOverride ?? s_log.Value;
+        var log = loggerOverride ?? NLogix.Host.Instance;
         var db = dbOverride ?? (s_db.IsValueCreated ? s_db.Value : null); // cho phép null-db cho một số handler
 
         var channel = BuildDispatchChannel(log, db);
@@ -89,7 +84,7 @@ internal static class AppConfig
         return new PacketDispatchChannel(cfg => cfg
             .WithLogging(log)
             .WithErrorHandling((exception, command)
-                => log.Error(Evt("DISPATCH_ERR"), $"Error handling command: {command}", exception))
+                => log.Error(Evt("DISPATCH_ERR") + $"Error handling command: {command}", exception))
             // Register handlers tại một chỗ, dễ test và kiểm soát thứ tự
             .WithHandler(() => new HandshakeOps())
             .WithHandler(() => new AccountOps(dbOrNull))
@@ -101,12 +96,11 @@ internal static class AppConfig
 
     private static GameDbContext CreateDbContextCore()
     {
-        var log = s_log.Value;
         try
         {
             var ctx = new AutoDbContextFactory().CreateDbContext([]);
             _ = ctx.Database.EnsureCreated();
-            log.Info(Evt("DB_INIT_OK"), "Database initialized successfully.");
+            NLogix.Host.Instance.Info(Evt("DB_INIT_OK") + "Database initialized successfully.");
             return ctx;
         }
         catch
@@ -117,7 +111,7 @@ internal static class AppConfig
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static String Evt(String name) => $"[{name}]";
+    private static String Evt(String name) => $"[{name}] ";
 
     #endregion
 }

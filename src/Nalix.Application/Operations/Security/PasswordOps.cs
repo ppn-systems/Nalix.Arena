@@ -55,9 +55,8 @@ public sealed class PasswordOps
         }
 
         // Lấy username từ hub theo connection
-        System.String username = InstanceManager.Instance
-                                                .GetOrCreateInstance<ConnectionHub>()
-                                                .GetUsername(connection.Id);
+        System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
+                                                         .GetUsername(connection.Id);
 
         if (username is null)
         {
@@ -65,7 +64,8 @@ public sealed class PasswordOps
                 "CHANGE_PASSWORD attempt without valid session from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -75,7 +75,8 @@ public sealed class PasswordOps
                 "Null payload in CHANGE_PASSWORD from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -87,7 +88,8 @@ public sealed class PasswordOps
             if (account is null)
             {
                 // Session có username nhưng DB không còn — xem như invalid
-                await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -97,7 +99,8 @@ public sealed class PasswordOps
                     "CHANGE_PASSWORD on disabled account {0} from {1}",
                     username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.DISABLED).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.DISABLED)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -108,7 +111,8 @@ public sealed class PasswordOps
                     "CHANGE_PASSWORD wrong current password for {0} from {1}",
                     username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -139,7 +143,8 @@ public sealed class PasswordOps
                 "Password changed successfully for {0} from {1}",
                 username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.OK)
+                            .ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -147,7 +152,8 @@ public sealed class PasswordOps
                 "CHANGE_PASSWORD failed for {0} from {1}: {2}",
                 username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
+                            .ConfigureAwait(false);
         }
     }
 

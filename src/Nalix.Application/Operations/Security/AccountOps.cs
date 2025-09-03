@@ -30,7 +30,7 @@ public sealed class AccountOps
                                     .SetMaxCapacity<CredentialsPacket>(1024);
 
         _ = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
-                                    .Prealloc<CredentialsPacket>(512);
+                                    .Prealloc<CredentialsPacket>(128);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
@@ -56,7 +56,8 @@ public sealed class AccountOps
                 "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -67,7 +68,8 @@ public sealed class AccountOps
                 "Null credentials in register p from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -81,20 +83,23 @@ public sealed class AccountOps
                 "Empty username or password in register attempt from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
+                            .ConfigureAwait(false);
             return;
         }
 
         try
         {
             // Check existing username
-            if (await _accounts.AnyAsync(a => a.Username == credentials.Username).ConfigureAwait(false))
+            if (await _accounts.AnyAsync(a => a.Username == credentials.Username)
+                               .ConfigureAwait(false))
             {
                 NLogix.Host.Instance.Warn(
                     "Username {0} already exists from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.ALREADY_EXISTS).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.ALREADY_EXISTS)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -116,7 +121,8 @@ public sealed class AccountOps
             };
 
             _accounts.Add(newAccount);
-            _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
+            _ = await _accounts.SaveChangesAsync()
+                               .ConfigureAwait(false);
 
             // Clear sensitive
             System.Array.Clear(salt, 0, salt.Length);
@@ -126,7 +132,8 @@ public sealed class AccountOps
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.OK)
+                            .ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -134,7 +141,8 @@ public sealed class AccountOps
                 "Failed to register account {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
+                            .ConfigureAwait(false);
         }
     }
 
@@ -156,7 +164,8 @@ public sealed class AccountOps
                 "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -166,7 +175,8 @@ public sealed class AccountOps
                 "Null credentials in login p from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
+                            .ConfigureAwait(false);
             return;
         }
 
@@ -184,7 +194,8 @@ public sealed class AccountOps
                     "LOGIN attempt with non-existent username {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -197,7 +208,8 @@ public sealed class AccountOps
                     "Account {0} locked due to too many failed attempts from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.LOCKED).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.LOCKED)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -213,7 +225,8 @@ public sealed class AccountOps
                     "Incorrect password for {0}, attempt {1} from connection {2}",
                     credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -224,7 +237,8 @@ public sealed class AccountOps
                     "LOGIN attempt on disabled account {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.DISABLED).ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.DISABLED)
+                                .ConfigureAwait(false);
                 return;
             }
 
@@ -243,7 +257,8 @@ public sealed class AccountOps
                 "User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.OK)
+                            .ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -251,7 +266,8 @@ public sealed class AccountOps
                 "LOGIN failed for {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
+                            .ConfigureAwait(false);
         }
     }
 
@@ -291,8 +307,7 @@ public sealed class AccountOps
             {
                 account.IsActive = false;
                 account.LastLogoutAt = System.DateTime.UtcNow;
-                _ = await _accounts.SaveChangesAsync()
-                                   .ConfigureAwait(false);
+                _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
             }
 
             // Reset connection state
