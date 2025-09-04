@@ -7,6 +7,8 @@ using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
+using Nalix.SDK.Remote;
+using Nalix.Shared.Injection;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -216,6 +218,11 @@ internal sealed class LoginSence : Scene
 
         public override void Update(Single dt)
         {
+            if (!InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>().IsConnected)
+            {
+                SceneManager.ChangeScene(SceneNames.Network);
+            }
+
             HandleTabToggle();
             HandleEnter();
             HandleEscape();

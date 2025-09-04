@@ -39,7 +39,7 @@ public static class Registry
         IPacketCatalog catalog = factory.CreateCatalog();
 
         // 2) Expose catalog through your current service locator.
-        InstanceManager.Instance.Register(catalog);
+        InstanceManager.Instance.Register<IPacketCatalog>(catalog);
 
         // 3) (Optional) Add more client init steps here later:
         // - Preload assets

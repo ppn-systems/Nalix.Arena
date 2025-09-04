@@ -32,7 +32,7 @@ internal static class AppConfig
     /// </summary>
     public static GameDbContext DbContext => s_db.Value;
 
-    public static ServerListener Listener = BuildServer(DbContext, NLogix.Host.Instance);
+    public static ServerListener Listener;
 
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' " +
@@ -44,6 +44,8 @@ internal static class AppConfig
         {
             InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
         }
+
+        Listener = BuildServer(null, NLogix.Host.Instance);
     }
 
     /// <summary>
@@ -89,8 +91,8 @@ internal static class AppConfig
                 => log.Error(Evt("DISPATCH_ERR") + $"Error handling command: {command}", exception))
             // Register handlers tại một chỗ, dễ test và kiểm soát thứ tự
             .WithHandler(() => new HandshakeOps())
-            .WithHandler(() => new AccountOps(dbOrNull))
-            .WithHandler(() => new PasswordOps(dbOrNull))
+        //.WithHandler(() => new AccountOps(dbOrNull))
+        //.WithHandler(() => new PasswordOps(dbOrNull))
         );
     }
 

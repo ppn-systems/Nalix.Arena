@@ -116,7 +116,7 @@ public class ConnectScene : Scene
 
                 case ConnectState.Success:
                     SceneManager.QueueDestroy(this);
-                    SceneManager.ChangeScene(SceneNames.Main);
+                    SceneManager.ChangeScene(SceneNames.Login);
                     _state = ConnectState.Done;
                     break;
 

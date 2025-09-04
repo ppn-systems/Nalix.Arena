@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Nalix.Logging" Version="4.5.0" />
-        <PackageReference Include="Nalix.Shared" Version="4.5.0" />
+        <PackageReference Include="Nalix.Shared" Version="4.5.2" />
     </ItemGroup>
   
     <ItemGroup>

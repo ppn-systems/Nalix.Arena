@@ -69,7 +69,6 @@ internal sealed class Terminal
             ExitEvent.Set();
         };
 
-        Console.Clear();
         Console.ResetColor();
         NLogix.Host.Instance.Info("Terminal initialized successfully.");
     }
