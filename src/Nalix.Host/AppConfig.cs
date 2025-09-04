@@ -32,6 +32,8 @@ internal static class AppConfig
     /// </summary>
     public static GameDbContext DbContext => s_db.Value;
 
+    public static ServerListener Listener = BuildServer(DbContext, NLogix.Host.Instance);
+
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' " +
         "require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
@@ -40,7 +42,7 @@ internal static class AppConfig
         Registry.Load();
         if (InstanceManager.Instance.GetExistingInstance<ILogger>() == null)
         {
-            InstanceManager.Instance.Register<ILogger>(Logging.NLogix.Host.Instance);
+            InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
         }
     }
 

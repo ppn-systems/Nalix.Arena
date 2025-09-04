@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Attributes;
+using Nalix.Common.Caching;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions; // if IPacketTransformer is here
 using Nalix.Common.Packets.Enums;
@@ -23,7 +24,7 @@ namespace Nalix.Communication.Collections;
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
 [MagicNumber((System.UInt32)PacketMagic.CHANGE_PASSWORD)]
-public sealed class CredsUpdatePacket : FrameBase, IPacketTransformer<CredsUpdatePacket>
+public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer<CredsUpdatePacket>
 {
     /// <summary>
     /// Max allowed bytes (UTF-8) for each password field to limit abuse/DoS.

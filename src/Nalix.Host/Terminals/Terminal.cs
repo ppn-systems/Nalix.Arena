@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nalix.Logging;
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,26 +52,26 @@ internal sealed class Terminal
         Console.CursorVisible = false;       // Ẩn con trỏ chuột
         Console.TreatControlCAsInput = false; // Ctrl+C không bị dừng chương trình
         Console.OutputEncoding = Encoding.UTF8;
-        Console.Title = $"Auto ({AppConfig.VersionInfo})"; // Đặt tiêu đề cửa sổ console
+        Console.Title = $"Auto ({AppConfig.VersionBanner})"; // Đặt tiêu đề cửa sổ console
 
         // Bắt sự kiện Ctrl+C để cảnh báo, không cho phép thoát
         Console.CancelKeyPress += (_, e) =>
         {
             e.Cancel = true;
-            AppConfig.Logger.Warn("Ctrl+C is disabled. Use Ctrl+H to show shortcuts.");
+            NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H to show shortcuts.");
         };
 
         // Thiết lập sự kiện thoát và ngoại lệ không bắt được (unhandled)
         AppDomain.CurrentDomain.ProcessExit += (s, e) => ExitEvent.Set();
         AppDomain.CurrentDomain.UnhandledException += (s, e) =>
         {
-            AppConfig.Logger.Error("Unhandled exception: " + e.ExceptionObject);
+            NLogix.Host.Instance.Error("Unhandled exception: " + e.ExceptionObject);
             ExitEvent.Set();
         };
 
         Console.Clear();
         Console.ResetColor();
-        AppConfig.Logger.Info("Terminal initialized successfully.");
+        NLogix.Host.Instance.Info("Terminal initialized successfully.");
     }
 
     /// <summary>
@@ -82,20 +83,20 @@ internal sealed class Terminal
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.Q, () =>
         {
-            AppConfig.Logger.Info("Ctrl+Q pressed: Initiating graceful shutdown...");
-            if (AppConfig.Server != null)
+            NLogix.Host.Instance.Info("Ctrl+Q pressed: Initiating graceful shutdown...");
+            if (AppConfig.Listener != null)
             {
                 try
                 {
-                    if (AppConfig.Server.IsListening)
+                    if (AppConfig.Listener.IsListening)
                     {
-                        _ = AppConfig.Server.DeactivateAsync();
-                        AppConfig.Logger.Info("Server stopped.");
+                        _ = AppConfig.Listener.DeactivateAsync();
+                        NLogix.Host.Instance.Info("Server stopped.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    AppConfig.Logger.Error($"Error during shutdown: {ex.Message}");
+                    NLogix.Host.Instance.Error($"Error during shutdown: {ex.Message}");
                 }
             }
             _cTokenSrc.Cancel();
@@ -105,22 +106,22 @@ internal sealed class Terminal
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.R, () =>
         {
-            if (AppConfig.Server == null)
+            if (AppConfig.Listener == null)
             {
-                AppConfig.Logger.Warn("Server is not initialized.");
+                NLogix.Host.Instance.Warn("Server is not initialized.");
                 return;
             }
-            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Server.ActivateAsync(_cTokenSrc.Token));
+            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Listener.ActivateAsync(_cTokenSrc.Token));
         }, "Run server");
 
         _shortcutManager.AddOrUpdateShortcut(ConsoleKey.P, () =>
         {
-            if (AppConfig.Server == null)
+            if (AppConfig.Listener == null)
             {
-                AppConfig.Logger.Warn("Server is not initialized.");
+                NLogix.Host.Instance.Warn("Server is not initialized.");
                 return;
             }
-            _ = Task.Run(() => AppConfig.Server.DeactivateAsync());
+            _ = Task.Run(() => AppConfig.Listener.DeactivateAsync());
         }, "Stop server");
     }
 
@@ -158,7 +159,7 @@ internal sealed class Terminal
         {
             _ = builder.AppendLine($"{indent}Ctrl+{key}".PadRight(15) + $"→ {description}");
         }
-        AppConfig.Logger.Info(builder.ToString());
+        NLogix.Host.Instance.Info(builder.ToString());
     }
 
     /// <summary>

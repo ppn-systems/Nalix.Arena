@@ -8,7 +8,7 @@ public enum ResponseStatus : System.UInt16
     /// <summary>
     /// Thành công (Success).
     /// </summary>
-    OK = 0,
+    OK = System.UInt16.MinValue,
 
     // ==== Input / Protocol errors ====
 
@@ -69,5 +69,5 @@ public enum ResponseStatus : System.UInt16
     /// <summary>
     /// Lỗi nội bộ server (Internal server error).
     /// </summary>
-    INTERNAL_ERROR = 99
+    INTERNAL_ERROR = System.UInt16.MaxValue
 }

@@ -1,4 +1,5 @@
-﻿using Nalix.Common.Connection;
+﻿using Nalix.Common.Caching;
+using Nalix.Common.Connection;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging;
@@ -42,10 +43,10 @@ public sealed class ServerProtocol(IPacketDispatch<IPacket> packetDispatcher) : 
         NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
     }
 
-    public override void ProcessMessage(ReadOnlySpan<Byte> bytes)
+    public void ProcessMessage(IBufferLease bytes)
     {
         IConnection connection = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                         .GetConnection(bytes[PacketConstants.HeaderSize..sizeof(UInt32)]);
+                                                         .GetConnection(bytes.Span[PacketConstants.HeaderSize..sizeof(UInt32)]);
 
         try
         {

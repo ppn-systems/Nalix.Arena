@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Attributes;
+using Nalix.Common.Caching;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Enums;
@@ -20,7 +21,7 @@ namespace Nalix.Communication.Collections;
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
 [MagicNumber((UInt32)PacketMagic.RESPONSE)]
-public sealed class ResponsePacket : FrameBase, IPacketDeserializer<ResponsePacket>
+public sealed class ResponsePacket : FrameBase, IPoolable, IPacketDeserializer<ResponsePacket>
 {
     /// <summary>
     /// Trạng thái phản hồi (Ok, InvalidCredentials, Locked…).

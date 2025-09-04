@@ -1,4 +1,5 @@
 ﻿using Nalix.Common.Attributes;
+using Nalix.Common.Caching;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Enums;
@@ -24,7 +25,7 @@ namespace Nalix.Communication.Collections;
 /// </summary>
 [SerializePackable(SerializeLayout.Sequential)]
 [MagicNumber((UInt32)PacketMagic.CREDENTIALS)]
-public class CredentialsPacket : FrameBase, IPacketTransformer<CredentialsPacket>
+public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<CredentialsPacket>
 {
     /// <summary>
     /// Tổng độ dài gói tin (byte), gồm header và nội dung.

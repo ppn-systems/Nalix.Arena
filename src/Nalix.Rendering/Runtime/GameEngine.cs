@@ -96,7 +96,8 @@ public static class GameEngine
     {
         _window.Close();
 
-        MusicManager.Dispose();
+        // Dispose game subsystems first
+        try { MusicManager.Dispose(); } catch { /* swallow to guarantee shutdown */ }
     }
 
     /// <summary>
