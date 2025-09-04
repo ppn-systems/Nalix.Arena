@@ -5,6 +5,10 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Nalix.Logging" Version="4.6.1" />
+  </ItemGroup>
+
 
 	<ItemGroup>
 		<ProjectReference Include="..\Nalix.Communication\Nalix.Communication.csproj" />

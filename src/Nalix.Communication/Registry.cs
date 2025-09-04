@@ -24,8 +24,6 @@ public static class Registry
         {
             InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
         }
-#else
-        Logging.Extensions.NLogixFx.MinimumLevel = (Common.Logging.Models.LogLevel)255;
 #endif
 
         // 1) Build packet catalog.
