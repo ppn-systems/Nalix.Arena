@@ -285,7 +285,7 @@ public sealed class AccountOps
         const System.UInt16 Op = (System.UInt16)Command.LOGOUT;
 
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                  .GetUsername(connection.Id);
+                                                  .GetUsername(connection.ID);
 
         if (username is null)
         {
@@ -313,7 +313,7 @@ public sealed class AccountOps
             // Reset connection state
             connection.Level = PermissionLevel.Guest;
             _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                        .UnregisterConnection(connection.Id);
+                                        .UnregisterConnection(connection.ID);
 
             NLogix.Host.Instance.Info(
                 "User {0} logged out successfully from connection {1}",

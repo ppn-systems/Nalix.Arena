@@ -33,6 +33,6 @@ internal static class PooledExtensions
             Pool.Return(resp);
         }
 
-        _ = await connection.Tcp.SendAsync(payload).ConfigureAwait(false);
+        _ = await connection.TCP.SendAsync(payload).ConfigureAwait(false);
     }
 }

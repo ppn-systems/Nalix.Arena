@@ -151,7 +151,7 @@ public sealed class HandshakeOps
         if (payload is { Length: > 0 })
         {
             // If send fails, rollback state to avoid “half-upgraded” connection
-            var sent = await connection.Tcp.SendAsync(payload).ConfigureAwait(false);
+            var sent = await connection.TCP.SendAsync(payload).ConfigureAwait(false);
             if (!sent)
             {
                 connection.EncryptionKey = null;

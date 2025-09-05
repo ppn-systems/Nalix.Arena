@@ -1,4 +1,7 @@
-﻿using Nalix.Logging;
+﻿// Copyright (c) 2025 PPN Corporation.
+
+using Nalix.Host.Extensions;
+using Nalix.Logging;
 using System;
 using System.Text;
 using System.Threading;
@@ -6,167 +9,201 @@ using System.Threading.Tasks;
 
 namespace Nalix.Host.Terminals;
 
-/// <summary>
-/// Lớp Terminal chịu trách nhiệm quản lý giao tiếp với Console trong ứng dụng Server.
-/// Bao gồm việc khởi tạo console, lắng nghe và xử lý các phím tắt để điều khiển trạng thái server.
-/// </summary>
 internal sealed class Terminal
 {
-    // Khóa để đảm bảo đọc phím an toàn khi nhiều luồng truy cập
-    private static readonly Lock _keyReadLock = new();
+    private static readonly Lock ReadLock = new();
 
-    // Token hủy cho các tác vụ async
-    private static readonly CancellationTokenSource _cTokenSrc = new();
+    // App lifetime CTS
+    private readonly Task? _eventLoopTask;
+    private readonly CancellationTokenSource _cts = new();
 
-    // Sự kiện dùng để báo hiệu thoát chương trình
+    // Server lifetime
+    private Task? _serverTask;
+    private CancellationTokenSource? _serverCts;
+
+    public readonly IConsoleReader ConsoleReader;
+    public readonly ShortcutManager ShortcutManager;
     public readonly ManualResetEventSlim ExitEvent = new(false);
 
-    // Interface đọc phím, dễ mock cho test
-    private readonly IConsoleReader _consoleReader;
-
-    // Quản lý danh sách phím tắt, mô tả và hành động tương ứng
-    private readonly ShortcutManager _shortcutManager;
-
-    /// <summary>
-    /// Khởi tạo Terminal với interface đọc phím và quản lý phím tắt.
-    /// </summary>
-    /// <param name="consoleReader">Đối tượng đọc phím từ console</param>
-    /// <param name="shortcutManager">Quản lý phím tắt và hành động</param>
     public Terminal(IConsoleReader consoleReader, ShortcutManager shortcutManager)
     {
-        _consoleReader = consoleReader ?? throw new ArgumentNullException(nameof(consoleReader));
-        _shortcutManager = shortcutManager ?? throw new ArgumentNullException(nameof(shortcutManager));
+        ConsoleReader = consoleReader ?? throw new ArgumentNullException(nameof(consoleReader));
+        ShortcutManager = shortcutManager ?? throw new ArgumentNullException(nameof(shortcutManager));
 
         InitializeConsole();
         RegisterDefaultShortcuts();
 
-        // Khởi chạy vòng lặp sự kiện xử lý phím không đồng bộ
-        _ = Task.Run(EventLoop);
+        _eventLoopTask = Task.Run(EventLoop);
     }
 
-    /// <summary>
-    /// Thiết lập các thuộc tính và sự kiện mặc định cho Console
-    /// </summary>
     private void InitializeConsole()
     {
-        Console.CursorVisible = false;       // Ẩn con trỏ chuột
-        Console.TreatControlCAsInput = false; // Ctrl+C không bị dừng chương trình
+        Console.CursorVisible = false;
+        Console.TreatControlCAsInput = false;
         Console.OutputEncoding = Encoding.UTF8;
-        Console.Title = $"Auto ({AppConfig.VersionBanner})"; // Đặt tiêu đề cửa sổ console
+        Console.Title = $"Auto ({AppConfig.VersionBanner})";
 
-        // Bắt sự kiện Ctrl+C để cảnh báo, không cho phép thoát
         Console.CancelKeyPress += (_, e) =>
         {
             e.Cancel = true;
-            NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H to show shortcuts.");
+            NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H for shortcuts, Ctrl+Q to exit.");
         };
 
-        // Thiết lập sự kiện thoát và ngoại lệ không bắt được (unhandled)
-        AppDomain.CurrentDomain.ProcessExit += (s, e) => ExitEvent.Set();
-        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+        AppDomain.CurrentDomain.ProcessExit += (_, __) => ExitEvent.Set();
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
         {
             NLogix.Host.Instance.Error("Unhandled exception: " + e.ExceptionObject);
             ExitEvent.Set();
+            _cts.Cancel();
         };
 
         Console.ResetColor();
         NLogix.Host.Instance.Info("Terminal initialized successfully.");
     }
 
-    /// <summary>
-    /// Đăng ký các phím tắt mặc định cùng hành động và mô tả của chúng
-    /// </summary>
     private void RegisterDefaultShortcuts()
     {
-        _shortcutManager.AddOrUpdateShortcut(ConsoleKey.H, ShowShortcuts, "Show shortcuts");
+        ShortcutManager.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.H, ShowShortcuts, "Show shortcuts");
+        ShortcutManager.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.R, StartServer, "Run server");
+        ShortcutManager.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.L, Console.Clear, "Clear screen");
+        ShortcutManager.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.X, () => StopServerInternalAsync().Forget(), "Stop server");
 
-        _shortcutManager.AddOrUpdateShortcut(ConsoleKey.Q, () =>
+        // Double-press Ctrl+Q within 2s to exit
+        DateTime lastQuit = DateTime.MinValue;
+        ShortcutManager.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.Q, () =>
         {
-            NLogix.Host.Instance.Info("Ctrl+Q pressed: Initiating graceful shutdown...");
-            if (AppConfig.Listener != null)
+            var now = DateTime.UtcNow;
+            if ((now - lastQuit).TotalSeconds < 2)
             {
-                try
-                {
-                    if (AppConfig.Listener.IsListening)
-                    {
-                        _ = AppConfig.Listener.DeactivateAsync();
-                        NLogix.Host.Instance.Info("Server stopped.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    NLogix.Host.Instance.Error($"Error during shutdown: {ex.Message}");
-                }
-            }
-            _cTokenSrc.Cancel();
-            ExitEvent.Set();
-            Environment.Exit(0);
-        }, "Exit");
+                NLogix.Host.Instance.Info("Exiting gracefully...");
+                StopServerInternalAsync().GetAwaiter().GetResult();
+                _cts.Cancel();
 
-        _shortcutManager.AddOrUpdateShortcut(ConsoleKey.R, () =>
-        {
-            if (AppConfig.Listener == null)
-            {
-                NLogix.Host.Instance.Warn("Server is not initialized.");
+                if (_eventLoopTask is not null)
+                {
+                    try { _eventLoopTask.GetAwaiter().GetResult(); }
+                    catch (OperationCanceledException) { }
+                    catch (Exception ex) { NLogix.Host.Instance.Error($"EventLoop failed: {ex}"); }
+                }
+
+                ExitEvent.Set();
                 return;
             }
-            _ = ThreadPool.QueueUserWorkItem(_ => AppConfig.Listener.ActivateAsync(_cTokenSrc.Token));
-        }, "Run server");
-
-        _shortcutManager.AddOrUpdateShortcut(ConsoleKey.P, () =>
-        {
-            if (AppConfig.Listener == null)
-            {
-                NLogix.Host.Instance.Warn("Server is not initialized.");
-                return;
-            }
-            _ = Task.Run(() => AppConfig.Listener.DeactivateAsync());
-        }, "Stop server");
+            lastQuit = now;
+            NLogix.Host.Instance.Warn("Press Ctrl+Q again within 2 seconds to exit.");
+        }, "Exit (double-press)");
     }
 
-    /// <summary>
-    /// Vòng lặp không đồng bộ để liên tục đọc phím từ console và xử lý phím tắt.
-    /// Sử dụng khóa để đảm bảo thread-safe khi đọc phím và gọi hành động.
-    /// </summary>
-    /// <returns>Task bất đồng bộ</returns>
+    private void StartServer()
+    {
+        if (AppConfig.Listener is null)
+        {
+            NLogix.Host.Instance.Warn("Server is not initialized.");
+            return;
+        }
+
+        _serverCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
+        var token = _serverCts.Token;
+
+        _serverTask = Task.Run(async () =>
+        {
+            try
+            {
+                await AppConfig.Listener!.ActivateAsync(token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                NLogix.Host.Instance.Debug("Server activation canceled (shutdown).");
+            }
+            catch (ObjectDisposedException) when (token.IsCancellationRequested)
+            {
+                NLogix.Host.Instance.Debug("Server listener disposed during shutdown.");
+            }
+            catch (Exception ex)
+            {
+                NLogix.Host.Instance.Error($"Unhandled server error: {ex}");
+            }
+        });
+    }
+
+    private async Task StopServerInternalAsync()
+    {
+        if (AppConfig.Listener is null)
+        {
+            NLogix.Host.Instance.Warn("Server is not initialized.");
+            return;
+        }
+
+        try
+        {
+            if (AppConfig.Listener.IsListening)
+            {
+                await AppConfig.Listener.DeactivateAsync().ConfigureAwait(false);
+            }
+
+            var cts = Interlocked.Exchange(ref _serverCts, null);
+            cts?.Cancel();
+
+            var task = Interlocked.Exchange(ref _serverTask, null);
+            if (task is not null)
+            {
+                try { await task.ConfigureAwait(false); }
+                catch (OperationCanceledException) { }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            NLogix.Host.Instance.Debug("Shutdown canceled (already stopping).");
+        }
+        catch (ObjectDisposedException)
+        {
+            NLogix.Host.Instance.Debug("Listener already disposed during shutdown.");
+        }
+        catch (Exception ex)
+        {
+            NLogix.Host.Instance.Error($"Error during shutdown: {ex}");
+        }
+    }
+
     private async Task EventLoop()
     {
-        while (!ExitEvent.IsSet)
+        try
         {
-            if (_consoleReader.KeyAvailable)
+            while (!_cts.IsCancellationRequested)
             {
-                ConsoleKeyInfo keyInfo;
-                lock (_keyReadLock) // tránh đọc đồng thời gây lỗi
+                if (ConsoleReader.KeyAvailable)
                 {
-                    keyInfo = _consoleReader.ReadKey(true);
-                    _ = _shortcutManager.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
+                    ConsoleKeyInfo keyInfo;
+                    lock (ReadLock)
+                    {
+                        keyInfo = ConsoleReader.ReadKey(intercept: true);
+                    }
+                    _ = ShortcutManager.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
                 }
+                await Task.Delay(10, _cts.Token).ConfigureAwait(false);
             }
-            await Task.Delay(10);
+        }
+        catch (OperationCanceledException)
+        {
+            // normal exit
         }
     }
 
-    /// <summary>
-    /// Hiển thị danh sách các phím tắt hiện có cùng mô tả để người dùng tham khảo.
-    /// </summary>
     private void ShowShortcuts()
     {
-        String indent = new(' ', 10);
-        StringBuilder builder = new();
-        _ = builder.AppendLine("Available shortcuts:");
-        foreach (var (key, description) in _shortcutManager.GetAllShortcuts())
+        var sb = new StringBuilder().AppendLine("Available shortcuts:");
+        foreach (var (mod, key, desc) in ShortcutManager.GetAllShortcuts())
         {
-            _ = builder.AppendLine($"{indent}Ctrl+{key}".PadRight(15) + $"→ {description}");
+            String modText = mod == 0 ? "" :
+                $"{(mod.HasFlag(ConsoleModifiers.Control) ? "Ctrl+" : "")}" +
+                $"{(mod.HasFlag(ConsoleModifiers.Shift) ? "Shift+" : "")}" +
+                $"{(mod.HasFlag(ConsoleModifiers.Alt) ? "Alt+" : "")}";
+
+            _ = sb.AppendLine($"{modText}{key,-6} → {desc}");
         }
-        NLogix.Host.Instance.Info(builder.ToString());
+        NLogix.Host.Instance.Info(sb.ToString());
     }
 
-    /// <summary>
-    /// Cho phép đăng ký hoặc cập nhật phím tắt với hành động và mô tả cụ thể.
-    /// </summary>
-    /// <param name="key">Phím console (ConsoleKey)</param>
-    /// <param name="action">Hành động thực thi khi nhấn phím</param>
-    /// <param name="description">Mô tả chức năng phím tắt</param>
-    public void SetShortcut(ConsoleKey key, Action action, String description)
-        => _shortcutManager.AddOrUpdateShortcut(key, action, description);
+    public void SetShortcut(ConsoleModifiers modifiers, ConsoleKey key, Action action, String description)
+        => ShortcutManager.AddOrUpdateShortcut(modifiers, key, action, description);
 }

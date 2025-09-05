@@ -56,7 +56,7 @@ public sealed class PasswordOps
 
         // Lấy username từ hub theo connection
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                         .GetUsername(connection.Id);
+                                                         .GetUsername(connection.ID);
 
         if (username is null)
         {

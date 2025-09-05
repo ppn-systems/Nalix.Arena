@@ -16,17 +16,23 @@ namespace Nalix.Infrastructure.Network;
 /// Lớp `ServerProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
 /// </summary>
 /// <param name="packetDispatcher">Bộ điều phối gói tin.</param>
-public sealed class ServerProtocol(IPacketDispatch<IPacket> packetDispatcher) : Protocol
+public sealed class ServerProtocol : Protocol
 {
     /// <summary>
     /// Bộ điều phối gói tin được sử dụng để xử lý dữ liệu nhận được.
     /// </summary>
-    private readonly IPacketDispatch<IPacket> _packetDispatcher = packetDispatcher;
+    private readonly IPacketDispatch<IPacket> _packetDispatcher;
 
     /// <summary>
     /// Xác định xem kết nối có được giữ mở liên tục hay không.
     /// </summary>
     public override Boolean KeepConnectionOpen => true;
+
+    public ServerProtocol(IPacketDispatch<IPacket> packetDispatcher)
+    {
+        _packetDispatcher = packetDispatcher;
+        IsAccepting = true;
+    }
 
     /// <summary>
     /// Xử lý sự kiện khi chấp nhận một kết nối mới.
