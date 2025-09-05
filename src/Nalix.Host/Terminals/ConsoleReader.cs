@@ -1,6 +1,12 @@
 ﻿namespace Nalix.Host.Terminals;
 
-// Concrete implementation using System.Console
+internal interface IConsoleReader
+{
+    System.Boolean KeyAvailable { get; }
+
+    System.ConsoleKeyInfo ReadKey(System.Boolean intercept);
+}
+
 internal class ConsoleReader : IConsoleReader
 {
     public System.Boolean KeyAvailable => System.Console.KeyAvailable;
