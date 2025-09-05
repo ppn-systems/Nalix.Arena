@@ -41,7 +41,7 @@ public class Notification : RenderObject
     private const System.Single InitialPanelHeightPx = 64f;
 
     /// <summary>Chiều cao panel tối thiểu (px).</summary>
-    private const System.Single MinPanelHeightPx = 72f;
+    private const System.Single MinPanelHeightPx = 162f;
 
     /// <summary>Chiều rộng bên trong tối thiểu (px).</summary>
     private const System.Single MinInnerWidthPx = 50f;

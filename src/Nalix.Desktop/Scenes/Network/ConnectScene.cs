@@ -54,7 +54,7 @@ public class ConnectScene : Scene
         public NetworkHandler()
         {
             _timer = 0f;
-            _attempt = 0;
+            _attempt = 4;
             _state = ConnectState.Waiting;
         }
 

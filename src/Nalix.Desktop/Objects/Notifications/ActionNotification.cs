@@ -137,7 +137,7 @@ public sealed class ActionNotification : Notification
 
         // Căn giữa origin để dễ đặt vào panel
         var lb = text.GetLocalBounds();
-        text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
+        text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f) - 10);
         return text;
     }
 

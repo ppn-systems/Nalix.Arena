@@ -23,7 +23,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Nalix.Logging" Version="4.6.1" />
+		<PackageReference Include="Nalix.Logging" Version="4.6.2" />
 		<PackageReference Include="Nalix.SDK" Version="4.6.1" />
 
 		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
