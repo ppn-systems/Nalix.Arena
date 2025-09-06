@@ -78,10 +78,7 @@ internal sealed class Terminal
 
         try
         {
-            if (AppConfig.Listener.IsListening)
-            {
-                await AppConfig.Listener.DeactivateAsync().ConfigureAwait(false);
-            }
+            await AppConfig.Listener.DeactivateAsync().ConfigureAwait(false);
 
             var cts = System.Threading.Interlocked.Exchange(ref _serverCts, null);
             cts?.Cancel();

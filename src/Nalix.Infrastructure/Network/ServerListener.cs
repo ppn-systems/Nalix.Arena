@@ -13,7 +13,7 @@ public sealed class ServerListener : TcpListenerBase
     /// </summary>
     /// <param name="protocol">Giao thức mạng được sử dụng.</param>
     public ServerListener(IProtocol protocol)
-        : base(protocol) => IsTimeSyncEnabled = true; // Bật đồng bộ thời gian
+        : base(protocol) => IsTimeSyncEnabled = false; // Bật đồng bộ thời gian
 
     /// <summary>
     /// Cập nhật thời gian hệ thống dựa trên số mili-giây đã trôi qua.

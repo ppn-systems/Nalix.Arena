@@ -156,7 +156,7 @@ public class ConnectScene : Scene
 
             try
             {
-                RemoteStreamClient client = InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>();
+                ReliableClient client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
                 // chạy connect async và giữ Task lại để polling trong Update
                 _connectTask = client.ConnectAsync(20000, _cts.Token);
             }

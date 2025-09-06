@@ -9,11 +9,11 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<StartupObject>Nalix.Host.Program</StartupObject>
 
-		<AssemblyName>Backend</AssemblyName>
+		<AssemblyName>Host</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Nalix.Logging" Version="4.6.5" />
+	  <PackageReference Include="Nalix.Logging" Version="4.8.0" />
 	</ItemGroup>
 
 

@@ -5,7 +5,7 @@
 
 		<StartupObject>Nalix.Desktop.Program</StartupObject>
 
-		<AssemblyName>Frontend</AssemblyName>
+		<AssemblyName>Arena</AssemblyName>
 
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
@@ -23,8 +23,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Nalix.Logging" Version="4.6.5" />
-		<PackageReference Include="Nalix.SDK" Version="4.6.5" />
+		<PackageReference Include="Nalix.Logging" Version="4.8.0" />
+		<PackageReference Include="Nalix.SDK" Version="4.8.0" />
 
 		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
 		<ProjectReference Include="..\Nalix.Communication\Nalix.Communication.csproj" />

@@ -218,7 +218,7 @@ internal sealed class LoginSence : Scene
 
         public override void Update(Single dt)
         {
-            if (!InstanceManager.Instance.GetOrCreateInstance<RemoteStreamClient>().IsConnected)
+            if (!InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().IsConnected)
             {
                 SceneManager.ChangeScene(SceneNames.Network);
             }
