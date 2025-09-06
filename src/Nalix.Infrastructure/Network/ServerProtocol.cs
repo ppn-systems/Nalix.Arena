@@ -97,4 +97,6 @@ public sealed class ServerProtocol : Protocol
         base.OnConnectionError(connection, exception);
         NLogix.Host.Instance.Error($"[OnConnectionError] Connection error with {connection.RemoteEndPoint}: {exception}");
     }
+
+    public override String ToString() => "SERVER_PROTOCOL";
 }
