@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Nalix.Logging" Version="5.0.0" />
-        <PackageReference Include="Nalix.Shared" Version="5.0.0" />
+        <PackageReference Include="Nalix.Logging" Version="5.0.5" />
+        <PackageReference Include="Nalix.Shared" Version="5.0.5" />
     </ItemGroup>
   
     <ItemGroup>
