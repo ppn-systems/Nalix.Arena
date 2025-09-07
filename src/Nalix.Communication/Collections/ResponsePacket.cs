@@ -42,7 +42,7 @@ public sealed class ResponsePacket : FrameBase, IPoolable, IPacketDeserializer<R
     /// </summary>
     public ResponsePacket()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         Status = ResponseStatus.INTERNAL_ERROR;
         MagicNumber = PacketMagic.RESPONSE.AsUInt32();
     }
@@ -61,7 +61,7 @@ public sealed class ResponsePacket : FrameBase, IPoolable, IPacketDeserializer<R
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         Status = ResponseStatus.INTERNAL_ERROR;
     }
 

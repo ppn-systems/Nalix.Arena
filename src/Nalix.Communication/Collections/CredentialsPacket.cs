@@ -45,7 +45,7 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
     /// </summary>
     public CredentialsPacket()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         MagicNumber = PacketMagic.CREDENTIALS.AsUInt32();
         Credentials = new Credentials();
     }
@@ -64,7 +64,7 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         Credentials = new Credentials();
     }
 

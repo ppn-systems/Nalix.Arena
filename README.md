@@ -20,13 +20,13 @@ This project is part of a modular game architecture, built with a strong focus o
 
 ## 🖼️ Screenshot Desktop
 
-### Main Menu
+### 1. Main Menu
 
 <p align="center">
   <img src="docs/25-09/2025-09-03.png" alt="Nalix.Arena Menu" width="600">
 </p>
 
-### Login
+### 2. Login
 
 <p align="center">
   <img src="docs/25-09/2025-09-04.png" alt="Nalix.Arena Login" width="600">

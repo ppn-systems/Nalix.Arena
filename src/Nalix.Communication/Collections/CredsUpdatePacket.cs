@@ -70,7 +70,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     /// </summary>
     public CredsUpdatePacket()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         // Prefer a dedicated magic if available:
         // MagicNumber = PacketMagic.CHANGE_PASSWORD.AsUInt32();
         MagicNumber = PacketMagic.CHANGE_PASSWORD.AsUInt32(); // fallback
@@ -97,7 +97,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     /// </summary>
     public override void ResetForPool()
     {
-        OpCode = Command.NONE.AsUInt16();
+        OpCode = OpCommand.NONE.AsUInt16();
         OldPassword = System.String.Empty;
         NewPassword = System.String.Empty;
         // Keep MagicNumber stable for this packet type.

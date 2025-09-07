@@ -37,12 +37,12 @@ public sealed class PasswordOps
     /// </summary>
     [PacketEncryption(true)]
     [PacketPermission(PermissionLevel.User)]
-    [PacketOpcode((System.UInt16)Command.CHANGE_PASSWORD)]
+    [PacketOpcode((System.UInt16)OpCommand.CHANGE_PASSWORD)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task ChangePasswordAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)Command.CHANGE_PASSWORD;
+        const System.UInt16 Op = (System.UInt16)OpCommand.CHANGE_PASSWORD;
 
         if (p is not CredsUpdatePacket packet)
         {

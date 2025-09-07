@@ -41,14 +41,14 @@ public sealed class HandshakeOps
     /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
     [PacketPermission(PermissionLevel.Guest)]
-    [PacketOpcode((System.UInt16)Command.HANDSHAKE)]
+    [PacketOpcode((System.UInt16)OpCommand.HANDSHAKE)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static async System.Threading.Tasks.Task Handshake(
         IPacket p,
         IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)Command.HANDSHAKE;
+        const System.UInt16 Op = (System.UInt16)OpCommand.HANDSHAKE;
 
         if (p is not Handshake packet)
         {

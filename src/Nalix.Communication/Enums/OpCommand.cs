@@ -1,6 +1,6 @@
 ﻿namespace Nalix.Communication.Enums;
 
-public enum Command : System.UInt16
+public enum OpCommand : System.UInt16
 {
     /// <summary>
     /// Lệnh không xác định hoặc không có chức năng cụ thể.

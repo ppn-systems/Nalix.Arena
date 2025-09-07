@@ -144,7 +144,7 @@ public class ConnectScene : Scene
                     {
                         // Proceed to next scene.
                         SceneManager.QueueDestroy(this);
-                        SceneManager.ChangeScene(SceneNames.Login);
+                        SceneManager.ChangeScene(SceneNames.Handshake);
                         _state = ConnectState.Done;
                         break;
                     }

@@ -42,12 +42,12 @@ public sealed class AccountOps
     /// </summary>
     [PacketEncryption(true)]
     [PacketPermission(PermissionLevel.Guest)]
-    [PacketOpcode((System.UInt16)Command.REGISTER)]
+    [PacketOpcode((System.UInt16)OpCommand.REGISTER)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)Command.REGISTER;
+        const System.UInt16 Op = (System.UInt16)OpCommand.REGISTER;
 
         // Validate p type (defensive even though signature is CredentialsPacket)
         if (p is not CredentialsPacket packet)
@@ -151,12 +151,12 @@ public sealed class AccountOps
     /// </summary>
     [PacketEncryption(true)]
     [PacketPermission(PermissionLevel.Guest)]
-    [PacketOpcode((System.UInt16)Command.LOGIN)]
+    [PacketOpcode((System.UInt16)OpCommand.LOGIN)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)Command.LOGIN;
+        const System.UInt16 Op = (System.UInt16)OpCommand.LOGIN;
 
         if (p is not CredentialsPacket packet)
         {
@@ -276,13 +276,13 @@ public sealed class AccountOps
     /// </summary>
     [PacketEncryption(false)]
     [PacketPermission(PermissionLevel.User)]
-    [PacketOpcode((System.UInt16)Command.LOGOUT)]
+    [PacketOpcode((System.UInt16)OpCommand.LOGOUT)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
     {
         System.ArgumentNullException.ThrowIfNull(p);
-        const System.UInt16 Op = (System.UInt16)Command.LOGOUT;
+        const System.UInt16 Op = (System.UInt16)OpCommand.LOGOUT;
 
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
                                                   .GetUsername(connection.ID);
