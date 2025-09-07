@@ -1,11 +1,11 @@
-﻿using Nalix.Rendering.Attributes;
-using Nalix.Rendering.Input;
+﻿using Nalix.Desktop.Objects.Controls;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
-using SFML.Window;
 
 namespace Nalix.Desktop.Scenes.Menu;
 
@@ -24,235 +24,200 @@ public class SettingsScene : Scene
     #region Scene lifecycle
 
     /// <summary>Tải các đối tượng của cảnh thiết lập như nền, banner và biểu tượng đóng.</summary>
-    protected override void LoadObjects()
-    {
-        AddObject(new Background());
-        AddObject(new Banner());      // trước đây chưa Add — giờ add để hiển thị
-        AddObject(new CloseIcon());
-    }
+    protected override void LoadObjects() => AddObject(new SettingsUi());
 
     #endregion
 
     #region Private types
 
-    /// <summary>Nền mờ phủ toàn màn hình.</summary>
     [IgnoredLoad("RenderObject")]
-    private class Background : RenderObject
+    private sealed class SettingsUi : RenderObject
     {
-        #region Config
+        #region Constants
 
-        private const System.String BgTextureKey = "bg/0";
-        private const System.Byte BackgroundAlpha = 180; // mờ nhẹ
+        private const System.Single PanelWidthRatio = 0.7f;
+        private const System.Single PanelHeightRatio = 0.6f;
+        private const System.Single PanelColorGray = 40f;
+        private const System.Single TitleFontSize = 32f;
+        private const System.Single BodyFontSize = 20f;
+        private const System.Single TitleTopPadding = 24f;
+        private const System.Single SidePadding = 24f;        // lề trong panel cho divider
+        private const System.Single GapTitleToDivider = 12f;  // khoảng cách chữ <-> divider
+        private const System.Single PanelSideTrim = 32f;      // rút ngắn divider về phía panel
+        private const System.Single BodyLeftPadding = 40f;
+        private const System.Single BodyTopGapFromTitle = 28f;
+        private const System.Single BackBottomPadding = 28f;
+        private const System.Single TitleOutlineThickness = 2f;
+        private const System.Single BodyOutlineThickness = 1.5f;
+        private const System.Single BackButtonWidth = 200f;
 
-        #endregion
+        #endregion Constants
 
         #region Fields
 
-        private readonly Sprite _background;
+        private readonly NineSlicePanel _bg;
+        private readonly Text _title;
+        private readonly StretchableButton _backBtn;
+        private readonly Sprite _divLeft, _divRight;
+        private readonly Texture _divTex;
+        private readonly Font _font;
 
-        #endregion
+        #endregion Fields
 
-        #region Ctor
-
-        public Background()
+        public SettingsUi(System.String texture = "divider/002")
         {
-            SetZIndex(0); // Hiển thị phía sau
-            _background = BuildBackgroundSprite();
+            // Build phase
+            _bg = BuildBackground();
+            _font = Assets.Font.Load("1");
+            _title = BuildTitle(_font);
+            _divTex = Assets.UiTextures.Load(texture);
+            (_divLeft, _divRight) = BuildDividers(_divTex);
+            _backBtn = BuildBackButton();
+
+            // Wire events
+            WireButtonHandlers(_backBtn);
+
+            // Initial layout
+            DoLayout();
         }
 
-        #endregion
-
-        #region Build helpers
-
-        private static Sprite BuildBackgroundSprite()
-        {
-            Texture bg = Assets.UiTextures.Load(BgTextureKey);
-            System.Single scaleX = (System.Single)GameEngine.ScreenSize.X / bg.Size.X;
-            System.Single scaleY = (System.Single)GameEngine.ScreenSize.Y / bg.Size.Y;
-
-            return new Sprite(bg)
-            {
-                Position = new Vector2f(0, 0),
-                Scale = new Vector2f(scaleX, scaleY),
-                Color = new Color(255, 255, 255, BackgroundAlpha)
-            };
-        }
-
-        #endregion
-
-        #region Render loop
-
-        public override void Render(RenderTarget target)
-        {
-            if (!Visible)
-            {
-                return;
-            }
-
-            target.Draw(_background);
-        }
-
-        protected override Drawable GetDrawable()
-            => throw new System.NotSupportedException("Use Render() instead of GetDrawable().");
-
-        #endregion
-    }
-
-    /// <summary>Banner trung tâm hiển thị trên màn hình thiết lập.</summary>
-    [IgnoredLoad("RenderObject")]
-    private class Banner : RenderObject
-    {
-        #region Config
-
-        private const System.String PanelTextureKey = "panels/007";
-        private const System.Single ScaleXFactor = 2f;
-        private const System.Single ScaleYFactor = 1.2f;
-
-        #endregion
-
-        #region Fields
-
-        private readonly Sprite _banner;
-
-        #endregion
-
-        #region Public props
-
-        /// <summary>Vị trí hiển thị của panel.</summary>
-        public Vector2f PanelPosition => _banner.Position;
-
-        /// <summary>Kích thước hiển thị sau scale.</summary>
-        public Vector2f PanelSize => new(
-            _banner.Texture.Size.X * _banner.Scale.X,
-            _banner.Texture.Size.Y * _banner.Scale.Y);
-
-        #endregion
-
-        #region Ctor
-
-        public Banner()
-        {
-            SetZIndex(2);
-            _banner = BuildBannerSprite();
-        }
-
-        #endregion
-
-        #region Build helpers
-
-        private static Sprite BuildBannerSprite()
-        {
-            Texture panel = Assets.UiTextures.Load(PanelTextureKey);
-
-            System.Single scaleFit = System.Math.Min(
-                (System.Single)GameEngine.ScreenSize.X / panel.Size.X,
-                (System.Single)GameEngine.ScreenSize.Y / panel.Size.Y);
-
-            Vector2f scale = new(scaleFit * ScaleXFactor, scaleFit * ScaleYFactor);
-
-            System.Single posX = (GameEngine.ScreenSize.X - (panel.Size.X * scale.X)) / 2f;
-            System.Single posY = (GameEngine.ScreenSize.Y - (panel.Size.Y * scale.Y)) / 2f;
-
-            return new Sprite(panel)
-            {
-                Scale = scale,
-                Position = new Vector2f(posX, posY)
-            };
-        }
-
-        #endregion
 
         #region Render
 
-        protected override Drawable GetDrawable() => _banner;
+        public override void Update(System.Single deltaTime) => _backBtn.Update(deltaTime);
 
-        #endregion
-    }
-
-    /// <summary>Biểu tượng đóng (góc trên phải) để quay lại màn hình chính.</summary>
-    [IgnoredLoad("RenderObject")]
-    internal class CloseIcon : RenderObject
-    {
-        #region Config
-
-        private const System.String IconTextureKey = "icons/2";
-        private const System.Single IconScale = 0.6f;
-        private const System.Single PaddingTop = 5f;
-        private const System.Single PaddingRight = 0f; // căn sát phải, đã trừ theo width
-
-        #endregion
-
-        #region Fields
-
-        private readonly Sprite _icon;
-
-        #endregion
-
-        #region Ctor
-
-        public CloseIcon()
+        public override void Render(RenderTarget target)
         {
-            SetZIndex(2);
-            _icon = BuildIconSprite();
-            PlaceTopRight();
+            _bg.Render(target);
+            target.Draw(_title);
+            target.Draw(_divLeft);
+            target.Draw(_divRight);
+            _backBtn.Render(target);
         }
 
-        #endregion
+        protected override Drawable GetDrawable() => null;
 
-        #region Build & layout
+        #endregion Render
 
-        private static Sprite BuildIconSprite()
+        #region Build helpers
+
+        private static NineSlicePanel BuildBackground()
         {
-            Texture texture = Assets.UiTextures.Load(IconTextureKey);
-            return new Sprite(texture)
+            var tex = Assets.UiTextures.Load("panels/031");
+            var panel = new NineSlicePanel(tex, new Thickness(32));
+
+            Vector2u screen = GameEngine.ScreenSize;
+            Vector2f size = new(screen.X * PanelWidthRatio, screen.Y * PanelHeightRatio);
+            Vector2f pos = new((screen.X - size.X) / 2f, (screen.Y - size.Y) / 2f);
+
+            panel.SetPosition(pos)
+                 .SetSize(size)
+                 .SetColor(new Color((System.Byte)PanelColorGray, (System.Byte)PanelColorGray, (System.Byte)PanelColorGray))
+                 .Layout();
+
+            return panel;
+        }
+
+        private static Text BuildTitle(Font font)
+            => new("Settings", font, (System.UInt32)TitleFontSize)
             {
-                Scale = new Vector2f(IconScale, IconScale),
+                FillColor = Color.White,
+                OutlineColor = new Color(0, 0, 0, 200),
+                OutlineThickness = TitleOutlineThickness
             };
-        }
 
-        private void PlaceTopRight()
+        private static (Sprite left, Sprite right) BuildDividers(Texture tex)
         {
-            FloatRect bounds = _icon.GetGlobalBounds();
-            System.Single x = GameEngine.ScreenSize.X - bounds.Width - PaddingRight;
-            _icon.Position = new Vector2f(x, PaddingTop);
+            var left = new Sprite(tex) { Scale = new Vector2f(0.5f, 0.5f) };
+            var right = new Sprite(tex) { Scale = new Vector2f(-0.5f, 0.5f) }; // mirror X
+            return (left, right);
         }
 
-        #endregion
+        private static StretchableButton BuildBackButton()
+            => new("Back", BackButtonWidth);
 
-        #region Input helpers
-
-        private System.Boolean IsMouseOver()
-            => _icon.GetGlobalBounds().Contains(InputState.GetMousePosition());
-
-        #endregion
-
-        #region Render loop
-
-        public override void Update(System.Single deltaTime)
+        private static void WireButtonHandlers(StretchableButton btn)
         {
-            if (!Visible)
-            {
-                return;
-            }
-
-            // Click chuột
-            if (InputState.IsMouseButtonPressed(Mouse.Button.Left) && IsMouseOver())
-            {
-                Assets.Sfx.Play("1");
-                SceneManager.ChangeScene(SceneNames.Main);
-            }
-
-            // Thoát bằng phím Esc (tiện UX)
-            if (InputState.IsKeyPressed(Keyboard.Key.Escape))
-            {
-                Assets.Sfx.Play("1");
-                SceneManager.ChangeScene(SceneNames.Main);
-            }
+            btn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
+            btn.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Main));
         }
 
-        protected override Drawable GetDrawable() => _icon;
+        // =======================
+        // Layout orchestrator
+        // =======================
+        private void DoLayout()
+        {
+            LayoutTitle();
+            LayoutDividers();
+            LayoutBackButton();
+        }
 
-        #endregion
+        // =======================
+        // Layout helpers
+        // =======================
+        private void LayoutTitle()
+        {
+            var p = _bg.Position; // top-left of panel
+            var s = _bg.Size;     // size of panel
+            var tb = _title.GetLocalBounds();
+
+            System.Single titleX = p.X + ((s.X - tb.Width) / 2f) - tb.Left;
+            System.Single titleY = p.Y + TitleTopPadding;
+
+            _title.Position = new Vector2f(titleX, titleY);
+        }
+
+        private void LayoutDividers()
+        {
+            var p = _bg.Position;
+            var s = _bg.Size;
+            var tb = _title.GetLocalBounds();
+
+            System.Single titleX = _title.Position.X;
+            System.Single titleY = _title.Position.Y;
+
+            // Mép trái/phải trong panel
+            System.Single innerLeft = p.X + SidePadding;
+            System.Single innerRight = p.X + s.X - SidePadding;
+
+            // Khoảng trống tới chữ (không đụng chữ)
+            System.Single leftAvail = titleX - GapTitleToDivider - innerLeft;
+            System.Single rightAvail = innerRight - (titleX + tb.Width + GapTitleToDivider);
+
+            // Chiều rộng chia đều (tối đa không vượt chữ)
+            System.Single baseW = System.MathF.Max(0f, System.MathF.Min(leftAvail, rightAvail));
+            System.Single divTargetW = System.MathF.Max(0f, baseW - PanelSideTrim);
+
+            // Scale theo texture
+            System.Single sx = _divTex.Size.X > 0 ? divTargetW / _divTex.Size.X : 0f;
+            System.Single sy = 1f;
+
+            _divLeft.Scale = new Vector2f(sx, sy);
+            _divRight.Scale = new Vector2f(-sx, sy); // mirror X
+
+            // Căn Y theo giữa của chữ
+            System.Single divHeight = _divTex.Size.Y * sy;
+            System.Single midY = titleY + ((tb.Top + tb.Height) * 0.5f);
+            System.Single divY = midY - (divHeight * 0.5f);
+
+            // Đặt vị trí: neo về phía panel và trim vào trong
+            _divLeft.Position = new Vector2f(innerLeft + PanelSideTrim, divY);
+            _divRight.Position = new Vector2f(innerRight - PanelSideTrim, divY);
+        }
+
+        private void LayoutBackButton()
+        {
+            var p = _bg.Position;
+            var s = _bg.Size;
+
+            var bb = _backBtn.GetGlobalBounds(); // dùng để căn giữa ngang & cách đáy
+            System.Single x = p.X + ((s.X - bb.Width) / 2f);
+            System.Single y = p.Y + s.Y - bb.Height - BackBottomPadding;
+
+            _backBtn.SetPosition(new Vector2f(x, y));
+        }
+
+        #endregion Build helpers
     }
 
     #endregion Private types

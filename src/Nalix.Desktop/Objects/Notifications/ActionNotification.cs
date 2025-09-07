@@ -146,10 +146,11 @@ public sealed class ActionNotification : Notification
         Texture frame = Assets.UiTextures.Load("transparent_border/001");
         frame.Smooth = false;
 
-        var panel = new NineSlicePanel(frame, _border);
-        _ = panel.SetPosition(new Vector2f(0f, 0f))
-                 .SetSize(new Vector2f(100f, 32f));
-        panel.Layout();
+        NineSlicePanel panel = new(frame, _border);
+        panel.SetPosition(new Vector2f(0f, 0f))
+             .SetSize(new Vector2f(100f, 32f))
+             .Layout();
+
         return panel;
     }
 
@@ -174,9 +175,8 @@ public sealed class ActionNotification : Notification
         System.Single targetH = System.MathF.Round(lb.Height + (ButtonPadYPx * 2f) + _border.Top + _border.Bottom);
         targetH = System.MathF.Max(targetH, MinButtonHeightPx);
 
-        _buttonPanel
-            .SetSize(new Vector2f(targetW * (ButtonScaleRatio - 0.1f), targetH * ButtonScaleRatio))
-            .Layout();
+        _buttonPanel.SetSize(new Vector2f(targetW * (ButtonScaleRatio - 0.1f), targetH * ButtonScaleRatio))
+                    .Layout();
     }
 
     private void PositionButtonBelowText()
@@ -184,6 +184,7 @@ public sealed class ActionNotification : Notification
         var (innerCenterX, _) = ComputeInnerMetrics();
         var textGB = _messageText.GetGlobalBounds();
 
+        _messageText.Position = new Vector2f(_messageText.Position.X, _messageText.Position.Y - 20);
         System.Single buttonY = System.MathF.Round(textGB.Top + textGB.Height + VerticalGapPx) + ButtonExtraOffsetY;
         System.Single btnX = System.MathF.Round(innerCenterX - (_buttonPanel.Size.X / 2f));
 

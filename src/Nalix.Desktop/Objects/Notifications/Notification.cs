@@ -41,7 +41,7 @@ public class Notification : RenderObject
     private const System.Single InitialPanelHeightPx = 64f;
 
     /// <summary>Chiều cao panel tối thiểu (px).</summary>
-    private const System.Single MinPanelHeightPx = 162f;
+    private const System.Single MinPanelHeightPx = 142f;
 
     /// <summary>Chiều rộng bên trong tối thiểu (px).</summary>
     private const System.Single MinInnerWidthPx = 50f;
@@ -170,20 +170,14 @@ public class Notification : RenderObject
     }
 
     private static System.Single ComputeInnerWidth(System.Single targetWidth)
-    {
-        System.Single w = targetWidth - (2f * HorizontalPaddingPx);
-        return System.MathF.Max(MinInnerWidthPx, w);
-    }
+        => System.MathF.Max(MinInnerWidthPx, targetWidth - (2f * HorizontalPaddingPx));
 
     private static Text PrepareWrappedText(Font font, System.String message, System.UInt32 charSize, System.Single innerWidth)
-    {
-        System.String wrapped = WrapText(font, message, charSize, innerWidth);
-        return new Text(wrapped, font, charSize) { FillColor = Color.Black };
-    }
+        => new(WrapText(font, message, charSize, innerWidth), font, charSize) { FillColor = Color.Black };
 
     private static System.Single CenterTextOriginAndMeasure(Text text)
     {
-        var lb = text.GetLocalBounds();
+        FloatRect lb = text.GetLocalBounds();
         text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
         return text.GetGlobalBounds().Height;
     }

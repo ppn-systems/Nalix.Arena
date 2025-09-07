@@ -1,6 +1,4 @@
-﻿using Nalix.Desktop;
-using Nalix.Desktop.Objects.Controls;
-using Nalix.Desktop.Scenes;
+﻿using Nalix.Desktop.Objects.Controls;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
@@ -169,7 +167,7 @@ internal sealed class CreditsScene : Scene
             var s = _bg.Size;     // size of panel
             var tb = _title.GetLocalBounds();
 
-            System.Single titleX = p.X + (s.X - tb.Width) / 2f - tb.Left;
+            System.Single titleX = p.X + ((s.X - tb.Width) / 2f) - tb.Left;
             System.Single titleY = p.Y + TitleTopPadding;
 
             _title.Position = new Vector2f(titleX, titleY);
@@ -205,8 +203,8 @@ internal sealed class CreditsScene : Scene
 
             // Căn Y theo giữa của chữ
             System.Single divHeight = _divTex.Size.Y * sy;
-            System.Single midY = titleY + (tb.Top + tb.Height) * 0.5f;
-            System.Single divY = midY - divHeight * 0.5f;
+            System.Single midY = titleY + ((tb.Top + tb.Height) * 0.5f);
+            System.Single divY = midY - (divHeight * 0.5f);
 
             // Đặt vị trí: neo về phía panel và trim vào trong
             _divLeft.Position = new Vector2f(innerLeft + PanelSideTrim, divY);
@@ -230,7 +228,7 @@ internal sealed class CreditsScene : Scene
             var s = _bg.Size;
 
             var bb = _backBtn.GetGlobalBounds(); // dùng để căn giữa ngang & cách đáy
-            System.Single x = p.X + (s.X - bb.Width) / 2f;
+            System.Single x = p.X + ((s.X - bb.Width) / 2f);
             System.Single y = p.Y + s.Y - bb.Height - BackBottomPadding;
 
             _backBtn.SetPosition(new Vector2f(x, y));
