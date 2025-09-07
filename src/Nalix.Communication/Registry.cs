@@ -18,14 +18,6 @@ public static class Registry
         "Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
     public static void Load()
     {
-        // REGISTER logger first so other components can use it.
-#if DEBUG
-        if (InstanceManager.Instance.GetExistingInstance<Common.Logging.Abstractions.ILogger>() == null)
-        {
-            InstanceManager.Instance.Register<Common.Logging.Abstractions.ILogger>(Logging.NLogix.Host.Instance);
-        }
-#endif
-
         // 1) Build packet catalog.
         var factory = new PacketCatalogFactory();
 

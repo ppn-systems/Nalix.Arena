@@ -62,7 +62,7 @@ public sealed class HandshakeOps
         }
 
         // Nếu đã handshake, không cho phép lặp lại - theo security best practices
-        if (connection.EncryptionKey is not null)
+        if (connection.EncryptionKey.Length == 32)
         {
             NLogix.Host.Instance.Warn(
                 "HANDSHAKE already completed for {0}",
@@ -126,6 +126,11 @@ public sealed class HandshakeOps
                 connection.RemoteEndPoint);
 
             response.Initialize(keyPair.PublicKey);
+
+            NLogix.Host.Instance.Debug(
+                "len={0} hex={1}",
+                keyPair.PublicKey.Length, keyPair.PublicKey.ToString());
+
             payload = response.Serialize();
         }
         catch (System.Exception ex)

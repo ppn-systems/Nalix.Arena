@@ -1,10 +1,12 @@
 ﻿using Nalix.Application.Operations.Security;
 using Nalix.Common.Logging.Abstractions;
+using Nalix.Common.Logging.Models;
 using Nalix.Communication;
 using Nalix.Host.Assemblies;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
+using Nalix.Logging.Sinks.Console;
 using Nalix.Network.Dispatch;
 using Nalix.Shared.Injection;
 using System;
@@ -40,12 +42,16 @@ internal static class AppConfig
     static AppConfig()
     {
         Registry.Load();
+
+        NLogix log = new(cfg => cfg.AddTarget(new ConsoleLogTarget())
+                             .SetMinLevel(LogLevel.Information));
+
         if (InstanceManager.Instance.GetExistingInstance<ILogger>() == null)
         {
-            InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
+            InstanceManager.Instance.Register<ILogger>(log);
         }
 
-        Listener = BuildServer(null, NLogix.Host.Instance);
+        Listener = BuildServer(null, log);
     }
 
     /// <summary>
@@ -76,6 +82,7 @@ internal static class AppConfig
         var db = dbOverride ?? (s_db.IsValueCreated ? s_db.Value : null); // cho phép null-db cho một số handler
 
         var channel = BuildDispatchChannel(log, db);
+        channel.Activate();
         var protocol = new ServerProtocol(channel);
         return new ServerListener(protocol);
     }
