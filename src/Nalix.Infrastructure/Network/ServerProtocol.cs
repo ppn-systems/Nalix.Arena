@@ -1,6 +1,4 @@
-﻿using Nalix.Common.Caching;
-using Nalix.Common.Connection;
-using Nalix.Common.Packets;
+﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Logging;
 using Nalix.Network.Abstractions;
@@ -47,24 +45,6 @@ public sealed class ServerProtocol : Protocol
         _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().RegisterConnection(connection);
 
         NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
-    }
-
-    public void ProcessMessage(IBufferLease bytes)
-    {
-        IConnection connection = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                         .GetConnection(bytes.Span[PacketConstants.HeaderSize..sizeof(UInt32)]);
-
-        try
-        {
-            NLogix.Host.Instance.Debug($"[ProcessMessage] Received packet from {connection.RemoteEndPoint}");
-            _packetDispatcher.HandlePacket(bytes, connection);
-            NLogix.Host.Instance.Debug($"[ProcessMessage] Successfully processed packet from {connection.RemoteEndPoint}");
-        }
-        catch (Exception ex)
-        {
-            NLogix.Host.Instance.Error($"[ProcessMessage] Error processing packet from {connection.RemoteEndPoint}: {ex}");
-            connection.Disconnect();
-        }
     }
 
     /// <summary>

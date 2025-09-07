@@ -191,4 +191,10 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
         _ = LiteSerializer.Deserialize(buffer, ref packet);
         return packet;
     }
+
+    /// <inheritdoc/>
+    public override System.Byte[] Serialize() => LiteSerializer.Serialize(this);
+
+    /// <inheritdoc/>
+    public override void Serialize(System.Span<System.Byte> buffer) => LiteSerializer.Serialize(this, buffer);
 }
