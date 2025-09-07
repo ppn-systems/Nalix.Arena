@@ -26,6 +26,11 @@ internal static class SceneNames
     public const System.String Network = "network";
 
     /// <summary>
+    /// Cảnh bắt tay (handshake) với server sau khi kết nối mạng thành công.
+    /// </summary>
+    public const System.String Handshake = "handshake";
+
+    /// <summary>
     /// Cảnh thiết lập trò chơi (âm thanh, hình ảnh, v.v.).
     /// </summary>
     public const System.String Settings = "settings";
