@@ -20,6 +20,10 @@ This project is part of a modular game architecture, built with a strong focus o
 
 ## 🖼️ Screenshot Desktop
 
+### Main Menu
+
 ![Nalix.Arena Menu](docs/25-09/2025-09-03.png)
+
+### Login
 
 ![Nalix.Arena Login](docs/25-09/2025-09-04.png)
