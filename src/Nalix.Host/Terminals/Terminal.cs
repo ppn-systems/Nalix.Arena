@@ -1,7 +1,11 @@
 ﻿// Copyright (c) 2025 PPN Corporation.
 
-using Nalix.Host.Extensions;
+using Nalix.Framework.Injection;
+using Nalix.Framework.Tasks;
 using Nalix.Logging;
+using Nalix.Network.Connection;
+using Nalix.Network.Throttling;
+using Nalix.Shared.Memory.Pooling;
 
 namespace Nalix.Host.Terminals;
 
@@ -21,9 +25,15 @@ internal sealed class Terminal
 
     #endregion Const || Fields
 
+    #region Properties
+
     public readonly IConsoleReader ConsoleReader;
     public readonly ShortcutManager ShortcutManager;
     public readonly System.Threading.ManualResetEventSlim ExitEvent = new(false);
+
+    #endregion Properties
+
+    #region Ctor
 
     public Terminal(IConsoleReader consoleReader, ShortcutManager shortcutManager)
     {
@@ -36,6 +46,8 @@ internal sealed class Terminal
         _eventLoopTask = System.Threading.Tasks.Task.Run(EventLoop);
     }
 
+    #endregion Ctor
+
     private void START_SERVER()
     {
         if (AppConfig.Listener is null)
@@ -47,28 +59,10 @@ internal sealed class Terminal
         _serverCts = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
         var token = _serverCts.Token;
 
-        _serverTask = System.Threading.Tasks.Task.Run(async () =>
-        {
-            try
-            {
-                await AppConfig.Listener!.ActivateAsync(token).ConfigureAwait(false);
-            }
-            catch (System.OperationCanceledException)
-            {
-                NLogix.Host.Instance.Debug("Server activation canceled (shutdown).");
-            }
-            catch (System.ObjectDisposedException) when (token.IsCancellationRequested)
-            {
-                NLogix.Host.Instance.Debug("Server listener disposed during shutdown.");
-            }
-            catch (System.Exception ex)
-            {
-                NLogix.Host.Instance.Error($"Unhandled server error: {ex}");
-            }
-        });
+        AppConfig.Listener!.Activate(token);
     }
 
-    private async System.Threading.Tasks.Task STOP_SERVER_ASYNC()
+    private void STOP_SERVER()
     {
         if (AppConfig.Listener is null)
         {
@@ -76,32 +70,7 @@ internal sealed class Terminal
             return;
         }
 
-        try
-        {
-            await AppConfig.Listener.DeactivateAsync().ConfigureAwait(false);
-
-            var cts = System.Threading.Interlocked.Exchange(ref _serverCts, null);
-            cts?.Cancel();
-
-            var task = System.Threading.Interlocked.Exchange(ref _serverTask, null);
-            if (task is not null)
-            {
-                try { await task.ConfigureAwait(false); }
-                catch (System.OperationCanceledException) { }
-            }
-        }
-        catch (System.OperationCanceledException)
-        {
-            NLogix.Host.Instance.Debug("Shutdown canceled (already stopping).");
-        }
-        catch (System.ObjectDisposedException)
-        {
-            NLogix.Host.Instance.Debug("Listener already disposed during shutdown.");
-        }
-        catch (System.Exception ex)
-        {
-            NLogix.Host.Instance.Error($"Error during shutdown: {ex}");
-        }
+        AppConfig.Listener.Deactivate();
     }
 
     private void SHOW_SHORTCUTS()
@@ -114,6 +83,17 @@ internal sealed class Terminal
             _ = sb.AppendLine($"{modText}{key,-6} → {desc}");
         }
         NLogix.Host.Instance.Info(sb.ToString());
+    }
+
+    private void SHOW_REPORT()
+    {
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GenerateReport());
     }
 
     #region Initialize
@@ -163,7 +143,12 @@ internal sealed class Terminal
         ShortcutManager.AddOrUpdateShortcut(
             System.ConsoleModifiers.Control,
             System.ConsoleKey.X,
-            () => STOP_SERVER_ASYNC().Forget(), "Stop server");
+            STOP_SERVER, "Stop server");
+
+        ShortcutManager.AddOrUpdateShortcut(
+            System.ConsoleModifiers.Control,
+            System.ConsoleKey.M,
+            SHOW_REPORT, "Report");
 
         // Double-press Ctrl+Q within 2s to exit
         System.DateTime lastQuit = System.DateTime.MinValue;
@@ -173,7 +158,7 @@ internal sealed class Terminal
             if ((now - lastQuit).TotalSeconds < 2)
             {
                 NLogix.Host.Instance.Info("Exiting gracefully...");
-                STOP_SERVER_ASYNC().GetAwaiter().GetResult();
+                STOP_SERVER();
                 _cts.Cancel();
 
                 if (_eventLoopTask is not null)
@@ -252,8 +237,12 @@ internal sealed class Terminal
 
     #endregion Private Methods
 
+    #region APIs
+
     public void SetShortcut(
         System.ConsoleModifiers modifiers,
         System.ConsoleKey key, System.Action action, System.String description)
         => ShortcutManager.AddOrUpdateShortcut(modifiers, key, action, description);
+
+    #endregion APIs
 }

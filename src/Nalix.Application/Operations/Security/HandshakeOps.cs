@@ -6,8 +6,8 @@ using Nalix.Common.Security.Types;
 using Nalix.Communication.Enums;
 using Nalix.Cryptography.Asymmetric;
 using Nalix.Cryptography.Hashing;
+using Nalix.Framework.Injection;
 using Nalix.Logging;
-using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Controls;
 

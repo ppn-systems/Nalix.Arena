@@ -7,7 +7,7 @@ using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
-using Nalix.Shared.Injection;
+using Nalix.Framework.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;

@@ -7,11 +7,11 @@ using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
 using Nalix.Cryptography.Security;
+using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;
-using Nalix.Shared.Injection;
 
 namespace Nalix.Application.Operations.Security;
 

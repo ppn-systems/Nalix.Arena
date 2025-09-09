@@ -1,6 +1,6 @@
 ﻿using Nalix.Common.Packets.Abstractions;
 using Nalix.Communication.Collections;
-using Nalix.Shared.Injection;
+using Nalix.Framework.Injection;
 using Nalix.Shared.Messaging.Catalog;
 
 namespace Nalix.Communication;

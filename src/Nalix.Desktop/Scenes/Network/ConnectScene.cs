@@ -1,11 +1,11 @@
 ﻿using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Indicators;
 using Nalix.Desktop.Objects.Notifications;
+using Nalix.Framework.Injection;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
-using Nalix.Shared.Injection;
 using SFML.Graphics;
 
 namespace Nalix.Desktop.Scenes.Network;

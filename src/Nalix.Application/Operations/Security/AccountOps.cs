@@ -7,11 +7,11 @@ using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
 using Nalix.Cryptography.Security;
+using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;
-using Nalix.Shared.Injection;
 using Nalix.Shared.Memory.Pooling;
 
 namespace Nalix.Application.Operations.Security;
@@ -313,7 +313,7 @@ public sealed class AccountOps
             // Reset connection state
             connection.Level = PermissionLevel.Guest;
             _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                        .UnregisterConnection(connection.ID);
+                                        .UnregisterConnection((IConnection)connection.ID);
 
             NLogix.Host.Instance.Info(
                 "User {0} logged out successfully from connection {1}",

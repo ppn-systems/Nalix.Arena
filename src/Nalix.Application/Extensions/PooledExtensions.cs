@@ -1,7 +1,7 @@
 ﻿using Nalix.Common.Connection;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
-using Nalix.Shared.Injection;
+using Nalix.Framework.Injection;
 using Nalix.Shared.Memory.Pooling;
 
 namespace Nalix.Application.Extensions;

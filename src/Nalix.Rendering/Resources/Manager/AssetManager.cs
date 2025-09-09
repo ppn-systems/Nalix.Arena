@@ -1,5 +1,5 @@
 using Nalix.Common.Environment;
-using Nalix.Shared.Injection.DI;
+using Nalix.Framework.Injection.DI;
 using SFML.Audio;
 using SFML.Graphics;
 using System;

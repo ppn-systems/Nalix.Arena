@@ -7,12 +7,12 @@ using Nalix.Communication.Extensions; // CommandExtensions
 using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Indicators;
 using Nalix.Desktop.Objects.Notifications;
+using Nalix.Framework.Injection;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using Nalix.SDK.Remote.Extensions;       // HandshakeExtensions
-using Nalix.Shared.Injection;
 using SFML.Graphics;
 
 namespace Nalix.Desktop.Scenes.Network;

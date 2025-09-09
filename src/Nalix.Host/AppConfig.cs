@@ -1,14 +1,12 @@
 ﻿using Nalix.Application.Operations.Security;
 using Nalix.Common.Logging.Abstractions;
-using Nalix.Common.Logging.Models;
 using Nalix.Communication;
+using Nalix.Framework.Injection;
 using Nalix.Host.Assemblies;
 using Nalix.Infrastructure.Database;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
-using Nalix.Logging.Sinks.Console;
 using Nalix.Network.Dispatch;
-using Nalix.Shared.Injection;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -43,15 +41,12 @@ internal static class AppConfig
     {
         Registry.Load();
 
-        NLogix log = new(cfg => cfg.AddTarget(new ConsoleLogTarget())
-                             .SetMinLevel(LogLevel.Information));
-
         if (InstanceManager.Instance.GetExistingInstance<ILogger>() == null)
         {
-            InstanceManager.Instance.Register<ILogger>(log);
+            InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
         }
 
-        Listener = BuildServer(null, log);
+        Listener = BuildServer(null, NLogix.Host.Instance);
     }
 
     /// <summary>

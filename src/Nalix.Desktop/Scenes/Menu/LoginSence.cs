@@ -1,4 +1,5 @@
 ﻿using Nalix.Desktop.Objects.Controls;
+using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
@@ -8,7 +9,6 @@ using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
-using Nalix.Shared.Injection;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;

@@ -1,10 +1,10 @@
 ﻿using Nalix.Common.Connection;
 using Nalix.Common.Packets.Abstractions;
+using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Network.Abstractions;
 using Nalix.Network.Connection;
 using Nalix.Network.Protocols;
-using Nalix.Shared.Injection;
 using System;
 using System.Threading;
 
