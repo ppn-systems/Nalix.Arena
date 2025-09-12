@@ -4,15 +4,15 @@ using Nalix.Network.Listeners.Tcp;
 namespace Nalix.Infrastructure.Network;
 
 /// <summary>
-/// Lớp `ServerListener` quản lý việc lắng nghe các kết nối mạng.
+/// Lớp `HostListener` quản lý việc lắng nghe các kết nối mạng.
 /// </summary>
-public sealed class ServerListener : TcpListenerBase
+public sealed class HostListener : TcpListenerBase
 {
     /// <summary>
     /// Được kế thừa từ `Listener`, lớp này cung cấp cơ chế cập nhật thời gian cho các sự kiện mạng.
     /// </summary>
     /// <param name="protocol">Giao thức mạng được sử dụng.</param>
-    public ServerListener(IProtocol protocol)
+    public HostListener(IProtocol protocol)
         : base(protocol) => IsTimeSyncEnabled = false; // Bật đồng bộ thời gian
 
     /// <summary>

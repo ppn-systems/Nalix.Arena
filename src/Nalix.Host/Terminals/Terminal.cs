@@ -1,248 +1,245 @@
-﻿// Copyright (c) 2025 PPN Corporation.
+﻿// Copyright (c) 2025
 
+using Nalix.Common.Abstractions;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Tasks;
+using Nalix.Infrastructure.Network;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Network.Throttling;
 using Nalix.Shared.Memory.Pooling;
+using System;
+using System.Diagnostics;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Nalix.Host.Terminals;
 
-internal sealed class Terminal
+/// <summary>
+/// Console-driven host service: handles shortcuts and graceful shutdown.
+/// </summary>
+internal sealed class TerminalService(IConsoleReader reader, ShortcutManager shortcuts, HostListener server) : IActivatable
 {
-    #region Const || Fields
-
     private static readonly System.Threading.Lock ReadLock = new();
+    private readonly IConsoleReader _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+    private readonly HostListener _server = server ?? throw new ArgumentNullException(nameof(server));
+    private readonly ShortcutManager _shortcuts = shortcuts ?? throw new ArgumentNullException(nameof(shortcuts));
 
-    // App lifetime CTS
-    private readonly System.Threading.Tasks.Task? _eventLoopTask;
-    private readonly System.Threading.CancellationTokenSource _cts = new();
+    private CancellationToken _hostToken;
+    private Task? _loopTask;
+    private volatile Boolean _started;
+    private volatile Boolean _disposed;
 
-    // Server lifetime
-    private System.Threading.Tasks.Task? _serverTask;
-    private System.Threading.CancellationTokenSource? _serverCts;
+    // double-press tracking
+    private readonly Stopwatch _quitWatch = Stopwatch.StartNew();
+    private Int64 _lastQuitTick = -1; // ticks from Stopwatch
 
-    #endregion Const || Fields
+    public ManualResetEventSlim ExitEvent { get; } = new(false); // still available for external waiters
 
-    #region Properties
-
-    public readonly IConsoleReader ConsoleReader;
-    public readonly ShortcutManager ShortcutManager;
-    public readonly System.Threading.ManualResetEventSlim ExitEvent = new(false);
-
-    #endregion Properties
-
-    #region Ctor
-
-    public Terminal(IConsoleReader consoleReader, ShortcutManager shortcutManager)
+    public void Activate(CancellationToken token)
     {
-        ConsoleReader = consoleReader ?? throw new System.ArgumentNullException(nameof(consoleReader));
-        ShortcutManager = shortcutManager ?? throw new System.ArgumentNullException(nameof(shortcutManager));
+        if (_started)
+        {
+            return;
+        }
 
-        InitializeConsole();
+        _hostToken = token;
+
+        InitializeConsole(); // events + console config
         RegisterDefaultShortcuts();
 
-        _eventLoopTask = System.Threading.Tasks.Task.Run(EventLoop);
+        _loopTask = Task.Run(EventLoop, token);
+        _started = true;
+        NLogix.Host.Instance.Info("[TERMINAL] started");
     }
 
-    #endregion Ctor
-
-    private void START_SERVER()
+    public void Deactivate(CancellationToken token)
     {
-        if (AppConfig.Listener is null)
+        if (!_started)
         {
-            NLogix.Host.Instance.Warn("Server is not initialized.");
             return;
         }
 
-        _serverCts = System.Threading.CancellationTokenSource.CreateLinkedTokenSource(_cts.Token);
-        var token = _serverCts.Token;
+        // Signal exit and wait for loop to finish (best effort)
+        this.ExitEvent.Set();
 
-        AppConfig.Listener!.Activate(token);
+        if (_loopTask is not null)
+        {
+            try { _loopTask.Wait(TimeSpan.FromSeconds(2), token); }
+            catch { /* ignore */ }
+        }
+
+        UnsubscribeConsoleEvents();
+        _started = false;
+        NLogix.Host.Instance.Info("[TERMINAL] stopped");
     }
 
-    private void STOP_SERVER()
+    public void Dispose()
     {
-        if (AppConfig.Listener is null)
+        if (_disposed)
         {
-            NLogix.Host.Instance.Warn("Server is not initialized.");
             return;
         }
 
-        AppConfig.Listener.Deactivate();
+        _disposed = true;
+
+        try { UnsubscribeConsoleEvents(); } catch { }
+        try { this.ExitEvent.Dispose(); } catch { }
     }
+
+    // ===== console init & events =====
+
+    private void InitializeConsole()
+    {
+        Console.CursorVisible = false;
+        Console.TreatControlCAsInput = false;
+        Console.OutputEncoding = Encoding.UTF8;
+        Console.Title = $"Auto ({AppConfig.VersionBanner})";
+
+        Console.CancelKeyPress += OnCancelKeyPress;
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+        Console.ResetColor();
+        NLogix.Host.Instance.Info("Terminal initialized successfully.");
+    }
+
+    private void UnsubscribeConsoleEvents()
+    {
+        Console.CancelKeyPress -= OnCancelKeyPress;
+        AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+    }
+
+    private void OnCancelKeyPress(Object? sender, ConsoleCancelEventArgs e)
+    {
+        e.Cancel = true;
+        NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H for shortcuts, Ctrl+Q to exit.");
+    }
+
+    private void OnProcessExit(Object? _, EventArgs __)
+        => this.ExitEvent.Set();
+
+    private void OnUnhandledException(Object? _, UnhandledExceptionEventArgs e)
+    {
+        NLogix.Host.Instance.Error("Unhandled exception: " + e.ExceptionObject);
+        this.ExitEvent.Set();
+    }
+
+    // ===== shortcuts =====
+
+    private void RegisterDefaultShortcuts()
+    {
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.R, () => _server.Activate(_hostToken), "Run server");
+
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.X, () => _server.Deactivate(), "Stop server");
+
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.L, Console.Clear, "Clear screen");
+
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.M, SHOW_REPORT, "Report");
+
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.H, SHOW_SHORTCUTS, "Show shortcuts");
+
+        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.Q, () =>
+        {
+            if (TryHandleQuit())
+            {
+                return;
+            }
+
+            NLogix.Host.Instance.Warn("Press Ctrl+Q again within 2 seconds to exit.");
+        }, "Exit (double-press)");
+    }
+
+    private Boolean TryHandleQuit()
+    {
+        const Double windowSeconds = 2.0;
+        Int64 now = _quitWatch.ElapsedTicks;
+
+        if (_lastQuitTick >= 0)
+        {
+            Double delta = (now - _lastQuitTick) / (Double)Stopwatch.Frequency;
+            if (delta <= windowSeconds)
+            {
+                NLogix.Host.Instance.Info("Exiting gracefully...");
+                _server.Deactivate();
+                this.ExitEvent.Set();
+                return true;
+            }
+        }
+
+        _lastQuitTick = now;
+        return false;
+    }
+
+    // ===== report & shortcuts helpers =====
 
     private void SHOW_SHORTCUTS()
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder().AppendLine("Available shortcuts:");
-        foreach (var (mod, key, desc) in ShortcutManager.GetAllShortcuts())
+        var sb = new StringBuilder().AppendLine("Available shortcuts:");
+        foreach (var (mod, key, desc) in _shortcuts.GetAllShortcuts())
         {
-            System.String modText = FormatModifiers(mod);
-
-            _ = sb.AppendLine($"{modText}{key,-6} → {desc}");
+            sb.AppendLine($"{FormatModifiers(mod)}{key,-6} → {desc}");
         }
         NLogix.Host.Instance.Info(sb.ToString());
     }
 
     private void SHOW_REPORT()
     {
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
+        Console.WriteLine(InstanceManager.Instance.GenerateReport());
     }
 
-    #region Initialize
-
-    private void InitializeConsole()
-    {
-        System.Console.CursorVisible = false;
-        System.Console.TreatControlCAsInput = false;
-        System.Console.OutputEncoding = System.Text.Encoding.UTF8;
-        System.Console.Title = $"Auto ({AppConfig.VersionBanner})";
-
-        System.Console.CancelKeyPress += (_, e) =>
-        {
-            e.Cancel = true;
-            NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H for shortcuts, Ctrl+Q to exit.");
-        };
-
-        System.AppDomain.CurrentDomain.ProcessExit += (_, __) => ExitEvent.Set();
-        System.AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-        {
-            NLogix.Host.Instance.Error("Unhandled exception: " + e.ExceptionObject);
-            ExitEvent.Set();
-            _cts.Cancel();
-        };
-
-        System.Console.ResetColor();
-        NLogix.Host.Instance.Info("Terminal initialized successfully.");
-    }
-
-    private void RegisterDefaultShortcuts()
-    {
-        ShortcutManager.AddOrUpdateShortcut(
-            System.ConsoleModifiers.Control,
-            System.ConsoleKey.R,
-            START_SERVER, "Run server");
-
-        ShortcutManager.AddOrUpdateShortcut(
-            System.ConsoleModifiers.Control,
-            System.ConsoleKey.H,
-            SHOW_SHORTCUTS, "Show shortcuts");
-
-        ShortcutManager.AddOrUpdateShortcut(
-            System.ConsoleModifiers.Control,
-            System.ConsoleKey.L,
-            System.Console.Clear, "Clear screen");
-
-        ShortcutManager.AddOrUpdateShortcut(
-            System.ConsoleModifiers.Control,
-            System.ConsoleKey.X,
-            STOP_SERVER, "Stop server");
-
-        ShortcutManager.AddOrUpdateShortcut(
-            System.ConsoleModifiers.Control,
-            System.ConsoleKey.M,
-            SHOW_REPORT, "Report");
-
-        // Double-press Ctrl+Q within 2s to exit
-        System.DateTime lastQuit = System.DateTime.MinValue;
-        ShortcutManager.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.Q, () =>
-        {
-            var now = System.DateTime.UtcNow;
-            if ((now - lastQuit).TotalSeconds < 2)
-            {
-                NLogix.Host.Instance.Info("Exiting gracefully...");
-                STOP_SERVER();
-                _cts.Cancel();
-
-                if (_eventLoopTask is not null)
-                {
-                    try { _eventLoopTask.GetAwaiter().GetResult(); }
-                    catch (System.OperationCanceledException) { }
-                    catch (System.Exception ex) { NLogix.Host.Instance.Error($"EventLoop failed: {ex}"); }
-                }
-
-                ExitEvent.Set();
-                return;
-            }
-            lastQuit = now;
-            NLogix.Host.Instance.Warn("Press Ctrl+Q again within 2 seconds to exit.");
-        }, "Exit (double-press)");
-    }
-
-    #endregion Initialize
-
-    #region Private Methods
-
-    private async System.Threading.Tasks.Task EventLoop()
-    {
-        try
-        {
-            while (!_cts.IsCancellationRequested)
-            {
-                if (ConsoleReader.KeyAvailable)
-                {
-                    System.ConsoleKeyInfo keyInfo;
-                    lock (ReadLock)
-                    {
-                        keyInfo = ConsoleReader.ReadKey(intercept: true);
-                    }
-                    _ = ShortcutManager.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
-                }
-                await System.Threading.Tasks.Task.Delay(10, _cts.Token).ConfigureAwait(false);
-            }
-        }
-        catch (System.OperationCanceledException)
-        {
-            // normal exit
-        }
-    }
-
-    /// <summary>
-    /// Formats a <see cref="System.ConsoleModifiers"/> into a readable key prefix,
-    /// e.g. Ctrl+Shift+, Alt+, or empty if no modifier.
-    /// </summary>
-    private static System.String FormatModifiers(System.ConsoleModifiers mod)
+    private static String FormatModifiers(ConsoleModifiers mod)
     {
         if (mod == 0)
         {
-            return System.String.Empty;
+            return String.Empty;
         }
 
-        var sb = new System.Text.StringBuilder();
-
-        if (mod.HasFlag(System.ConsoleModifiers.Control))
+        var sb = new StringBuilder();
+        if (mod.HasFlag(ConsoleModifiers.Control))
         {
-            _ = sb.Append("Ctrl+");
+            sb.Append("Ctrl+");
         }
 
-        if (mod.HasFlag(System.ConsoleModifiers.Shift))
+        if (mod.HasFlag(ConsoleModifiers.Shift))
         {
-            _ = sb.Append("Shift+");
+            sb.Append("Shift+");
         }
 
-        if (mod.HasFlag(System.ConsoleModifiers.Alt))
+        if (mod.HasFlag(ConsoleModifiers.Alt))
         {
-            _ = sb.Append("Alt+");
+            sb.Append("Alt+");
         }
 
         return sb.ToString();
     }
 
-    #endregion Private Methods
+    // ===== event loop =====
 
-    #region APIs
-
-    public void SetShortcut(
-        System.ConsoleModifiers modifiers,
-        System.ConsoleKey key, System.Action action, System.String description)
-        => ShortcutManager.AddOrUpdateShortcut(modifiers, key, action, description);
-
-    #endregion APIs
+    private async Task EventLoop()
+    {
+        try
+        {
+            while (!_hostToken.IsCancellationRequested && !this.ExitEvent.IsSet)
+            {
+                if (_reader.KeyAvailable)
+                {
+                    ConsoleKeyInfo keyInfo;
+                    lock (ReadLock) { keyInfo = _reader.ReadKey(intercept: true); }
+                    _ = _shortcuts.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
+                }
+                await Task.Delay(10, _hostToken).ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException) { /* normal */ }
+        catch (Exception ex) { NLogix.Host.Instance.Error("[TERMINAL] loop faulted", ex); }
+    }
 }

@@ -32,7 +32,7 @@ internal static class AppConfig
     /// </summary>
     public static GameDbContext DbContext => s_db.Value;
 
-    public static ServerListener Listener;
+    public static HostListener Listener;
 
     [UnconditionalSuppressMessage("Trimming",
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' " +
@@ -69,17 +69,17 @@ internal static class AppConfig
     }
 
     /// <summary>
-    /// Tạo sẵn ServerListener đã cấu hình protocol & pipeline — KHÔNG gọi Start().
+    /// Tạo sẵn HostListener đã cấu hình protocol & pipeline — KHÔNG gọi Start().
     /// </summary>
-    public static ServerListener BuildServer(GameDbContext? dbOverride = null, ILogger? loggerOverride = null)
+    public static HostListener BuildServer(GameDbContext? dbOverride = null, ILogger? loggerOverride = null)
     {
         var log = loggerOverride ?? NLogix.Host.Instance;
         var db = dbOverride ?? (s_db.IsValueCreated ? s_db.Value : null); // cho phép null-db cho một số handler
 
         var channel = BuildDispatchChannel(log, db);
         channel.Activate();
-        var protocol = new ServerProtocol(channel);
-        return new ServerListener(protocol);
+        var protocol = new HostProtocol(channel);
+        return new HostListener(protocol);
     }
 
     /// <summary>
@@ -102,18 +102,10 @@ internal static class AppConfig
 
     private static GameDbContext CreateDbContextCore()
     {
-        try
-        {
-            var ctx = new AutoDbContextFactory().CreateDbContext([]);
-            _ = ctx.Database.EnsureCreated();
-            NLogix.Host.Instance.Info(Evt("DB_INIT_OK") + "Database initialized successfully.");
-            return ctx;
-        }
-        catch
-        {
-            // Log chi tiết ở TryInitializeDatabase; ở đây để nguyên stack cho caller nếu cần.
-            throw;
-        }
+        var ctx = new AutoDbContextFactory().CreateDbContext([]);
+        _ = ctx.Database.EnsureCreated();
+        NLogix.Host.Instance.Info(Evt("DB_INIT_OK") + "Database initialized successfully.");
+        return ctx;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

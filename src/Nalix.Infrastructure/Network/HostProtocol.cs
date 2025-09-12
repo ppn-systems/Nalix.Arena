@@ -11,10 +11,9 @@ using System.Threading;
 namespace Nalix.Infrastructure.Network;
 
 /// <summary>
-/// Lớp `ServerProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
+/// Lớp `HostProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
 /// </summary>
-/// <param name="packetDispatcher">Bộ điều phối gói tin.</param>
-public sealed class ServerProtocol : Protocol
+public sealed class HostProtocol : Protocol
 {
     /// <summary>
     /// Bộ điều phối gói tin được sử dụng để xử lý dữ liệu nhận được.
@@ -26,7 +25,7 @@ public sealed class ServerProtocol : Protocol
     /// </summary>
     public override Boolean KeepConnectionOpen => true;
 
-    public ServerProtocol(IPacketDispatch<IPacket> packetDispatcher)
+    public HostProtocol(IPacketDispatch<IPacket> packetDispatcher)
     {
         _packetDispatcher = packetDispatcher;
         IsAccepting = true;
