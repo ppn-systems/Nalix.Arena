@@ -32,7 +32,7 @@ public sealed class Credentials
     /// </summary>
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public System.Int32 Id { get; private set; }
+    public System.Int32 Id { get; }
 
     /// <summary>
     /// Tên người dùng.

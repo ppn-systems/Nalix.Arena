@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Nalix.Host.Runtime;
+﻿using Nalix.Host.Runtime;
 using Nalix.Host.Terminals;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
@@ -9,8 +7,7 @@ namespace Nalix.Host;
 
 internal static class Program
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1163:Unused parameter", Justification = "<Pending>")]
-    private static async Task<Int32> Main(String[] args)
+    private static async System.Threading.Tasks.Task<System.Int32> Main(System.String[] args)
     {
         try
         {
@@ -30,12 +27,12 @@ internal static class Program
             // Wait until terminal sets ExitEvent (Ctrl+Q double-press)
             terminal.ExitEvent.Wait();
 
-            await host.StopAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            await host.StopAsync(System.TimeSpan.FromSeconds(5)).ConfigureAwait(false);
             await host.DisposeAsync();
 
             return 0;
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             NLogix.Host.Instance.Fatal("Fatal error in host entry point.", ex);
             return -1;

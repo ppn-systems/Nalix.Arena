@@ -42,8 +42,6 @@ public sealed class HostProtocol : Protocol
 
         // Thêm kết nối vào danh sách quản lý
         _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().RegisterConnection(connection);
-
-        NLogix.Host.Instance.Debug($"[OnAccept] Connection accepted from {connection.RemoteEndPoint}");
     }
 
     /// <summary>
@@ -55,9 +53,7 @@ public sealed class HostProtocol : Protocol
     {
         try
         {
-            NLogix.Host.Instance.Debug($"[ProcessMessage] Received packet from {args.Connection.RemoteEndPoint}");
             _packetDispatcher.HandlePacket(args.Connection.IncomingPacket, args.Connection);
-            NLogix.Host.Instance.Debug($"[ProcessMessage] Successfully processed packet from {args.Connection.RemoteEndPoint}");
         }
         catch (Exception ex)
         {
