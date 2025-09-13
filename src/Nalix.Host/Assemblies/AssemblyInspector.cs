@@ -3,7 +3,7 @@ namespace Nalix.Host.Assemblies;
 /// <summary>
 /// High-performance helper class for retrieving assembly metadata information.
 /// </summary>
-public static class AssemblyInspector
+internal static class AssemblyInspector
 {
     private static readonly System.Lazy<AssemblyInfo> LazyVersionInfo = new(GetVersionInfoInternal);
 

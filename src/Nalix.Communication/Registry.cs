@@ -19,7 +19,7 @@ public static class Registry
     public static void Load()
     {
         // 1) Build packet catalog.
-        var factory = new PacketCatalogFactory();
+        PacketCatalogFactory factory = new();
 
         // REGISTER packets here (single source of truth).
         _ = factory.RegisterPacket<ResponsePacket>();

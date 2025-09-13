@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Nalix.Host.Runtime;
 using Nalix.Host.Terminals;
+using Nalix.Infrastructure.Network;
 using Nalix.Logging;
 
 namespace Nalix.Host;
@@ -14,13 +15,13 @@ internal static class Program
         try
         {
             // Compose services manually (no external libs)
-            var host = new SimpleHost();
+            SimpleHost host = new();
 
-            var consoleReader = new ConsoleReader();
-            var shortcuts = new ShortcutManager();
-            var server = AppConfig.BuildServer(null, NLogix.Host.Instance);
+            ConsoleReader consoleReader = new();
+            ShortcutManager shortcuts = new();
+            HostListener server = AppConfig.BuildServer(null, NLogix.Host.Instance);
 
-            var terminal = new TerminalService(consoleReader, shortcuts, server);
+            TerminalService terminal = new(consoleReader, shortcuts, server);
 
             host.AddService(terminal);
 

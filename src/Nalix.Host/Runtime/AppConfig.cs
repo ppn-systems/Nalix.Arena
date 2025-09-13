@@ -13,7 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Nalix.Host;
+namespace Nalix.Host.Runtime;
 
 internal static class AppConfig
 {

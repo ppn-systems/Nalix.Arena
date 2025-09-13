@@ -3,7 +3,7 @@ namespace Nalix.Host.Assemblies;
 /// <summary>
 /// Structure containing comprehensive assembly version information.
 /// </summary>
-public readonly struct AssemblyInfo
+internal readonly struct AssemblyInfo
 {
     /// <summary>
     /// The product name associated with the assembly.

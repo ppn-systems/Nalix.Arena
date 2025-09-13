@@ -3,6 +3,7 @@
 using Nalix.Common.Abstractions;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Tasks;
+using Nalix.Host.Runtime;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
 using Nalix.Network.Connection;
@@ -118,8 +119,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H for shortcuts, Ctrl+Q to exit.");
     }
 
-    private void OnProcessExit(Object? _, EventArgs __)
-        => this.ExitEvent.Set();
+    private void OnProcessExit(Object? _, EventArgs __) => this.ExitEvent.Set();
 
     private void OnUnhandledException(Object? _, UnhandledExceptionEventArgs e)
     {
