@@ -1,11 +1,11 @@
 ﻿using Nalix.Common.Attributes;
 using Nalix.Common.Caching;
+using Nalix.Common.Enums;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions; // if IPacketTransformer is here
 using Nalix.Common.Packets.Enums;
-using Nalix.Common.Security.Enums;
-using Nalix.Common.Serialization;
 using Nalix.Common.Serialization.Attributes;
+using Nalix.Common.Serialization.Enums;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
 using Nalix.Cryptography.Extensions;
@@ -196,5 +196,5 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     public override System.Byte[] Serialize() => LiteSerializer.Serialize(this);
 
     /// <inheritdoc/>
-    public override void Serialize(System.Span<System.Byte> buffer) => LiteSerializer.Serialize(this, buffer);
+    public override System.Int32 Serialize(System.Span<System.Byte> buffer) => LiteSerializer.Serialize(this, buffer);
 }

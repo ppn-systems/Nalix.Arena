@@ -1,6 +1,6 @@
-﻿using Nalix.Common.Security.Types;
-using Nalix.Common.Serialization;
+﻿using Nalix.Common.Enums;
 using Nalix.Common.Serialization.Attributes;
+using Nalix.Common.Serialization.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
