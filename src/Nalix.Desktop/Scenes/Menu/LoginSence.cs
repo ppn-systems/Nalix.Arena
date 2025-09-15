@@ -5,7 +5,6 @@ using Nalix.Communication.Models;
 using Nalix.Desktop.Objects.Controls;
 using Nalix.Framework.Injection;
 using Nalix.Logging;
-using Nalix.Logging.Extensions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Effects.Visual.UI;
@@ -15,7 +14,6 @@ using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using Nalix.SDK.Remote.Configuration;
-using Nalix.Shared.Extensions;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -323,17 +321,9 @@ internal sealed class LoginSence : Scene
             };
             CredentialsPacket packet = new();
             packet.Initialize(OpCommand.LOGIN.AsUInt16(), credentials);
-            CredentialsPacket packet2 = CredentialsPacket.Encrypt(packet, options.EncryptionKey, Common.Enums.SymmetricAlgorithmType.XTEA);
+            packet = CredentialsPacket.Encrypt(packet, options.EncryptionKey, Common.Enums.SymmetricAlgorithmType.XTEA);
 
-            Byte[] raw = packet2.Serialize();
-            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().SendAsync(packet2);
-
-            System.Int32 len = raw.Length;
-            System.UInt32 magic = len >= 4 ? raw.ReadMagicNumberLE() : 0u;
-
-            System.String head = System.Convert.ToHexString(raw[..16]);
-            NLogixFx.Warn($"[{nameof(LoginSence)}] " +
-                         $"deserialize-none len={len} magic=0x{magic:X8} head={head}");
+            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().SendAsync(packet);
         }
 
         #endregion

@@ -40,7 +40,7 @@ public sealed class HandshakeOps
     /// <param name="connection">Thông tin kết nối của client yêu cầu bắt tay bảo mật.</param>
     /// <returns>Gói tin chứa khóa công khai của server hoặc thông báo lỗi nếu quá trình thất bại.</returns>
     [PacketEncryption(false)]
-    [PacketPermission(PermissionLevel.Guest)]
+    [PacketPermission(PermissionLevel.None)]
     [PacketOpcode((System.UInt16)OpCommand.HANDSHAKE)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -113,12 +113,15 @@ public sealed class HandshakeOps
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
             connection.EncryptionKey = SHA256.HashData(secret);
 
+            NLogix.Host.Instance.Info(
+                System.Convert.ToHexStringLower(connection.EncryptionKey));
+
             // Security: Clear sensitive data từ memory
             System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
             System.Array.Clear(secret, 0, secret.Length);
 
             // Nâng cấp quyền truy cập của client lên mức User
-            connection.Level = PermissionLevel.User;
+            connection.Level = PermissionLevel.Guest;
 
             // Log successful handshake
             NLogix.Host.Instance.Info(

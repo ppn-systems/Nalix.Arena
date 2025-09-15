@@ -1,8 +1,6 @@
-﻿using Nalix.Common.Logging.Abstractions;
-using Nalix.Common.Packets.Abstractions;
+﻿using Nalix.Common.Packets.Abstractions;
 using Nalix.Communication.Collections;
 using Nalix.Framework.Injection;
-using Nalix.Logging;
 using Nalix.Shared.Messaging.Catalog;
 
 namespace Nalix.Communication;
@@ -20,7 +18,6 @@ public static class Registry
         "Calls Nalix.Shared.Messaging.Catalog.PacketCatalogFactory.CreateCatalog()")]
     public static void Load()
     {
-        InstanceManager.Instance.Register<ILogger>(NLogix.Host.Instance);
         // 1) Build packet catalog.
         PacketCatalogFactory factory = new();
 

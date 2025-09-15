@@ -127,6 +127,9 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
 
         packet.OldPassword = packet.OldPassword.EncryptToBase64(key, algorithm);
         packet.NewPassword = packet.NewPassword.EncryptToBase64(key, algorithm);
+
+        packet.Flags |= PacketFlags.Encrypted;
+
         return packet;
     }
 
@@ -144,6 +147,8 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
         {
             packet.OldPassword = packet.OldPassword.DecryptFromBase64(key, algorithm);
             packet.NewPassword = packet.NewPassword.DecryptFromBase64(key, algorithm);
+            packet.Flags &= ~PacketFlags.Encrypted;
+
             return packet;
         }
         catch (System.FormatException ex)
@@ -165,6 +170,8 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
 
         packet.OldPassword = packet.OldPassword.CompressToBase64();
         packet.NewPassword = packet.NewPassword.CompressToBase64();
+        packet.Flags |= PacketFlags.Compressed;
+
         return packet;
     }
 
@@ -177,6 +184,8 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
 
         packet.OldPassword = packet.OldPassword.DecompressFromBase64();
         packet.NewPassword = packet.NewPassword.DecompressFromBase64();
+        packet.Flags &= ~PacketFlags.Compressed;
+
         return packet;
     }
 

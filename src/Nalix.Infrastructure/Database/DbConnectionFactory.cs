@@ -52,7 +52,7 @@ public sealed class DbConnectionFactory : IDbConnectionFactory
             }
 
             conn.Open();
-            Nalix.Logging.NLogix.Host.Instance.Info("[DB_FACTORY] SQLite connection opened successfully.");
+            Nalix.Logging.NLogix.Host.Instance.Trace("[DB_FACTORY] SQLite connection opened successfully.");
             return conn;
         }
         catch (Exception ex)

@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "Nalix.Game.sln",
+    "path": "Nalix.Arena.sln",
     "projects": [
 		"Nalix.Desktop\\Nalix.Desktop.csproj",
 		"Nalix.Rendering\\Nalix.Rendering.csproj",

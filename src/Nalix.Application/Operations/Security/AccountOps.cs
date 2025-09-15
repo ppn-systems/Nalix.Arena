@@ -116,7 +116,7 @@ public sealed class AccountOps
                 FailedLoginCount = 0
             };
 
-            _ = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
+            System.Int32 id = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
 
             // Clear sensitive
             System.Array.Clear(salt, 0, salt.Length);

@@ -81,6 +81,8 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
         packet.Credentials.Username = packet.Credentials.Username.EncryptToBase64(key, algorithm);
         packet.Credentials.Password = packet.Credentials.Password.EncryptToBase64(key, algorithm);
 
+        packet.Flags |= PacketFlags.Encrypted;
+
         return packet;
     }
 
@@ -98,6 +100,8 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
         {
             packet.Credentials.Username = packet.Credentials.Username.DecryptFromBase64(key, algorithm);
             packet.Credentials.Password = packet.Credentials.Password.DecryptFromBase64(key, algorithm);
+
+            packet.Flags &= ~PacketFlags.Encrypted;
 
             return packet;
         }
@@ -120,6 +124,9 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
 
         packet.Credentials.Username = packet.Credentials.Username.CompressToBase64();
         packet.Credentials.Password = packet.Credentials.Password.CompressToBase64();
+
+        packet.Flags |= PacketFlags.Compressed;
+
         return packet;
     }
 
@@ -132,6 +139,9 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
 
         packet.Credentials.Username = packet.Credentials.Username.DecompressFromBase64();
         packet.Credentials.Password = packet.Credentials.Password.DecompressFromBase64();
+
+        packet.Flags &= ~PacketFlags.Compressed;
+
         return packet;
     }
 
