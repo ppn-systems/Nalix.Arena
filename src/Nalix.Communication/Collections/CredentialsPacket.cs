@@ -23,7 +23,7 @@ namespace Nalix.Communication.Collections;
 /// Gói tin chứa thông tin đăng nhập từ client (username, mật khẩu băm, metadata),
 /// dùng trong quá trình xác thực sau handshake.
 /// </summary>
-[SerializePackable(SerializeLayout.Sequential)]
+[SerializePackable(SerializeLayout.Explicit)]
 [MagicNumber((UInt32)PacketMagic.CREDENTIALS)]
 public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<CredentialsPacket>
 {

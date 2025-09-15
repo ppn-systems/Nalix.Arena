@@ -22,7 +22,7 @@ namespace Nalix.Communication.Collections;
 /// Provides per-packet encryption/compression helpers to protect sensitive fields
 /// on top of the session key established by HandshakeOps.
 /// </summary>
-[SerializePackable(SerializeLayout.Sequential)]
+[SerializePackable(SerializeLayout.Explicit)]
 [MagicNumber((System.UInt32)PacketMagic.CHANGE_PASSWORD)]
 public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer<CredsUpdatePacket>
 {
@@ -31,6 +31,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     /// </summary>
     public const System.Int32 MaxPasswordBytes = 128;
 
+    [SerializeIgnore]
     private static readonly System.Text.Encoding Utf8 = System.Text.Encoding.UTF8;
 
     /// <summary>

@@ -1,4 +1,6 @@
-﻿using Nalix.Application.Extensions;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Application.Extensions;
 using Nalix.Common.Connection;
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
@@ -8,8 +10,7 @@ using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
 using Nalix.Cryptography.Security;
 using Nalix.Framework.Injection;
-using Nalix.Infrastructure.Database;
-using Nalix.Infrastructure.Repositories;
+using Nalix.Infrastructure.Abstractions;
 using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Shared.Memory.Pooling;
@@ -17,12 +18,12 @@ using Nalix.Shared.Memory.Pooling;
 namespace Nalix.Application.Operations.Security;
 
 /// <summary>
-/// User account management service: register, login, logout with secure practices and pooling.
+/// User account management service: register, login, logout with secure practices and pooling (Dapper-based).
 /// </summary>
 [PacketController]
 public sealed class AccountOps
 {
-    private readonly Repository<Credentials> _accounts;
+    private readonly ICredentialsRepository _accounts;
 
     static AccountOps()
     {
@@ -35,7 +36,8 @@ public sealed class AccountOps
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage(
         "Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-    public AccountOps(GameDbContext context) => _accounts = new Repository<Credentials>(context);
+    public AccountOps(ICredentialsRepository accounts)
+        => _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
     /// <summary>
     /// Handles user registration.
@@ -45,31 +47,27 @@ public sealed class AccountOps
     [PacketOpcode((System.UInt16)OpCommand.REGISTER)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
     {
         const System.UInt16 Op = (System.UInt16)OpCommand.REGISTER;
 
-        // Validate p type (defensive even though signature is CredentialsPacket)
         if (p is not CredentialsPacket packet)
         {
             NLogix.Host.Instance.Error(
                 "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
             return;
         }
 
-        // Null payload
         if (packet.Credentials is null)
         {
             NLogix.Host.Instance.Error(
                 "Null credentials in register p from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
@@ -83,23 +81,21 @@ public sealed class AccountOps
                 "Empty username or password in register attempt from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
         try
         {
-            // Check existing username
-            if (await _accounts.AnyAsync(a => a.Username == credentials.Username)
-                               .ConfigureAwait(false))
+            // Check existing username (Dapper)
+            var existed = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
+            if (existed is not null)
             {
                 NLogix.Host.Instance.Warn(
                     "Username {0} already exists from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.ALREADY_EXISTS)
-                                .ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.ALREADY_EXISTS).ConfigureAwait(false);
                 return;
             }
 
@@ -120,9 +116,7 @@ public sealed class AccountOps
                 FailedLoginCount = 0
             };
 
-            _accounts.Add(newAccount);
-            _ = await _accounts.SaveChangesAsync()
-                               .ConfigureAwait(false);
+            _ = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
 
             // Clear sensitive
             System.Array.Clear(salt, 0, salt.Length);
@@ -132,8 +126,7 @@ public sealed class AccountOps
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -141,8 +134,7 @@ public sealed class AccountOps
                 "Failed to register account {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
         }
     }
 
@@ -154,7 +146,7 @@ public sealed class AccountOps
     [PacketOpcode((System.UInt16)OpCommand.LOGIN)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
     {
         const System.UInt16 Op = (System.UInt16)OpCommand.LOGIN;
 
@@ -164,8 +156,7 @@ public sealed class AccountOps
                 "Invalid p type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
             return;
         }
 
@@ -175,8 +166,7 @@ public sealed class AccountOps
                 "Null credentials in login p from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
             return;
         }
 
@@ -184,9 +174,8 @@ public sealed class AccountOps
 
         try
         {
-            // Look up account
-            Credentials account = await _accounts.GetFirstOrDefaultAsync(
-                a => a.Username == credentials.Username).ConfigureAwait(false);
+            // Look up account (Dapper)
+            Credentials account = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
 
             if (account is null)
             {
@@ -194,8 +183,7 @@ public sealed class AccountOps
                     "LOGIN attempt with non-existent username {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS)
-                                .ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
                 return;
             }
 
@@ -208,25 +196,22 @@ public sealed class AccountOps
                     "Account {0} locked due to too many failed attempts from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.LOCKED)
-                                .ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.LOCKED).ConfigureAwait(false);
                 return;
             }
 
             // Verify password
-            if (!SecureCredentials.VerifyCredentialHash(
-                    credentials.Password, account.Salt, account.Hash))
+            if (!SecureCredentials.VerifyCredentialHash(credentials.Password, account.Salt, account.Hash))
             {
                 account.FailedLoginCount++;
                 account.LastFailedLoginAt = System.DateTime.UtcNow;
-                _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
+                _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
 
                 NLogix.Host.Instance.Warn(
                     "Incorrect password for {0}, attempt {1} from connection {2}",
                     credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS)
-                                .ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
                 return;
             }
 
@@ -237,8 +222,7 @@ public sealed class AccountOps
                     "LOGIN attempt on disabled account {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.DISABLED)
-                                .ConfigureAwait(false);
+                await connection.SendAsync(Op, ResponseStatus.DISABLED).ConfigureAwait(false);
                 return;
             }
 
@@ -246,7 +230,7 @@ public sealed class AccountOps
             account.FailedLoginCount = 0;
             account.LastFailedLoginAt = null;
             account.LastLoginAt = System.DateTime.UtcNow;
-            _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
+            _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
 
             // Update connection state
             connection.Level = account.Role;
@@ -257,8 +241,7 @@ public sealed class AccountOps
                 "User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -266,8 +249,7 @@ public sealed class AccountOps
                 "LOGIN failed for {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
         }
     }
 
@@ -279,7 +261,7 @@ public sealed class AccountOps
     [PacketOpcode((System.UInt16)OpCommand.LOGOUT)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    internal async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
     {
         System.ArgumentNullException.ThrowIfNull(p);
         const System.UInt16 Op = (System.UInt16)OpCommand.LOGOUT;
@@ -293,21 +275,19 @@ public sealed class AccountOps
                 "LOGOUT attempt without valid session from connection {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
             return;
         }
 
         try
         {
-            Credentials account = await _accounts.GetFirstOrDefaultAsync(a => a.Username == username)
-                                                 .ConfigureAwait(false);
+            Credentials account = await _accounts.GetByUsernameAsync(username).ConfigureAwait(false);
 
             if (account is not null)
             {
                 account.IsActive = false;
                 account.LastLogoutAt = System.DateTime.UtcNow;
-                _ = await _accounts.SaveChangesAsync().ConfigureAwait(false);
+                _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
             }
 
             // Reset connection state
@@ -319,9 +299,8 @@ public sealed class AccountOps
                 "User {0} logged out successfully from connection {1}",
                 username, connection.RemoteEndPoint);
 
-            // Send response first, then disconnect so client receives the p
-            await connection.SendAsync(Op, ResponseStatus.OK)
-                            .ConfigureAwait(false);
+            // Send response first, then disconnect so client receives the packet
+            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
 
             connection.Disconnect();
         }
@@ -332,8 +311,7 @@ public sealed class AccountOps
                 username, connection.RemoteEndPoint, ex.Message);
 
             // Try to inform client about error, then disconnect
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
 
             connection.Level = PermissionLevel.Guest;
             connection.Disconnect();

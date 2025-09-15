@@ -1,6 +1,7 @@
 ﻿using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Controls;
 using Nalix.Desktop.Objects.Notifications;
+using Nalix.Framework.Randomization;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Objects;
@@ -232,15 +233,51 @@ internal class MainScene : Scene
             SetZIndex(1);
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
+            System.Int32 scene = SecureRandom.GetInt32(1, 4);
+
+            switch (scene)
+            {
+                case 1:
+                    // hang động
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/1"), 00f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 15f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/2"), 25f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/3"), 30f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/4"), 35f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/5"), 40f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/6"), 45f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/cave/7"), 50f, true);
+                    break;
+                case 2:
+                    // city
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/1"), 00f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/2"), 35f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/3"), 40f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/4"), 45f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/5"), 50f, true);
+                    break;
+                case 3:
+                    // city
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/gc/1"), 00f, true);
+
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/7"), 10f, true);
+
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/gc/2"), 35f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/gc/3"), 40f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/gc/4"), 45f, true);
+
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/gc/5"), 50f, true);
+                    break;
+                default:
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/1"), 00f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/2"), 35f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/3"), 40f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/4"), 45f, true);
+                    _parallax.AddLayer(Assets.UiTextures.Load("bg/wcp/5"), 50f, true);
+                    break;
+            }
+
             // xa -> gần
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/1"), 00f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/8"), 15f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/2"), 25f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/3"), 30f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/4"), 35f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/5"), 40f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/6"), 45f, true);
-            _parallax.AddLayer(Assets.UiTextures.Load("bg/7"), 50f, true);
         }
 
         #endregion

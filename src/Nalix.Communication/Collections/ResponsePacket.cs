@@ -18,7 +18,7 @@ namespace Nalix.Communication.Collections;
 /// Gói phản hồi siêu nhẹ từ server.
 /// Chỉ gồm StatusCode (1 byte), không có chuỗi message để tiết kiệm băng thông.
 /// </summary>
-[SerializePackable(SerializeLayout.Sequential)]
+[SerializePackable(SerializeLayout.Explicit)]
 [MagicNumber((System.UInt32)PacketMagic.RESPONSE)]
 public sealed class ResponsePacket : FrameBase, IPoolable, IPacketDeserializer<ResponsePacket>
 {

@@ -16,5 +16,5 @@ public static class CommandExtensions
     /// </summary>
     /// <param name="command">Giá trị enum OpCommand.</param>
     /// <returns>Giá trị ushort tương ứng.</returns>
-    public static System.UInt16 AsUInt32(this PacketMagic command) => (System.UInt16)command;
+    public static System.UInt32 AsUInt32(this PacketMagic command) => (System.UInt32)command;
 }
