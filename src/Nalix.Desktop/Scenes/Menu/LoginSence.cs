@@ -322,11 +322,10 @@ internal sealed class LoginSence : Scene
                 Password = _pass.Text
             };
             CredentialsPacket packet = new();
-            packet.Initialize(OpCommand.REGISTER.AsUInt16(), credentials);
+            packet.Initialize(OpCommand.LOGIN.AsUInt16(), credentials);
             CredentialsPacket packet2 = CredentialsPacket.Encrypt(packet, options.EncryptionKey, Common.Enums.SymmetricAlgorithmType.XTEA);
 
-            Byte[] raw = packet.Serialize();
-            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().SendAsync(packet);
+            Byte[] raw = packet2.Serialize();
             InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().SendAsync(packet2);
 
             System.Int32 len = raw.Length;

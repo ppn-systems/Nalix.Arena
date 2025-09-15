@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nalix.Logging" Version="5.6.5" />
+    <PackageReference Include="Nalix.Logging" Version="5.7.0" />
   </ItemGroup>
 
 
