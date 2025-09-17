@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Common.Abstractions;
 using Nalix.Framework.Injection;
@@ -9,11 +9,6 @@ using Nalix.Logging;
 using Nalix.Network.Connection;
 using Nalix.Network.Throttling;
 using Nalix.Shared.Memory.Pooling;
-using System;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Nalix.Host.Terminals;
 
@@ -23,22 +18,22 @@ namespace Nalix.Host.Terminals;
 internal sealed class TerminalService(IConsoleReader reader, ShortcutManager shortcuts, HostListener server) : IActivatable
 {
     private static readonly System.Threading.Lock ReadLock = new();
-    private readonly IConsoleReader _reader = reader ?? throw new ArgumentNullException(nameof(reader));
-    private readonly HostListener _server = server ?? throw new ArgumentNullException(nameof(server));
-    private readonly ShortcutManager _shortcuts = shortcuts ?? throw new ArgumentNullException(nameof(shortcuts));
+    private readonly IConsoleReader _reader = reader ?? throw new System.ArgumentNullException(nameof(reader));
+    private readonly HostListener _server = server ?? throw new System.ArgumentNullException(nameof(server));
+    private readonly ShortcutManager _shortcuts = shortcuts ?? throw new System.ArgumentNullException(nameof(shortcuts));
 
-    private CancellationToken _hostToken;
-    private Task? _loopTask;
-    private volatile Boolean _started;
-    private volatile Boolean _disposed;
+    private System.Threading.CancellationToken _hostToken;
+    private System.Threading.Tasks.Task? _loopTask;
+    private volatile System.Boolean _started;
+    private volatile System.Boolean _disposed;
 
     // double-press tracking
-    private readonly Stopwatch _quitWatch = Stopwatch.StartNew();
-    private Int64 _lastQuitTick = -1; // ticks from Stopwatch
+    private readonly System.Diagnostics.Stopwatch _quitWatch = System.Diagnostics.Stopwatch.StartNew();
+    private System.Int64 _lastQuitTick = -1; // ticks from Stopwatch
 
-    public ManualResetEventSlim ExitEvent { get; } = new(false); // still available for external waiters
+    public System.Threading.ManualResetEventSlim ExitEvent { get; } = new(false); // still available for external waiters
 
-    public void Activate(CancellationToken token)
+    public void Activate(System.Threading.CancellationToken token)
     {
         if (_started)
         {
@@ -50,12 +45,12 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         InitializeConsole(); // events + console config
         RegisterDefaultShortcuts();
 
-        _loopTask = Task.Run(EventLoop, token);
+        _loopTask = System.Threading.Tasks.Task.Run(EventLoop, token);
         _started = true;
         NLogix.Host.Instance.Info("[TERMINAL] started");
     }
 
-    public void Deactivate(CancellationToken token)
+    public void Deactivate(System.Threading.CancellationToken token)
     {
         if (!_started)
         {
@@ -67,7 +62,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
         if (_loopTask is not null)
         {
-            try { _loopTask.Wait(TimeSpan.FromSeconds(2), token); }
+            try { _loopTask.Wait(System.TimeSpan.FromSeconds(2), token); }
             catch { /* ignore */ }
         }
 
@@ -93,35 +88,35 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     private void InitializeConsole()
     {
-        Console.CursorVisible = false;
-        Console.TreatControlCAsInput = false;
-        Console.OutputEncoding = Encoding.UTF8;
-        Console.Title = $"Auto ({AppConfig.VersionBanner})";
+        System.Console.CursorVisible = false;
+        System.Console.TreatControlCAsInput = false;
+        System.Console.OutputEncoding = System.Text.Encoding.UTF8;
+        System.Console.Title = $"Auto ({AppConfig.VersionBanner})";
 
-        Console.CancelKeyPress += OnCancelKeyPress;
-        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
-        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        System.Console.CancelKeyPress += OnCancelKeyPress;
+        System.AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        System.AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-        Console.ResetColor();
+        System.Console.ResetColor();
         NLogix.Host.Instance.Info("Terminal initialized successfully.");
     }
 
     private void UnsubscribeConsoleEvents()
     {
-        Console.CancelKeyPress -= OnCancelKeyPress;
-        AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
-        AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
+        System.Console.CancelKeyPress -= OnCancelKeyPress;
+        System.AppDomain.CurrentDomain.ProcessExit -= OnProcessExit;
+        System.AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
     }
 
-    private void OnCancelKeyPress(Object? sender, ConsoleCancelEventArgs e)
+    private void OnCancelKeyPress(System.Object? sender, System.ConsoleCancelEventArgs e)
     {
         e.Cancel = true;
         NLogix.Host.Instance.Warn("Ctrl+C is disabled. Use Ctrl+H for shortcuts, Ctrl+Q to exit.");
     }
 
-    private void OnProcessExit(Object? _, EventArgs __) => this.ExitEvent.Set();
+    private void OnProcessExit(System.Object? _, System.EventArgs __) => this.ExitEvent.Set();
 
-    private void OnUnhandledException(Object? _, UnhandledExceptionEventArgs e)
+    private void OnUnhandledException(System.Object? _, System.UnhandledExceptionEventArgs e)
     {
         NLogix.Host.Instance.Error("Unhandled exception: " + e.ExceptionObject);
         this.ExitEvent.Set();
@@ -131,17 +126,17 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     private void RegisterDefaultShortcuts()
     {
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.R, () => _server.Activate(_hostToken), "Run server");
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.R, () => _server.Activate(_hostToken), "Run server");
 
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.X, () => _server.Deactivate(), "Stop server");
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.X, () => _server.Deactivate(), "Stop server");
 
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.L, Console.Clear, "Clear screen");
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.L, System.Console.Clear, "Clear screen");
 
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.M, SHOW_REPORT, "Report");
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.M, SHOW_REPORT, "Report");
 
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.H, SHOW_SHORTCUTS, "Show shortcuts");
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.H, SHOW_SHORTCUTS, "Show shortcuts");
 
-        _shortcuts.AddOrUpdateShortcut(ConsoleModifiers.Control, ConsoleKey.Q, () =>
+        _shortcuts.AddOrUpdateShortcut(System.ConsoleModifiers.Control, System.ConsoleKey.Q, () =>
         {
             if (TryHandleQuit())
             {
@@ -152,14 +147,14 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         }, "Exit (double-press)");
     }
 
-    private Boolean TryHandleQuit()
+    private System.Boolean TryHandleQuit()
     {
-        const Double windowSeconds = 2.0;
-        Int64 now = _quitWatch.ElapsedTicks;
+        const System.Double windowSeconds = 2.0;
+        System.Int64 now = _quitWatch.ElapsedTicks;
 
         if (_lastQuitTick >= 0)
         {
-            Double delta = (now - _lastQuitTick) / (Double)Stopwatch.Frequency;
+            System.Double delta = (now - _lastQuitTick) / (System.Double)System.Diagnostics.Stopwatch.Frequency;
             if (delta <= windowSeconds)
             {
                 NLogix.Host.Instance.Info("Exiting gracefully...");
@@ -177,7 +172,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     private void SHOW_SHORTCUTS()
     {
-        var sb = new StringBuilder().AppendLine("Available shortcuts:");
+        var sb = new System.Text.StringBuilder().AppendLine("Available shortcuts:");
         foreach (var (mod, key, desc) in _shortcuts.GetAllShortcuts())
         {
             sb.AppendLine($"{FormatModifiers(mod)}{key,-6} → {desc}");
@@ -187,34 +182,34 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     private void SHOW_REPORT()
     {
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
-        Console.WriteLine(InstanceManager.Instance.GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
+        System.Console.WriteLine(InstanceManager.Instance.GenerateReport());
     }
 
-    private static String FormatModifiers(ConsoleModifiers mod)
+    private static System.String FormatModifiers(System.ConsoleModifiers mod)
     {
         if (mod == 0)
         {
-            return String.Empty;
+            return System.String.Empty;
         }
 
-        var sb = new StringBuilder();
-        if (mod.HasFlag(ConsoleModifiers.Control))
+        var sb = new System.Text.StringBuilder();
+        if (mod.HasFlag(System.ConsoleModifiers.Control))
         {
             sb.Append("Ctrl+");
         }
 
-        if (mod.HasFlag(ConsoleModifiers.Shift))
+        if (mod.HasFlag(System.ConsoleModifiers.Shift))
         {
             sb.Append("Shift+");
         }
 
-        if (mod.HasFlag(ConsoleModifiers.Alt))
+        if (mod.HasFlag(System.ConsoleModifiers.Alt))
         {
             sb.Append("Alt+");
         }
@@ -224,7 +219,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     // ===== event loop =====
 
-    private async Task EventLoop()
+    private async System.Threading.Tasks.Task EventLoop()
     {
         try
         {
@@ -232,14 +227,14 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
             {
                 if (_reader.KeyAvailable)
                 {
-                    ConsoleKeyInfo keyInfo;
+                    System.ConsoleKeyInfo keyInfo;
                     lock (ReadLock) { keyInfo = _reader.ReadKey(intercept: true); }
                     _ = _shortcuts.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
                 }
-                await Task.Delay(10, _hostToken).ConfigureAwait(false);
+                await System.Threading.Tasks.Task.Delay(10, _hostToken).ConfigureAwait(false);
             }
         }
-        catch (OperationCanceledException) { /* normal */ }
-        catch (Exception ex) { NLogix.Host.Instance.Error("[TERMINAL] loop faulted", ex); }
+        catch (System.OperationCanceledException) { /* normal */ }
+        catch (System.Exception ex) { NLogix.Host.Instance.Error("[TERMINAL] loop faulted", ex); }
     }
 }

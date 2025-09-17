@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 namespace Nalix.Host.Terminals;
 
@@ -9,27 +7,30 @@ namespace Nalix.Host.Terminals;
 /// </summary>
 internal sealed class ShortcutManager
 {
-    private readonly ConcurrentDictionary<(ConsoleModifiers Modifiers, ConsoleKey Key), Shortcut> _shortcuts = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<
+        (System.ConsoleModifiers Modifiers, System.ConsoleKey Key), Shortcut> _shortcuts = new();
 
     /// <summary>
     /// Add or update a shortcut with specific modifiers and key.
     /// </summary>
-    public void AddOrUpdateShortcut(ConsoleModifiers modifiers, ConsoleKey key, Action action, String description)
+    public void AddOrUpdateShortcut(
+        System.ConsoleModifiers modifiers,
+        System.ConsoleKey key, System.Action action, System.String description)
         => _shortcuts[(modifiers, key)] = new Shortcut(action, description);
 
     /// <summary>
     /// Add or update a shortcut with only a key (defaults to Ctrl+Key).
     /// </summary>
-    public void AddOrUpdateShortcut(ConsoleKey key, Action action, String description)
-        => AddOrUpdateShortcut(ConsoleModifiers.Control, key, action, description);
+    public void AddOrUpdateShortcut(System.ConsoleKey key, System.Action action, System.String description)
+        => AddOrUpdateShortcut(System.ConsoleModifiers.Control, key, action, description);
 
     /// <summary>
     /// Try execute a shortcut given pressed modifiers and key.
     /// </summary>
-    public Boolean TryExecuteShortcut(ConsoleModifiers modifiers, ConsoleKey key)
+    public System.Boolean TryExecuteShortcut(System.ConsoleModifiers modifiers, System.ConsoleKey key)
     {
         // Normalize: only consider Ctrl/Shift/Alt flags
-        var lookup = (modifiers & (ConsoleModifiers.Control | ConsoleModifiers.Shift | ConsoleModifiers.Alt), key);
+        var lookup = (modifiers & (System.ConsoleModifiers.Control | System.ConsoleModifiers.Shift | System.ConsoleModifiers.Alt), key);
 
         if (_shortcuts.TryGetValue(lookup, out var shortcut))
         {
@@ -42,7 +43,8 @@ internal sealed class ShortcutManager
     /// <summary>
     /// Get all registered shortcuts for help display.
     /// </summary>
-    public IEnumerable<(ConsoleModifiers Modifiers, ConsoleKey Key, String Description)> GetAllShortcuts()
+    public System.Collections.Generic.IEnumerable<
+        (System.ConsoleModifiers Modifiers, System.ConsoleKey Key, System.String Description)> GetAllShortcuts()
     {
         foreach (var kvp in _shortcuts)
         {
@@ -50,9 +52,9 @@ internal sealed class ShortcutManager
         }
     }
 
-    private sealed class Shortcut(Action action, String description)
+    private sealed class Shortcut(System.Action action, System.String description)
     {
-        public Action Action { get; } = action ?? throw new ArgumentNullException(nameof(action));
-        public String Description { get; } = description ?? String.Empty;
+        public System.Action Action { get; } = action ?? throw new System.ArgumentNullException(nameof(action));
+        public System.String Description { get; } = description ?? System.String.Empty;
     }
 }

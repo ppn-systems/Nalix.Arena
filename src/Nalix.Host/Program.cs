@@ -1,4 +1,6 @@
-﻿using Nalix.Host.Runtime;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Host.Runtime;
 using Nalix.Host.Terminals;
 using Nalix.Logging;
 
@@ -10,7 +12,6 @@ internal static class Program
     {
         try
         {
-
             // Compose services manually (no external libs)
             SimpleHost host = new();
 
@@ -21,12 +22,12 @@ internal static class Program
 
             host.AddService(terminal);
 
-            await host.StartAsync().ConfigureAwait(false);
+            await host.ActivateAsync().ConfigureAwait(false);
 
             // Wait until terminal sets ExitEvent (Ctrl+Q double-press)
             terminal.ExitEvent.Wait();
 
-            await host.StopAsync(System.TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            await host.DeactivateAsync().ConfigureAwait(false);
             await host.DisposeAsync();
 
             return 0;
