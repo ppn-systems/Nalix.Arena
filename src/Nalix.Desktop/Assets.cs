@@ -1,4 +1,6 @@
-﻿using Nalix.Rendering.Resources;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Rendering.Resources;
 using Nalix.Rendering.Resources.Manager;
 using Nalix.Rendering.Runtime;
 

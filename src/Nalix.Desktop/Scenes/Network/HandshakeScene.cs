@@ -3,7 +3,7 @@
 using Nalix.Common.Logging.Abstractions;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions; // CommandExtensions
+using Nalix.Communication.Extensions;
 using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Indicators;
 using Nalix.Desktop.Objects.Notifications;
@@ -12,7 +12,7 @@ using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
-using Nalix.SDK.Remote.Extensions;       // HandshakeExtensions
+using Nalix.SDK.Remote.Extensions;
 using SFML.Graphics;
 
 namespace Nalix.Desktop.Scenes.Network;

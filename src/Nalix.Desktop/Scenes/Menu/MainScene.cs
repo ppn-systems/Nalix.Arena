@@ -1,4 +1,6 @@
-﻿using Nalix.Desktop.Enums;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Controls;
 using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Randomization;

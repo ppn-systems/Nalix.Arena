@@ -1,4 +1,7 @@
-﻿using Nalix.Rendering.Runtime;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Communication;
+using Nalix.Rendering.Runtime;
 
 namespace Nalix.Desktop;
 
@@ -17,7 +20,7 @@ internal static class Program
     public static void Main(System.String[] args)
     {
         // Initialize client-side services and registrations.
-        Communication.Registry.Load();
+        Registry.Load();
 
         // Open the game window.
         GameEngine.OpenWindow();

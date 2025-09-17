@@ -1,4 +1,6 @@
-﻿using Nalix.Communication.Collections;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
 using Nalix.Communication.Models;
@@ -17,7 +19,6 @@ using Nalix.SDK.Remote.Configuration;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
 namespace Nalix.Desktop.Scenes.Menu;
 
@@ -60,22 +61,22 @@ internal sealed class LoginSence : Scene
         private static readonly Color BackPanel = new(160, 160, 160);
 
         // Layout numbers
-        private const Single TitleFont = 26f;
-        private const Single LabelFont = 16f;
-        private const Single FieldFont = 18f;
-        private const Single FieldWidth = 340f;
-        private const Single FieldHeight = 40f;
-        private const Single TitleOffsetX = 10f;
-        private const Single TitleOffsetY = 6f;
-        private const Single LabelUserY = 70f;
-        private const Single LabelPassY = 130f;
-        private const Single FieldLeft = 140f;
-        private const Single FieldUserTop = 60f;
-        private const Single FieldPassTop = 120f;
-        private const Single BtnRowY = 70f; // khoảng cách đáy panel -> hàng nút
-        private const Single BtnWidth = 280f;
-        private const Single LoginBtnExtraX = 150f; // như code gốc
-        private const Single BackBtnOffsetLeft = -30f; // như code gốc (ra ngoài 1 chút)
+        private const System.Single TitleFont = 26f;
+        private const System.Single LabelFont = 16f;
+        private const System.Single FieldFont = 18f;
+        private const System.Single FieldWidth = 340f;
+        private const System.Single FieldHeight = 40f;
+        private const System.Single TitleOffsetX = 10f;
+        private const System.Single TitleOffsetY = 6f;
+        private const System.Single LabelUserY = 70f;
+        private const System.Single LabelPassY = 130f;
+        private const System.Single FieldLeft = 140f;
+        private const System.Single FieldUserTop = 60f;
+        private const System.Single FieldPassTop = 120f;
+        private const System.Single BtnRowY = 70f; // khoảng cách đáy panel -> hàng nút
+        private const System.Single BtnWidth = 280f;
+        private const System.Single LoginBtnExtraX = 150f; // như code gốc
+        private const System.Single BackBtnOffsetLeft = -30f; // như code gốc (ra ngoài 1 chút)
 
         #endregion
 
@@ -141,22 +142,22 @@ internal sealed class LoginSence : Scene
 
         private (Text title, Text u, Text p) BuildTexts()
         {
-            var title = new Text("LOGIN", _font, (UInt32)TitleFont) { FillColor = TitleColor };
-            var u = new Text("Username", _font, (UInt32)LabelFont) { FillColor = LabelColor };
-            var p = new Text("Password", _font, (UInt32)LabelFont) { FillColor = LabelColor };
+            var title = new Text("LOGIN", _font, (System.UInt32)TitleFont) { FillColor = TitleColor };
+            var u = new Text("Username", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
+            var p = new Text("Password", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
             return (title, u, p);
         }
 
         private (InputField user, PasswordField pass) BuildFields()
         {
-            var user = new InputField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
+            var user = new InputField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
                                       new Vector2f(FieldWidth, FieldHeight),
                                       new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldUserTop));
             user.SetPanelColor(FieldPanel);
             user.SetTextColor(FieldText);
             user.Focused = true;
 
-            var pass = new PasswordField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
+            var pass = new PasswordField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
                                          new Vector2f(FieldWidth, FieldHeight),
                                          new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldPassTop));
             pass.SetPanelColor(FieldPanel);
@@ -204,8 +205,8 @@ internal sealed class LoginSence : Scene
 
             // Buttons (giữa đáy panel)
             var r = _loginBtn.GetGlobalBounds();
-            Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
-            Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
+            System.Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
+            System.Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
 
             _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
             _backBtn.SetPosition(new Vector2f(_panelPos.X + BackBtnOffsetLeft, btnBaseY));
@@ -221,7 +222,7 @@ internal sealed class LoginSence : Scene
 
         #region Input
 
-        public override void Update(Single dt)
+        public override void Update(System.Single dt)
         {
             if (!InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().IsConnected)
             {
@@ -246,7 +247,7 @@ internal sealed class LoginSence : Scene
                 return;
             }
 
-            Boolean toPass = _user.Focused;
+            System.Boolean toPass = _user.Focused;
             _user.Focused = !toPass;
             _pass.Focused = toPass;
         }

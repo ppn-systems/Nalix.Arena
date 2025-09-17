@@ -1,4 +1,6 @@
-﻿using Nalix.Desktop.Objects.Controls;
+﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
+
+using Nalix.Desktop.Objects.Controls;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
