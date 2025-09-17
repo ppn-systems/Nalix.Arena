@@ -267,7 +267,7 @@ public sealed class AccountOps
         const System.UInt16 Op = (System.UInt16)OpCommand.LOGOUT;
 
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                  .GetUsername(connection.ID);
+                                                         .GetUsername(connection.ID);
 
         if (username is null)
         {
