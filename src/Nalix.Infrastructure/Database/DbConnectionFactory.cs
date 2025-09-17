@@ -2,12 +2,12 @@
 
 using Nalix.Infrastructure.Abstractions;
 using Nalix.Shared.Configuration;
-using Npgsql;
 using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Data.SQLite;
+using Npgsql;
 
 namespace Nalix.Infrastructure.Database;
 

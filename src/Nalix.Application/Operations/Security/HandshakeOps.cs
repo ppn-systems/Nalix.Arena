@@ -10,6 +10,8 @@ using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Controls;
+using Nalix.Network.Connection;
+using Nalix.Common.Protocols;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -48,16 +50,18 @@ public sealed class HandshakeOps
         IPacket p,
         IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)OpCommand.HANDSHAKE;
-
         if (p is not Handshake packet)
         {
             NLogix.Host.Instance.Error(
                 "Invalid packet type. Expected HandshakePacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(
+                ControlType.ERROR,
+                ProtocolCode.UNSUPPORTED_PACKET,
+                ProtocolAction.DO_NOT_RETRY
+            ).ConfigureAwait(false);
+
             return;
         }
 
@@ -68,8 +72,11 @@ public sealed class HandshakeOps
                 "HANDSHAKE already completed for {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.ALREADY_HANDSHAKED)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(
+                ControlType.NACK,
+                ProtocolCode.DUPLICATE_SESSION,
+                ProtocolAction.DO_NOT_RETRY
+            ).ConfigureAwait(false);
             return;
         }
 
@@ -80,8 +87,11 @@ public sealed class HandshakeOps
                 "Null payload in handshake packet from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(
+                ControlType.ERROR,
+                ProtocolCode.MISSING_REQUIRED_FIELD,
+                ProtocolAction.FIX_AND_RETRY
+            ).ConfigureAwait(false);
             return;
         }
 
@@ -92,8 +102,12 @@ public sealed class HandshakeOps
                 "Invalid public key length [Length={0}] from {1}",
                 packet.Data.Length, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_KEY_LENGTH)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(
+                ControlType.ERROR,
+                ProtocolCode.VALIDATION_FAILED,
+                ProtocolAction.FIX_AND_RETRY
+            ).ConfigureAwait(false);
+
             return;
         }
 
@@ -147,8 +161,12 @@ public sealed class HandshakeOps
             connection.EncryptionKey = null;
             connection.Level = PermissionLevel.Guest;
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR)
-                            .ConfigureAwait(false);
+            await connection.SendAsync(
+                ControlType.ERROR,
+                ProtocolCode.INTERNAL_ERROR,
+                ProtocolAction.BACKOFF_RETRY,
+                flags: ControlFlags.IS_TRANSIENT
+            ).ConfigureAwait(false);
         }
         finally
         {

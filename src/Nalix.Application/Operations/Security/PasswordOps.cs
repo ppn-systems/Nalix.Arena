@@ -12,13 +12,14 @@ using Nalix.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Abstractions;
 using Nalix.Logging;
-using Nalix.Network.Connection;
+using Nalix.Network.Connection;          // ConnectionExtensions.SendAsync
+using Nalix.Common.Protocols;            // ControlType, ProtocolCode, ProtocolAction, ControlFlags
 
 namespace Nalix.Application.Operations.Security;
 
 /// <summary>
 /// Handles password change for authenticated users (Dapper-based).
-/// Requires current password and a new strong password.
+/// Emits synchronized control directives via <see cref="ConnectionExtensions.SendAsync"/>.
 /// </summary>
 [PacketController]
 public sealed class PasswordOps
@@ -28,6 +29,30 @@ public sealed class PasswordOps
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
     public PasswordOps(ICredentialsRepository accounts)
         => _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
+
+    #region Helpers
+
+    /// <summary>
+    /// Attempts to obtain a correlation SequenceId from the incoming packet.
+    /// Returns 0 when unavailable.
+    /// </summary>
+    private static System.UInt32 GetSequenceIdOrZero(IPacket p)
+    {
+        if (p is IPacketSequenced seq)
+        {
+            return seq.SequenceId;
+        }
+        return 0u;
+    }
+
+    private static System.Threading.Tasks.Task SendAckAsync(IConnection c, System.UInt32 seq)
+        => c.SendAsync(ControlType.ACK, ProtocolCode.NONE, ProtocolAction.NONE, sequenceId: seq);
+
+    private static System.Threading.Tasks.Task SendErrorAsync(
+        IConnection c, System.UInt32 seq, ProtocolCode code, ProtocolAction action, ControlFlags flags = ControlFlags.NONE)
+        => c.SendAsync(ControlType.ERROR, code, action, sequenceId: seq, flags: flags);
+
+    #endregion
 
     /// <summary>
     /// Change the current user's password:
@@ -43,7 +68,8 @@ public sealed class PasswordOps
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public async System.Threading.Tasks.Task ChangePasswordAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)OpCommand.CHANGE_PASSWORD;
+        System.ArgumentNullException.ThrowIfNull(connection);
+        System.UInt32 seq = GetSequenceIdOrZero(p);
 
         if (p is not CredsUpdatePacket packet)
         {
@@ -51,13 +77,14 @@ public sealed class PasswordOps
                 "Invalid packet type. Expected CredsUpdatePacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
-        // Lấy username từ hub theo connection
+        // Resolve username from connection hub
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                  .GetUsername(connection.ID);
+                                                 .GetUsername(connection.ID);
 
         if (username is null)
         {
@@ -65,7 +92,8 @@ public sealed class PasswordOps
                 "CHANGE_PASSWORD attempt without valid session from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.SESSION_NOT_FOUND, ProtocolAction.DO_NOT_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -75,18 +103,20 @@ public sealed class PasswordOps
                 "Null payload in CHANGE_PASSWORD from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
         try
         {
-            // Dapper: lấy tài khoản theo username
+            // Fetch account by username (Dapper)
             Credentials account = await _accounts.GetByUsernameAsync(username).ConfigureAwait(false);
 
             if (account is null)
             {
-                await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
+                await SendErrorAsync(connection, seq, ProtocolCode.SESSION_NOT_FOUND, ProtocolAction.DO_NOT_RETRY)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -96,40 +126,51 @@ public sealed class PasswordOps
                     "CHANGE_PASSWORD on disabled account {0} from {1}",
                     username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.DISABLED).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.ACCOUNT_SUSPENDED,
+                        ProtocolAction.DO_NOT_RETRY,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
-            // Xác thực mật khẩu cũ
+            // Verify old password
             if (!SecureCredentials.VerifyCredentialHash(packet.OldPassword, account.Salt, account.Hash))
             {
                 NLogix.Host.Instance.Warn(
                     "CHANGE_PASSWORD wrong current password for {0} from {1}",
                     username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.UNAUTHENTICATED,
+                        ProtocolAction.REAUTHENTICATE,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
-            // Kiểm tra độ mạnh mật khẩu mới
+            // Check new password strength
             if (!IsStrongPassword(packet.NewPassword))
             {
-                await connection.SendAsync(Op, ResponseStatus.PASSWORD_TOO_WEAK).ConfigureAwait(false);
+                await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                    .ConfigureAwait(false);
                 return;
             }
 
-            // Tạo salt + hash mới
+            // Generate new salt + hash
             SecureCredentials.GenerateCredentialHash(
                 packet.NewPassword,
                 out System.Byte[] newSalt,
                 out System.Byte[] newHash);
 
-            // Cập nhật DB qua Dapper repo
+            // Persist
             account.Salt = newSalt;
             account.Hash = newHash;
             _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
 
-            // Dọn dẹp nhạy cảm
+            // Clear sensitive buffers
             System.Array.Clear(newSalt, 0, newSalt.Length);
             System.Array.Clear(newHash, 0, newHash.Length);
 
@@ -137,7 +178,7 @@ public sealed class PasswordOps
                 "Password changed successfully for {0} from {1}",
                 username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await SendAckAsync(connection, seq).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -145,7 +186,12 @@ public sealed class PasswordOps
                 "CHANGE_PASSWORD failed for {0} from {1}: {2}",
                 username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await SendErrorAsync(
+                    connection, seq,
+                    ProtocolCode.INTERNAL_ERROR,
+                    ProtocolAction.BACKOFF_RETRY,
+                    flags: ControlFlags.IS_TRANSIENT)
+                .ConfigureAwait(false);
         }
     }
 

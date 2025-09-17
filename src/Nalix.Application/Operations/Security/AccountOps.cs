@@ -12,13 +12,15 @@ using Nalix.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Abstractions;
 using Nalix.Logging;
-using Nalix.Network.Connection;
+using Nalix.Network.Connection;                 // <-- for ConnectionExtensions.SendAsync(..)
 using Nalix.Shared.Memory.Pooling;
+using Nalix.Common.Protocols;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
 
 namespace Nalix.Application.Operations.Security;
 
 /// <summary>
 /// User account management service: register, login, logout with secure practices and pooling (Dapper-based).
+/// Now emits synchronized control directives via <see cref="ConnectionExtensions.SendAsync"/>.
 /// </summary>
 [PacketController]
 public sealed class AccountOps
@@ -39,6 +41,30 @@ public sealed class AccountOps
     public AccountOps(ICredentialsRepository accounts)
         => _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
+    #region Helpers
+
+    /// <summary>
+    /// Attempts to get a correlation SequenceId from the packet, falls back to 0 if not present.
+    /// </summary>
+    private static System.UInt32 GetSequenceIdOrZero(IPacket p)
+    {
+        if (p is IPacketSequenced seq)
+        {
+            return seq.SequenceId;
+        }
+        return 0u;
+    }
+
+    private static System.Threading.Tasks.Task SendAckAsync(IConnection c, System.UInt32 seq)
+        => c.SendAsync(ControlType.ACK, ProtocolCode.NONE, ProtocolAction.NONE, sequenceId: seq);
+
+    private static System.Threading.Tasks.Task SendErrorAsync(
+        IConnection c, System.UInt32 seq, ProtocolCode code, ProtocolAction action,
+        ControlFlags flags = ControlFlags.NONE)
+        => c.SendAsync(ControlType.ERROR, code, action, sequenceId: seq, flags: flags);
+
+    #endregion
+
     /// <summary>
     /// Handles user registration.
     /// </summary>
@@ -49,25 +75,28 @@ public sealed class AccountOps
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)OpCommand.REGISTER;
+        System.ArgumentNullException.ThrowIfNull(connection);
+        System.UInt32 seq = GetSequenceIdOrZero(p);
 
         if (p is not CredentialsPacket packet)
         {
             NLogix.Host.Instance.Error(
-                "Invalid p type. Expected CredentialsPacket from {0}",
+                "Invalid packet type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
         if (packet.Credentials is null)
         {
             NLogix.Host.Instance.Error(
-                "Null credentials in register p from {0}",
+                "Null credentials in register packet from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -81,7 +110,8 @@ public sealed class AccountOps
                 "Empty username or password in register attempt from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -95,7 +125,8 @@ public sealed class AccountOps
                     "Username {0} already exists from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.ALREADY_EXISTS).ConfigureAwait(false);
+                await SendErrorAsync(connection, seq, ProtocolCode.ALREADY_EXISTS, ProtocolAction.FIX_AND_RETRY)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -116,7 +147,7 @@ public sealed class AccountOps
                 FailedLoginCount = 0
             };
 
-            System.Int32 id = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
+            _ = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
 
             // Clear sensitive
             System.Array.Clear(salt, 0, salt.Length);
@@ -126,7 +157,7 @@ public sealed class AccountOps
                 "Account {0} registered successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await SendAckAsync(connection, seq).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -134,7 +165,12 @@ public sealed class AccountOps
                 "Failed to register account {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await SendErrorAsync(
+                    connection, seq,
+                    ProtocolCode.INTERNAL_ERROR,
+                    ProtocolAction.BACKOFF_RETRY,
+                    flags: ControlFlags.IS_TRANSIENT)
+                .ConfigureAwait(false);
         }
     }
 
@@ -148,25 +184,28 @@ public sealed class AccountOps
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
     {
-        const System.UInt16 Op = (System.UInt16)OpCommand.LOGIN;
+        System.ArgumentNullException.ThrowIfNull(connection);
+        System.UInt32 seq = GetSequenceIdOrZero(p);
 
         if (p is not CredentialsPacket packet)
         {
             NLogix.Host.Instance.Error(
-                "Invalid p type. Expected CredentialsPacket from {0}",
+                "Invalid packet type. Expected CredentialsPacket from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PACKET).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
         if (packet.Credentials is null)
         {
             NLogix.Host.Instance.Error(
-                "Null credentials in login p from {0}",
+                "Null credentials in login packet from {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_PAYLOAD).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -183,7 +222,12 @@ public sealed class AccountOps
                     "LOGIN attempt with non-existent username {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.UNAUTHENTICATED,
+                        ProtocolAction.REAUTHENTICATE,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -196,7 +240,12 @@ public sealed class AccountOps
                     "Account {0} locked due to too many failed attempts from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.LOCKED).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.ACCOUNT_LOCKED,
+                        ProtocolAction.BACKOFF_RETRY,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -211,7 +260,12 @@ public sealed class AccountOps
                     "Incorrect password for {0}, attempt {1} from connection {2}",
                     credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.INVALID_CREDENTIALS).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.UNAUTHENTICATED,
+                        ProtocolAction.REAUTHENTICATE,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -222,7 +276,12 @@ public sealed class AccountOps
                     "LOGIN attempt on disabled account {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
 
-                await connection.SendAsync(Op, ResponseStatus.DISABLED).ConfigureAwait(false);
+                await SendErrorAsync(
+                        connection, seq,
+                        ProtocolCode.ACCOUNT_SUSPENDED,
+                        ProtocolAction.DO_NOT_RETRY,
+                        flags: ControlFlags.IS_AUTH_RELATED)
+                    .ConfigureAwait(false);
                 return;
             }
 
@@ -241,7 +300,7 @@ public sealed class AccountOps
                 "User {0} logged in successfully from connection {1}",
                 credentials.Username, connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            await SendAckAsync(connection, seq).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -249,7 +308,12 @@ public sealed class AccountOps
                 "LOGIN failed for {0} from connection {1}: {2}",
                 credentials.Username, connection.RemoteEndPoint, ex.Message);
 
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            await SendErrorAsync(
+                    connection, seq,
+                    ProtocolCode.INTERNAL_ERROR,
+                    ProtocolAction.BACKOFF_RETRY,
+                    flags: ControlFlags.IS_TRANSIENT)
+                .ConfigureAwait(false);
         }
     }
 
@@ -264,10 +328,12 @@ public sealed class AccountOps
     public async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
     {
         System.ArgumentNullException.ThrowIfNull(p);
-        const System.UInt16 Op = (System.UInt16)OpCommand.LOGOUT;
+        System.ArgumentNullException.ThrowIfNull(connection);
+
+        System.UInt32 seq = GetSequenceIdOrZero(p);
 
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                         .GetUsername(connection.ID);
+                                                 .GetUsername(connection.ID);
 
         if (username is null)
         {
@@ -275,7 +341,8 @@ public sealed class AccountOps
                 "LOGOUT attempt without valid session from connection {0}",
                 connection.RemoteEndPoint);
 
-            await connection.SendAsync(Op, ResponseStatus.INVALID_SESSION).ConfigureAwait(false);
+            await SendErrorAsync(connection, seq, ProtocolCode.SESSION_NOT_FOUND, ProtocolAction.DO_NOT_RETRY)
+                .ConfigureAwait(false);
             return;
         }
 
@@ -285,7 +352,8 @@ public sealed class AccountOps
 
             if (account is not null)
             {
-                account.IsActive = false;
+                // NOTE: Typically you do NOT deactivate account on logout.
+                // Keep IsActive as-is; just stamp LastLogoutAt.
                 account.LastLogoutAt = System.DateTime.UtcNow;
                 _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
             }
@@ -293,14 +361,19 @@ public sealed class AccountOps
             // Reset connection state
             connection.Level = PermissionLevel.Guest;
             _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                        .UnregisterConnection((IConnection)connection.ID);
+                                        .UnregisterConnection(connection);
 
             NLogix.Host.Instance.Info(
                 "User {0} logged out successfully from connection {1}",
                 username, connection.RemoteEndPoint);
 
-            // Send response first, then disconnect so client receives the packet
-            await connection.SendAsync(Op, ResponseStatus.OK).ConfigureAwait(false);
+            // Inform client to close (correlated), then disconnect so client receives it
+            await connection.SendAsync(
+                    ControlType.DISCONNECT,
+                    ProtocolCode.CLIENT_QUIT,
+                    ProtocolAction.NONE,
+                    sequenceId: seq)
+                .ConfigureAwait(false);
 
             connection.Disconnect();
         }
@@ -310,8 +383,13 @@ public sealed class AccountOps
                 "LOGOUT failed for {0} from connection {1}: {2}",
                 username, connection.RemoteEndPoint, ex.Message);
 
-            // Try to inform client about error, then disconnect
-            await connection.SendAsync(Op, ResponseStatus.INTERNAL_ERROR).ConfigureAwait(false);
+            // Best-effort error report then drop
+            await SendErrorAsync(
+                    connection, seq,
+                    ProtocolCode.INTERNAL_ERROR,
+                    ProtocolAction.BACKOFF_RETRY,
+                    flags: ControlFlags.IS_TRANSIENT)
+                .ConfigureAwait(false);
 
             connection.Level = PermissionLevel.Guest;
             connection.Disconnect();

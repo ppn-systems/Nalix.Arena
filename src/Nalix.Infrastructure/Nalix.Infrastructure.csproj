@@ -9,20 +9,10 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		
 		<PackageReference Include="Dapper" Version="2.1.66" />
-		
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.9" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.9" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
 		<PackageReference Include="Nalix.Logging" Version="5.8.0" />
 		<PackageReference Include="Nalix.Network" Version="5.8.0" />
-		
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-		
+		<PackageReference Include="Npgsql" Version="9.0.3" />
 		<PackageReference Include="System.Data.SQLite" Version="2.0.2" />
 	</ItemGroup>
 
