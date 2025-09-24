@@ -1,6 +1,5 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Application.Extensions;
 using Nalix.Common.Connection;
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
@@ -22,37 +21,9 @@ namespace Nalix.Application.Operations.Security;
 /// Emits synchronized control directives via <see cref="ConnectionExtensions.SendAsync"/>.
 /// </summary>
 [PacketController]
-public sealed class PasswordOps
+public sealed class PasswordOps(ICredentialsRepository accounts) : OpsBase
 {
-    private readonly ICredentialsRepository _accounts;
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-    public PasswordOps(ICredentialsRepository accounts)
-        => _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
-
-    #region Helpers
-
-    /// <summary>
-    /// Attempts to obtain a correlation SequenceId from the incoming packet.
-    /// Returns 0 when unavailable.
-    /// </summary>
-    private static System.UInt32 GetSequenceIdOrZero(IPacket p)
-    {
-        if (p is IPacketSequenced seq)
-        {
-            return seq.SequenceId;
-        }
-        return 0u;
-    }
-
-    private static System.Threading.Tasks.Task SendAckAsync(IConnection c, System.UInt32 seq)
-        => c.SendAsync(ControlType.ACK, ProtocolCode.NONE, ProtocolAction.NONE, sequenceId: seq);
-
-    private static System.Threading.Tasks.Task SendErrorAsync(
-        IConnection c, System.UInt32 seq, ProtocolCode code, ProtocolAction action, ControlFlags flags = ControlFlags.NONE)
-        => c.SendAsync(ControlType.ERROR, code, action, sequenceId: seq, flags: flags);
-
-    #endregion
+    private readonly ICredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
     /// <summary>
     /// Change the current user's password:
@@ -84,7 +55,7 @@ public sealed class PasswordOps
 
         // Resolve username from connection hub
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                 .GetUsername(connection.ID);
+                                                         .GetUsername(connection.ID);
 
         if (username is null)
         {

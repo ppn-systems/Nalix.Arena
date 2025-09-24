@@ -23,9 +23,9 @@ namespace Nalix.Application.Operations.Security;
 /// Now emits synchronized control directives via <see cref="ConnectionExtensions.SendAsync"/>.
 /// </summary>
 [PacketController]
-public sealed class AccountOps
+public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
 {
-    private readonly ICredentialsRepository _accounts;
+    private readonly ICredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
     static AccountOps()
     {
@@ -35,35 +35,6 @@ public sealed class AccountOps
         _ = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
                                     .Prealloc<CredentialsPacket>(128);
     }
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage(
-        "Style", "IDE0290:Use primary constructor", Justification = "<Pending>")]
-    public AccountOps(ICredentialsRepository accounts)
-        => _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
-
-    #region Helpers
-
-    /// <summary>
-    /// Attempts to get a correlation SequenceId from the packet, falls back to 0 if not present.
-    /// </summary>
-    private static System.UInt32 GetSequenceIdOrZero(IPacket p)
-    {
-        if (p is IPacketSequenced seq)
-        {
-            return seq.SequenceId;
-        }
-        return 0u;
-    }
-
-    private static System.Threading.Tasks.Task SendAckAsync(IConnection c, System.UInt32 seq)
-        => c.SendAsync(ControlType.ACK, ProtocolCode.NONE, ProtocolAction.NONE, sequenceId: seq);
-
-    private static System.Threading.Tasks.Task SendErrorAsync(
-        IConnection c, System.UInt32 seq, ProtocolCode code, ProtocolAction action,
-        ControlFlags flags = ControlFlags.NONE)
-        => c.SendAsync(ControlType.ERROR, code, action, sequenceId: seq, flags: flags);
-
-    #endregion
 
     /// <summary>
     /// Handles user registration.
