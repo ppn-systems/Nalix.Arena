@@ -8,13 +8,13 @@ using Nalix.Common.Packets.Attributes;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
-using Nalix.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Abstractions;
 using Nalix.Logging;
 using Nalix.Network.Connection;                 // <-- for ConnectionExtensions.SendAsync(..)
 using Nalix.Shared.Memory.Pooling;
-using Nalix.Common.Protocols;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
+using Nalix.Common.Protocols;
+using Nalix.Framework.Cryptography.Security;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
 
 namespace Nalix.Application.Operations.Security;
 

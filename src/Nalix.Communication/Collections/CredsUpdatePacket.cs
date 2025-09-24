@@ -8,9 +8,8 @@ using Nalix.Common.Serialization.Attributes;
 using Nalix.Common.Serialization.Enums;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
-using Nalix.Cryptography.Extensions;
 using Nalix.Framework.Injection;
-using Nalix.Shared.LZ4.Extensions;
+using Nalix.Shared.Extensions;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
@@ -121,7 +120,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     public static CredsUpdatePacket Encrypt(
         CredsUpdatePacket packet,
         System.Byte[] key,
-        SymmetricAlgorithmType algorithm)
+        CipherType algorithm)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 
@@ -139,7 +138,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     public static CredsUpdatePacket Decrypt(
         CredsUpdatePacket packet,
         System.Byte[] key,
-        SymmetricAlgorithmType algorithm)
+        CipherType algorithm)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 

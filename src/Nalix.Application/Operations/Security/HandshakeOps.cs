@@ -4,14 +4,13 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Communication.Enums;
-using Nalix.Cryptography.Asymmetric;
-using Nalix.Cryptography.Hashing;
 using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Controls;
 using Nalix.Network.Connection;
 using Nalix.Common.Protocols;
+using Nalix.Framework.Cryptography.Asymmetric;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -66,7 +65,7 @@ public sealed class HandshakeOps
         }
 
         // Nếu đã handshake, không cho phép lặp lại - theo security best practices
-        if (connection.EncryptionKey.Length == 32)
+        if (connection.Secret.Length == 32)
         {
             NLogix.Host.Instance.Warn(
                 "HANDSHAKE already completed for {0}",
@@ -125,10 +124,10 @@ public sealed class HandshakeOps
             System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
 
             // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
-            connection.EncryptionKey = SHA256.HashData(secret);
+            connection.Secret = System.Security.Cryptography.SHA256.HashData(secret);
 
             NLogix.Host.Instance.Info(
-                System.Convert.ToHexStringLower(connection.EncryptionKey));
+                System.Convert.ToHexStringLower(connection.Secret));
 
             // Security: Clear sensitive data từ memory
             System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
@@ -158,7 +157,7 @@ public sealed class HandshakeOps
                 connection.RemoteEndPoint, ex.Message);
 
             // Reset connection state nếu có lỗi
-            connection.EncryptionKey = null;
+            connection.Secret = null;
             connection.Level = PermissionLevel.Guest;
 
             await connection.SendAsync(
@@ -180,7 +179,7 @@ public sealed class HandshakeOps
             var sent = await connection.TCP.SendAsync(payload).ConfigureAwait(false);
             if (!sent)
             {
-                connection.EncryptionKey = null;
+                connection.Secret = null;
                 connection.Level = PermissionLevel.Guest;
                 NLogix.Host.Instance.Warn("HANDSHAKE send failed; rolled back state for {0}", connection.RemoteEndPoint);
                 return;
