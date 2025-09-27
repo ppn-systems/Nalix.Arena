@@ -11,12 +11,13 @@ using Nalix.Shared.Messaging.Controls;
 using Nalix.Network.Connection;
 using Nalix.Common.Protocols;
 using Nalix.Framework.Cryptography.Asymmetric;
+using Nalix.Framework.Cryptography.Hashing;
 
 namespace Nalix.Application.Operations.Security;
 
 /// <summary>
 /// Quản lý quá trình bắt tay bảo mật để thiết lập kết nối mã hóa an toàn với client.
-/// Sử dụng thuật toán trao đổi khóa X25519 và băm SHA256 để đảm bảo tính bảo mật và toàn vẹn của kết nối.
+/// Sử dụng thuật toán trao đổi khóa X25519 và băm SHA3256 để đảm bảo tính bảo mật và toàn vẹn của kết nối.
 /// Lớp này chịu trách nhiệm khởi tạo bắt tay, tạo cặp khóa, và tính toán khóa mã hóa chung.
 /// </summary>
 [PacketController]
@@ -123,8 +124,8 @@ public sealed class HandshakeOps
             // Tính toán shared secret từ private key của server và public key của client
             System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
 
-            // Băm bí mật chung bằng SHA256 để tạo khóa mã hóa an toàn
-            connection.Secret = System.Security.Cryptography.SHA256.HashData(secret);
+            // Băm bí mật chung bằng SHA3256 để tạo khóa mã hóa an toàn
+            connection.Secret = SHA3256.HashData(secret);
 
             NLogix.Host.Instance.Info(
                 System.Convert.ToHexStringLower(connection.Secret));
