@@ -198,7 +198,7 @@ internal sealed class CreditsScene : Scene
 
             // Scale theo texture
             System.Single sx = _divTex.Size.X > 0 ? divTargetW / _divTex.Size.X : 0f;
-            System.Single sy = 1f;
+            const System.Single sy = 1f;
 
             _divLeft.Scale = new Vector2f(sx, sy);
             _divRight.Scale = new Vector2f(-sx, sy); // mirror X

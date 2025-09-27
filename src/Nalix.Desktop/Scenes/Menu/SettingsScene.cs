@@ -41,16 +41,12 @@ public class SettingsScene : Scene
         private const System.Single PanelHeightRatio = 0.6f;
         private const System.Single PanelColorGray = 40f;
         private const System.Single TitleFontSize = 32f;
-        private const System.Single BodyFontSize = 20f;
         private const System.Single TitleTopPadding = 24f;
         private const System.Single SidePadding = 24f;        // lề trong panel cho divider
         private const System.Single GapTitleToDivider = 12f;  // khoảng cách chữ <-> divider
         private const System.Single PanelSideTrim = 32f;      // rút ngắn divider về phía panel
-        private const System.Single BodyLeftPadding = 40f;
-        private const System.Single BodyTopGapFromTitle = 28f;
         private const System.Single BackBottomPadding = 28f;
         private const System.Single TitleOutlineThickness = 2f;
-        private const System.Single BodyOutlineThickness = 1.5f;
         private const System.Single BackButtonWidth = 200f;
 
         #endregion Constants
@@ -192,7 +188,7 @@ public class SettingsScene : Scene
 
             // Scale theo texture
             System.Single sx = _divTex.Size.X > 0 ? divTargetW / _divTex.Size.X : 0f;
-            System.Single sy = 1f;
+            const System.Single sy = 1f;
 
             _divLeft.Scale = new Vector2f(sx, sy);
             _divRight.Scale = new Vector2f(-sx, sy); // mirror X

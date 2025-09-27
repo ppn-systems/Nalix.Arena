@@ -89,7 +89,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
         try
         {
             // Check existing username (Dapper)
-            var existed = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
+            Credentials existed = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
             if (existed is not null)
             {
                 NLogix.Host.Instance.Warn(
