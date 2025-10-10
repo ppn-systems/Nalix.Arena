@@ -1,6 +1,5 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Application.Extensions;
 using Nalix.Common.Connection;
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
