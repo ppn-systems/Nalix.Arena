@@ -26,6 +26,9 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
 {
     private readonly ICredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
+    private const System.Int32 MaxFailedLoginAttempts = 5;
+    private static readonly System.TimeSpan LockoutWindow = System.TimeSpan.FromMinutes(15);
+
     static AccountOps()
     {
         _ = InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>()
@@ -85,6 +88,39 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             return;
         }
 
+        if (!Nalix.Application.Validators.CredentialPolicy.IsValidUsername(credentials.Username))
+        {
+            NLogix.Host.Instance.Debug(
+                "Invalid username format '{0}' in register attempt from {1}",
+                credentials.Username,
+                connection.RemoteEndPoint);
+
+            await SendErrorAsync(
+                    connection,
+                    seq,
+                    ProtocolCode.VALIDATION_FAILED,
+                    // ProtocolCode.INVALID_USERNAME,
+                    ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
+            return;
+        }
+
+        if (!Nalix.Application.Validators.CredentialPolicy.IsStrongPassword(credentials.Password))
+        {
+            NLogix.Host.Instance.Debug(
+                "Weak password in register attempt from {0}",
+                connection.RemoteEndPoint);
+
+            await SendErrorAsync(
+                    connection,
+                    seq,
+                    ProtocolCode.VALIDATION_FAILED,
+                    // ProtocolCode.WEAK_PASSWORD,
+                    ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
+            return;
+        }
+
         try
         {
             // Check existing username (Dapper)
@@ -101,10 +137,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Derive salt/hash
-            HASHER.Hash(
-                credentials.Password,
-                out System.Byte[] salt,
-                out System.Byte[] hash);
+            HASHER.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
 
             Credentials newAccount = new()
             {
@@ -179,6 +212,18 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             return;
         }
 
+        if (System.String.IsNullOrWhiteSpace(packet.Credentials.Username) ||
+            System.String.IsNullOrWhiteSpace(packet.Credentials.Password))
+        {
+            NLogix.Host.Instance.Debug(
+                "Empty username or password in login attempt from {0}",
+                connection.RemoteEndPoint);
+
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
+                .ConfigureAwait(false);
+            return;
+        }
+
         Credentials credentials = packet.Credentials;
 
         try
@@ -188,6 +233,8 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
 
             if (account is null)
             {
+                FakeVerifyDelay();
+
                 NLogix.Host.Instance.Warn(
                     "LOGIN attempt with non-existent username {0} from connection {1}",
                     credentials.Username, connection.RemoteEndPoint);
@@ -202,9 +249,9 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Lockout window
-            if (account.FailedLoginCount >= 5 &&
+            if (account.FailedLoginCount >= MaxFailedLoginAttempts &&
                 account.LastFailedLoginAt.HasValue &&
-                System.DateTime.UtcNow < account.LastFailedLoginAt.Value.AddMinutes(15))
+                System.DateTime.UtcNow < account.LastFailedLoginAt.Value + LockoutWindow)
             {
                 NLogix.Host.Instance.Warn(
                     "Account {0} locked due to too many failed attempts from connection {1}",
@@ -364,5 +411,17 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             connection.Level = PermissionLevel.Guest;
             connection.Disconnect();
         }
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(
+        System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+    private static void FakeVerifyDelay()
+    {
+        var salt = new System.Byte[16];
+        var hash = new System.Byte[32];
+        System.Security.Cryptography.RandomNumberGenerator.Fill(salt);
+        Nalix.Framework.Cryptography.Security.HASHER.Hash("FakePwd_For_Timing", out salt, out hash);
+        System.Array.Clear(salt, 0, salt.Length);
+        System.Array.Clear(hash, 0, hash.Length);
     }
 }
