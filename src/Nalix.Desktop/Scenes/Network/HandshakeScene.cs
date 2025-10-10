@@ -200,26 +200,32 @@ public sealed class HandshakeScene : Scene
 
             _task = System.Threading.Tasks.Task.Run(async () =>
             {
-                var logger = InstanceManager.Instance.GetExistingInstance<ILogger>();
-
                 try
                 {
-                    var client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
+                    ReliableClient client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
                     if (!client.IsConnected)
                     {
                         throw new System.InvalidOperationException("Client is not connected.");
                     }
 
                     // 1) Initiate: send client public key
-                    SceneManager.FindByType<Notification>()?.UpdateMessage(Text.Initiating);
-                    var kp = await client.InitiateHandshakeAsync(OpCommand.HANDSHAKE.AsUInt16(), _cts.Token).ConfigureAwait(false);
+                    SceneManager.FindByType<Notification>()?
+                                .UpdateMessage(Text.Initiating);
+
+                    var kp = await client.InitiateHandshakeAsync(OpCommand.HANDSHAKE.AsUInt16(), _cts.Token)
+                                         .ConfigureAwait(false);
 
                     // 2) Wait for server's Handshake packet
-                    SceneManager.FindByType<Notification>()?.UpdateMessage(Text.Waiting);
-                    IPacket serverPacket = await client.ReceiveAsync(_cts.Token).ConfigureAwait(false);
+                    SceneManager.FindByType<Notification>()?
+                                .UpdateMessage(Text.Waiting);
+
+                    IPacket serverPacket = await client.ReceiveAsync(_cts.Token)
+                                                       .ConfigureAwait(false);
 
                     // 3) Install encryption key
-                    SceneManager.FindByType<Notification>()?.UpdateMessage(Text.Installing);
+                    SceneManager.FindByType<Notification>()?
+                                .UpdateMessage(Text.Installing);
+
                     System.Boolean ok = client.FinishHandshake(kp, serverPacket);
                     if (!ok)
                     {
@@ -227,17 +233,20 @@ public sealed class HandshakeScene : Scene
                     }
 
                     // Success
-                    logger?.Info("Handshake succeeded. Session encryption key is installed.");
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
+                                            .Info("Handshake succeeded. Session encryption key is installed.");
                 }
                 catch (System.OperationCanceledException ocex)
                 {
                     // Treat as failure in this flow (we will retry if attempts left)
-                    logger?.Warn("Handshake canceled or timed out.", ocex);
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
+                                            .Warn("Handshake canceled or timed out.", ocex);
                     throw;
                 }
                 catch (System.Exception ex)
                 {
-                    logger?.Error("Handshake error.", ex);
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
+                                            .Error("Handshake error.", ex);
                     throw;
                 }
             }, _cts.Token);

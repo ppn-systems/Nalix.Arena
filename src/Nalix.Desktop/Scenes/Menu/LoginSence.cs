@@ -1,6 +1,5 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Common.Enums;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
@@ -316,16 +315,18 @@ internal sealed class LoginSence : Scene
 
             TransportOptions options = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().Options;
 
+            CredentialsPacket packet = new();
             Credentials credentials = new()
             {
                 Username = _user.Text,
                 Password = _pass.Text
             };
-            CredentialsPacket packet = new();
-            packet.Initialize(OpCommand.LOGIN.AsUInt16(), credentials);
-            packet = CredentialsPacket.Encrypt(packet, options.EncryptionKey, CipherType.XTEA);
 
-            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().SendAsync(packet);
+            packet.Initialize(OpCommand.LOGIN.AsUInt16(), credentials);
+            packet = CredentialsPacket.Encrypt(packet, options.EncryptionKey, options.EncryptionMode);
+
+            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>()
+                                    .SendAsync(packet);
         }
 
         #endregion
