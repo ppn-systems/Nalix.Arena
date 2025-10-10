@@ -6,7 +6,6 @@
 /// <typeparam name="TId">Kiểu dữ liệu của mã định danh.</typeparam>
 public abstract class NamedEntity<TId>
 {
-    /// >>
     public TId Id { get; set; }
 
     /// <summary>

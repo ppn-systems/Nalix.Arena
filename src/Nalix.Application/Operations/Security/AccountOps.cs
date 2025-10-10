@@ -102,7 +102,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Derive salt/hash
-            SecureCredentials.GenerateCredentialHash(
+            HASHER.Hash(
                 credentials.Password,
                 out System.Byte[] salt,
                 out System.Byte[] hash);
@@ -221,7 +221,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Verify password
-            if (!SecureCredentials.VerifyCredentialHash(credentials.Password, account.Salt, account.Hash))
+            if (!HASHER.Verify(credentials.Password, account.Salt, account.Hash))
             {
                 account.FailedLoginCount++;
                 account.LastFailedLoginAt = System.DateTime.UtcNow;

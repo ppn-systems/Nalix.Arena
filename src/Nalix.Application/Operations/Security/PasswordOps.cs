@@ -107,7 +107,7 @@ public sealed class PasswordOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Verify old password
-            if (!SecureCredentials.VerifyCredentialHash(packet.OldPassword, account.Salt, account.Hash))
+            if (!HASHER.Verify(packet.OldPassword, account.Salt, account.Hash))
             {
                 NLogix.Host.Instance.Warn(
                     "CHANGE_PASSWORD wrong current password for {0} from {1}",
@@ -131,10 +131,7 @@ public sealed class PasswordOps(ICredentialsRepository accounts) : OpsBase
             }
 
             // Generate new salt + hash
-            SecureCredentials.GenerateCredentialHash(
-                packet.NewPassword,
-                out System.Byte[] newSalt,
-                out System.Byte[] newHash);
+            HASHER.Hash(packet.NewPassword, out System.Byte[] newSalt, out System.Byte[] newHash);
 
             // Persist
             account.Salt = newSalt;
