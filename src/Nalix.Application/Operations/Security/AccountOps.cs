@@ -13,7 +13,8 @@ using Nalix.Logging;
 using Nalix.Network.Connection;                 // <-- for ConnectionExtensions.SendAsync(..)
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Common.Protocols;
-using Nalix.Framework.Cryptography.Security;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
+using Nalix.Framework.Cryptography.Security;
+using Nalix.Framework.Randomization;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
 
 namespace Nalix.Application.Operations.Security;
 
@@ -27,7 +28,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
     private readonly ICredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
     private const System.Int32 MaxFailedLoginAttempts = 5;
-    private static readonly System.TimeSpan LockoutWindow = System.TimeSpan.FromMinutes(15);
+    private static readonly System.TimeSpan LockoutWindow = System.TimeSpan.FromMinutes(3);
 
     static AccountOps()
     {
@@ -41,7 +42,9 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
     /// <summary>
     /// Handles user registration.
     /// </summary>
+    [PacketTimeout(4000)]
     [PacketEncryption(true)]
+    [PacketRateLimit(1, 01)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((System.UInt16)OpCommand.REGISTER)]
     [System.Runtime.CompilerServices.MethodImpl(
@@ -180,12 +183,16 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
     /// <summary>
     /// Handles user login.
     /// </summary>
+    [PacketTimeout(4000)]
     [PacketEncryption(true)]
+    [PacketRateLimit(2, 03)]
     [PacketPermission(PermissionLevel.Guest)]
     [PacketOpcode((System.UInt16)OpCommand.LOGIN)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public async System.Threading.Tasks.Task LoginAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task LoginAsync(
+        IPacket p, IConnection connection,
+        System.Threading.CancellationToken token)
     {
         System.ArgumentNullException.ThrowIfNull(connection);
         System.UInt32 seq = GetSequenceIdOrZero(p);
@@ -228,8 +235,10 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
 
         try
         {
+            token.ThrowIfCancellationRequested();
+
             // Look up account (Dapper)
-            Credentials account = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
+            Credentials account = await _accounts.GetByUsernameAsync(credentials.Username, token).ConfigureAwait(false);
 
             if (account is null)
             {
@@ -271,7 +280,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             {
                 account.FailedLoginCount++;
                 account.LastFailedLoginAt = System.DateTime.UtcNow;
-                _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
+                _ = await _accounts.UpdateAsync(account, token).ConfigureAwait(false);
 
                 NLogix.Host.Instance.Warn(
                     "Incorrect password for {0}, attempt {1} from connection {2}",
@@ -306,7 +315,7 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
             account.FailedLoginCount = 0;
             account.LastFailedLoginAt = null;
             account.LastLoginAt = System.DateTime.UtcNow;
-            _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
+            _ = await _accounts.UpdateAsync(account, token).ConfigureAwait(false);
 
             // Update connection state
             connection.Level = account.Role;
@@ -318,6 +327,18 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
                 credentials.Username, connection.RemoteEndPoint);
 
             await SendAckAsync(connection, seq).ConfigureAwait(false);
+        }
+        catch (System.OperationCanceledException)
+        {
+            NLogix.Host.Instance.Warn(
+                "LOGIN operation cancelled for {0} from connection {1}",
+                credentials.Username, connection.RemoteEndPoint);
+
+            await SendErrorAsync(
+                    connection, seq,
+                    ProtocolCode.CANCELLED,
+                    ProtocolAction.DO_NOT_RETRY,
+                    flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
         }
         catch (System.Exception ex)
         {
@@ -417,10 +438,9 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static void FakeVerifyDelay()
     {
-        var salt = new System.Byte[16];
-        var hash = new System.Byte[32];
-        System.Security.Cryptography.RandomNumberGenerator.Fill(salt);
-        Nalix.Framework.Cryptography.Security.HASHER.Hash("FakePwd_For_Timing", out salt, out hash);
+        System.Byte[] salt = new System.Byte[16];
+        SecureRandom.Fill(salt);
+        HASHER.Hash("FakePwd_For_Timing", out salt, out System.Byte[] hash);
         System.Array.Clear(salt, 0, salt.Length);
         System.Array.Clear(hash, 0, hash.Length);
     }

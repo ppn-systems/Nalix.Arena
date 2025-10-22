@@ -120,7 +120,7 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     public static CredsUpdatePacket Encrypt(
         CredsUpdatePacket packet,
         System.Byte[] key,
-        CipherType algorithm)
+        CipherSuiteType algorithm)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 
@@ -137,15 +137,14 @@ public sealed class CredsUpdatePacket : FrameBase, IPoolable, IPacketTransformer
     /// </summary>
     public static CredsUpdatePacket Decrypt(
         CredsUpdatePacket packet,
-        System.Byte[] key,
-        CipherType algorithm)
+        System.Byte[] key)
     {
         System.ArgumentNullException.ThrowIfNull(packet);
 
         try
         {
-            packet.OldPassword = packet.OldPassword.DecryptFromBase64(key, algorithm);
-            packet.NewPassword = packet.NewPassword.DecryptFromBase64(key, algorithm);
+            packet.OldPassword = packet.OldPassword.DecryptFromBase64(key);
+            packet.NewPassword = packet.NewPassword.DecryptFromBase64(key);
             packet.Flags &= ~PacketFlags.Encrypted;
 
             return packet;

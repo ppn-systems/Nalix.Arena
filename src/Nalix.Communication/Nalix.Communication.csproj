@@ -6,9 +6,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Nalix.Common" Version="6.5.0" />
-		<PackageReference Include="Nalix.Shared" Version="6.5.0" />
-		<PackageReference Include="Nalix.Logging" Version="6.5.0" />
+		<PackageReference Include="Nalix.Common" Version="6.8.0" />
+		<PackageReference Include="Nalix.Shared" Version="6.8.0" />
+		<PackageReference Include="Nalix.Logging" Version="6.8.0" />
 	</ItemGroup>
 
 </Project>

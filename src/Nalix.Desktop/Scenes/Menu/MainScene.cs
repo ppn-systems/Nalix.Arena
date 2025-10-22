@@ -235,7 +235,7 @@ internal class MainScene : Scene
             SetZIndex(1);
             _parallax = new ParallaxBackground(GameEngine.ScreenSize);
 
-            System.Int32 scene = RANDOM.GetInt32(1, 4);
+            System.Int32 scene = SecureRandom.GetInt32(1, 4);
 
             switch (scene)
             {

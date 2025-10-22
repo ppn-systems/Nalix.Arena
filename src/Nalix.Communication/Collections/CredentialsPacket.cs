@@ -69,7 +69,7 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
     public static CredentialsPacket Encrypt(
     CredentialsPacket packet,
     System.Byte[] key,
-    CipherType algorithm)
+    CipherSuiteType algorithm)
     {
         if (packet?.Credentials == null)
         {
@@ -86,8 +86,7 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
 
     public static CredentialsPacket Decrypt(
         CredentialsPacket packet,
-        System.Byte[] key,
-        CipherType algorithm)
+        System.Byte[] key)
     {
         if (packet?.Credentials == null)
         {
@@ -96,8 +95,8 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
 
         try
         {
-            packet.Credentials.Username = packet.Credentials.Username.DecryptFromBase64(key, algorithm);
-            packet.Credentials.Password = packet.Credentials.Password.DecryptFromBase64(key, algorithm);
+            packet.Credentials.Username = packet.Credentials.Username.DecryptFromBase64(key);
+            packet.Credentials.Password = packet.Credentials.Password.DecryptFromBase64(key);
 
             packet.Flags &= ~PacketFlags.Encrypted;
 
