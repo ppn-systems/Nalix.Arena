@@ -13,12 +13,12 @@ public abstract class SceneObject
     /// <summary>
     /// Indicates whether the object is paused.
     /// </summary>
-    public System.Boolean Paused { get; private set; }
+    public System.Boolean Paused { get; set; }
 
     /// <summary>
     /// Indicates whether the object is enabled and active.
     /// </summary>
-    public System.Boolean Enabled { get; private set; }
+    public System.Boolean Enabled { get; set; }
 
     /// <summary>
     /// Indicates whether the object has been initialized.

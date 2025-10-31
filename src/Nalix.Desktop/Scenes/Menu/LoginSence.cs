@@ -1,11 +1,13 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
+using Nalix.Common.Protocols;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions;
 using Nalix.Communication.Models;
 using Nalix.Desktop.Objects.Controls;
+using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Injection;
+using Nalix.Framework.Randomization;
 using Nalix.Logging;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
@@ -15,10 +17,12 @@ using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
-using Nalix.SDK.Remote.Configuration;
+using Nalix.SDK.Remote.Extensions;
+using Nalix.Shared.Messaging.Controls;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
 
 namespace Nalix.Desktop.Scenes.Menu;
 
@@ -99,6 +103,16 @@ internal sealed class LoginSence : Scene
 
         // layout
         private readonly Vector2f _panelPos;
+
+        private Boolean _loggingIn;
+        private DateTime _lastSubmitAt;
+        private System.Threading.CancellationTokenSource _loginCts;
+
+        private const Int32 CooldownMs = 600;       // Debounce
+        private const Int32 ServerTimeoutMs = 4000; // Match [PacketTimeout(4000)]
+
+        // Simple local rate limiter: allow 2 sends per 3 seconds
+        private readonly System.Collections.Generic.Queue<DateTime> _loginSendTimes = new();
 
         #endregion
 
@@ -184,7 +198,7 @@ internal sealed class LoginSence : Scene
         private void WireHandlers()
         {
             _loginBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _loginBtn.RegisterClickHandler(Submit);
+            _loginBtn.RegisterClickHandler(() => _ = TryLoginAsync());
 
             _backBtn.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _backBtn.RegisterClickHandler(GoBack);
@@ -261,7 +275,7 @@ internal sealed class LoginSence : Scene
 
             NLogix.Host.Instance.Info("LOGIN: Enter pressed");
             if (_user.Focused) { _user.Focused = false; _pass.Focused = true; }
-            else if (_pass.Focused) { Submit(); }
+            else if (_pass.Focused) { _ = TryLoginAsync(); }
         }
 
         private static void HandleEscape()
@@ -308,28 +322,185 @@ internal sealed class LoginSence : Scene
 
         private static void GoBack() => SceneManager.ChangeScene(SceneNames.Main);
 
-        private void Submit()
+        private async System.Threading.Tasks.Task TryLoginAsync()
         {
-            _ = _user.Text;
-            _ = _pass.Text;
-
-            TransportOptions options = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().Options;
-
-            CredentialsPacket packet = new();
-            Credentials credentials = new()
+            if (_loggingIn)
             {
-                Username = _user.Text,
-                Password = _pass.Text
-            };
+                return;
+            }
 
-            packet.Initialize(OpCommand.LOGIN.AsUInt16(), credentials);
-            packet = CredentialsPacket.Encrypt(packet, options.EncryptionKey, options.EncryptionMode);
+            if ((DateTime.UtcNow - _lastSubmitAt).TotalMilliseconds < CooldownMs)
+            {
+                return;
+            }
 
-            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>()
-                                    .SendAsync(packet);
+            _lastSubmitAt = DateTime.UtcNow;
+
+            var client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
+            if (!client.IsConnected)
+            {
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Not connected to server.");
+                SceneManager.ChangeScene(SceneNames.Network);
+                return;
+            }
+
+            // Local rate limit (match [PacketRateLimit(2, 03)])
+            if (!AllowRateLimitedSend())
+            {
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Too many attempts. Please wait a moment.");
+                return;
+            }
+
+            String user = _user.Text?.Trim() ?? String.Empty;
+            String pass = _pass.Text ?? String.Empty;
+            if (String.IsNullOrWhiteSpace(user) || String.IsNullOrWhiteSpace(pass))
+            {
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Please enter username & password");
+                return;
+            }
+
+            // Encryption required → ensure handshake done (idempotent)
+            _loginCts?.Dispose();
+            _loginCts = new System.Threading.CancellationTokenSource(ServerTimeoutMs);
+            _loggingIn = true;
+            LockUi(true);
+
+            try
+            {
+                // 1) Handshake if needed (idempotent)
+                Boolean okHs = await client.HandshakeAsync(opCode: 1, timeoutMs: 3000, ct: _loginCts.Token).ConfigureAwait(false);
+                if (!okHs)
+                {
+                    SceneManager.FindByType<Notification>()?.UpdateMessage("Handshake failed. Please retry.");
+                    return;
+                }
+
+                // 2) Build CredentialsPacket (+Encrypt). Also ensure it carries a SequenceId.
+                var options = client.Options;
+                var creds = new Credentials { Username = user, Password = pass };
+                var login = new CredentialsPacket();
+                login.Initialize((UInt16)OpCommand.LOGIN, creds);
+                login.SequenceId = SecureRandom.NextUInt32();
+                login = CredentialsPacket.Encrypt(login, options.EncryptionKey, options.EncryptionMode);
+
+                // Assign/obtain a SequenceId:
+                // - If the packet implements IPacketSequenced and client assigns on SendAsync,
+                //   capture returned seq. Otherwise, set before sending (e.g., login.SequenceId = SeqGenerator.Next()).
+                // Below assumes SendAsync returns the effective seq:
+                await client.SendAsync(login, _loginCts.Token).ConfigureAwait(false);
+
+                // 3) In parallel, keep processing directives (THROTTLE/REDIRECT/NACK/NOTICE) while we wait.
+                using var subs = client.Subscribe(
+                    client.On<Directive>(d => client.TryHandleDirectiveAsync(d, null, null, _loginCts.Token))
+                );
+
+                // 4) Await correlated CONTROL (ACK or ERROR) with same SequenceId (timeout 4s)
+                //    Use a single await with predicate matching both type and seq.
+                var ctrl = await client.AwaitPacketAsync<Directive>(
+                    predicate: c =>
+                        c.SequenceId == login.SequenceId &&
+                        (c.Type == ControlType.ACK || c.Type == ControlType.ERROR),
+                    timeoutMs: ServerTimeoutMs,
+                    ct: _loginCts.Token).ConfigureAwait(false);
+
+                if (ctrl.Type == ControlType.ACK)
+                {
+                    SceneManager.FindByType<Notification>()?.UpdateMessage("Welcome!");
+                    SceneManager.ChangeScene(SceneNames.Main); // hoặc CharacterSelect
+                    return;
+                }
+
+                // ERROR path: decide UX based on code/action
+                var msg = MapErrorMessage(ctrl.Reason);
+                SceneManager.FindByType<Notification>()?.UpdateMessage(msg);
+
+                var backoff = MapBackoff(ctrl.Action);
+                if (backoff is TimeSpan wait && wait > TimeSpan.Zero)
+                {
+                    // Optional: gray out login button during backoff to align with ProtocolAction
+                    await System.Threading.Tasks.Task.Delay(wait, _loginCts.Token).ConfigureAwait(false);
+                }
+
+                if (ctrl.Action == ProtocolAction.DO_NOT_RETRY)
+                {
+                    // Keep disabled or navigate back depending on policy
+                    _user.Enabled = true; _pass.Enabled = true; _loginBtn.Enabled = false;
+                }
+                else if (ctrl.Action == ProtocolAction.REAUTHENTICATE)
+                {
+                    _pass.Focused = true;
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Login cancelled or timed out.");
+            }
+            catch (System.TimeoutException)
+            {
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Login timeout. Please try again.");
+            }
+            catch (System.Exception ex)
+            {
+                NLogix.Host.Instance.Error("LOGIN exception", ex);
+                SceneManager.FindByType<Notification>()?.UpdateMessage("Login failed due to an error.");
+            }
+            finally
+            {
+                _pass.Destroy();
+                _loggingIn = false;
+                LockUi(false);
+            }
+        }
+
+        private void LockUi(Boolean on)
+        {
+            _user.Enabled = !on;
+            _pass.Enabled = !on;
+            _backBtn.Enabled = !on;
+            _loginBtn.Enabled = !on;
+            _loginBtn.SetText(on ? "Signing in..." : "Sign in");
         }
 
         #endregion
+
+        private static String MapErrorMessage(ProtocolCode code) => code switch
+        {
+            ProtocolCode.UNAUTHENTICATED => "Invalid username or password.",
+            ProtocolCode.ACCOUNT_LOCKED => "Too many failed attempts. Please wait and try again.",
+            ProtocolCode.ACCOUNT_SUSPENDED => "Your account is suspended.",
+            ProtocolCode.VALIDATION_FAILED => "Please fill both username and password.",
+            ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch.",
+            ProtocolCode.CANCELLED => "Login cancelled.",
+            ProtocolCode.INTERNAL_ERROR => "Server error. Please try again later.",
+            _ => "Login failed."
+        };
+
+        // Optional backoff table for ProtocolAction
+        private static TimeSpan? MapBackoff(ProtocolAction action) => action switch
+        {
+            ProtocolAction.BACKOFF_RETRY => TimeSpan.FromSeconds(3),
+            ProtocolAction.REAUTHENTICATE => TimeSpan.Zero,  // immediate re-input
+            ProtocolAction.DO_NOT_RETRY => null,           // block retries
+            _ => null
+        };
+
+        private Boolean AllowRateLimitedSend()
+        {
+            var now = DateTime.UtcNow;
+            // Trim entries older than 3s
+            while (_loginSendTimes.Count > 0 && (now - _loginSendTimes.Peek()).TotalSeconds > 3)
+            {
+                _loginSendTimes.Dequeue();
+            }
+
+            if (_loginSendTimes.Count >= 2)
+            {
+                return false;
+            }
+
+            _loginSendTimes.Enqueue(now);
+            return true;
+        }
     }
 
     #endregion

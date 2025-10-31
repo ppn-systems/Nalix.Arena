@@ -21,7 +21,7 @@ namespace Nalix.Communication.Collections;
 /// </summary>
 [SerializePackable(SerializeLayout.Explicit)]
 [MagicNumber((System.UInt32)PacketMagic.CREDENTIALS)]
-public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<CredentialsPacket>
+public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<CredentialsPacket>, IPacketSequenced
 {
     /// <summary>
     /// Tổng độ dài gói tin (byte), gồm header và nội dung.
@@ -30,10 +30,13 @@ public class CredentialsPacket : FrameBase, IPoolable, IPacketTransformer<Creden
     public override System.UInt16 Length =>
         (System.UInt16)(PacketConstants.HeaderSize + Credentials.EstimatedSerializedLength());
 
+    [SerializeOrder(PacketHeaderOffset.DataRegion)]
+    public System.UInt32 SequenceId { get; set; }
+
     /// <summary>
     /// Thông tin đăng nhập (username, mật khẩu băm, metadata).
     /// </summary>
-    [SerializeOrder(PacketHeaderOffset.DataRegion)]
+    [SerializeOrder(PacketHeaderOffset.DataRegion + 1)]
     public Credentials Credentials { get; set; }
 
     /// <summary>
