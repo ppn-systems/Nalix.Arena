@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Common.Logging.Abstractions;
-using Nalix.Common.Packets.Abstractions;
+using Nalix.Common.Logging;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
 using Nalix.Desktop.Enums;
@@ -208,49 +207,45 @@ public sealed class HandshakeScene : Scene
                         throw new System.InvalidOperationException("Client is not connected.");
                     }
 
-                    // 1) Initiate: send client public key
-                    SceneManager.FindByType<Notification>()?
-                                .UpdateMessage(Text.Initiating);
+                    // 1) UI: initiating
+                    SceneManager.FindByType<Notification>()?.UpdateMessage(Text.Initiating);
 
-                    var kp = await client.InitiateHandshakeAsync(OpCommand.HANDSHAKE.AsUInt16(), _cts.Token)
-                                         .ConfigureAwait(false);
+                    // 2) UI: waiting (lib sẽ tự subscribe, chờ gói Handshake, derive, cài key)
+                    SceneManager.FindByType<Notification>()?.UpdateMessage(Text.Waiting);
 
-                    // 2) Wait for server's Handshake packet
-                    SceneManager.FindByType<Notification>()?
-                                .UpdateMessage(Text.Waiting);
+                    // Gọi one-call handshake (timeout tổng, có thể chỉnh theo nhu cầu)
+                    System.Boolean ok = await client.HandshakeAsync(
+                        opCode: OpCommand.HANDSHAKE.AsUInt16(),
+                        timeoutMs: 5000,
+                        ct: _cts.Token
+                    ).ConfigureAwait(false);
 
-                    IPacket serverPacket = await client.ReceiveAsync(_cts.Token)
-                                                       .ConfigureAwait(false);
-
-                    // 3) Install encryption key
-                    SceneManager.FindByType<Notification>()?
-                                .UpdateMessage(Text.Installing);
-
-                    System.Boolean ok = client.FinishHandshake(kp, serverPacket);
                     if (!ok)
                     {
-                        throw new System.InvalidOperationException("Unexpected packet received during handshake.");
+                        // Fail có kiểm soát để bật nhánh retry
+                        throw new System.InvalidOperationException("Handshake timed out or was rejected.");
                     }
 
-                    // Success
-                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
-                                            .Info("Handshake succeeded. Session encryption key is installed.");
+                    // Thành công (lib đã log “EncryptionKey installed.”)
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()
+                        ?.Info("Handshake succeeded. Session encryption key is installed.");
                 }
                 catch (System.OperationCanceledException ocex)
                 {
-                    // Treat as failure in this flow (we will retry if attempts left)
-                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
-                                            .Warn("Handshake canceled or timed out.", ocex);
+                    // Xem như thất bại để cơ chế retry hoạt động
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()
+                        ?.Warn("Handshake canceled or timed out.", ocex);
                     throw;
                 }
                 catch (System.Exception ex)
                 {
-                    InstanceManager.Instance.GetExistingInstance<ILogger>()?
-                                            .Error("Handshake error.", ex);
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()
+                        ?.Error("Handshake error.", ex);
                     throw;
                 }
             }, _cts.Token);
         }
+
 
         private void CleanupTask()
         {

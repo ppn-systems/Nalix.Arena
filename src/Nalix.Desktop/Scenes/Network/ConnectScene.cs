@@ -179,7 +179,7 @@ public class ConnectScene : Scene
             }
             catch (System.Exception ex)
             {
-                InstanceManager.Instance.GetExistingInstance<Common.Logging.Abstractions.ILogger>()?
+                InstanceManager.Instance.GetExistingInstance<Common.Logging.ILogger>()?
                                         .Error("Failed to resolve ReliableClient for connection attempt", ex);
 
                 _connectTask = System.Threading.Tasks.Task.FromException(new System.Exception("Dependency resolution failed"));

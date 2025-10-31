@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Application.Operations.Security;
-using Nalix.Common.Logging.Abstractions;
+using Nalix.Common.Logging;
 using Nalix.Communication;
 using Nalix.Framework.Injection;
 using Nalix.Host.Assemblies;
