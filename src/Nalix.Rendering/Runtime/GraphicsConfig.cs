@@ -10,6 +10,11 @@ namespace Nalix.Rendering.Runtime;
 public sealed class GraphicsConfig : ConfigurationLoader
 {
     /// <summary>
+    /// VSync enabled or disabled. Default value is false.
+    /// </summary>
+    public System.Boolean VSync { get; init; } = false;
+
+    /// <summary>
     /// Gets the frame limit for the application. Default value is 60.
     /// </summary>
     public System.UInt32 FrameLimit { get; init; } = 60;

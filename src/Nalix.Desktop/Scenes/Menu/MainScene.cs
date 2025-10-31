@@ -318,6 +318,7 @@ internal class MainScene : Scene
         {
             SetZIndex(2);
             Texture tex = Assets.UiTextures.Load("icons/12");
+            tex.Smooth = false; // crisp UI
             _icon = new Sprite(tex)
             {
                 Scale = new Vector2f(0.6f, 0.6f),
