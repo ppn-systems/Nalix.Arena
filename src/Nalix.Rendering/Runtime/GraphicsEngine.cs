@@ -11,7 +11,7 @@ namespace Nalix.Rendering.Runtime;
 /// <summary>
 /// The Game class serves as the entry point for managing the game window, rendering, and scene updates.
 /// </summary>
-public static class GameEngine
+public static class GraphicsEngine
 {
     // Private fields
     internal static readonly RenderWindow _window;
@@ -39,7 +39,7 @@ public static class GameEngine
     /// <summary>
     /// Static constructor to initialize the game configuration and window.
     /// </summary>
-    static GameEngine()
+    static GraphicsEngine()
     {
         GraphicsConfig = new GraphicsConfig();
         ScreenSize = new Vector2u(GraphicsConfig.ScreenWidth, GraphicsConfig.ScreenHeight);
@@ -64,11 +64,7 @@ public static class GameEngine
         _window.Closed += (_, _) => _window.Close();
         _window.GainedFocus += (_, _) => SetFocus(true);
         _window.LostFocus += (_, _) => SetFocus(false);
-        _window.Resized += (_, e) =>
-        {
-            ScreenSize = new Vector2u(e.Width, e.Height);
-            Effects.Camera.Camera2D.Initialize(ScreenSize);
-        };
+        _window.Resized += (_, e) => ScreenSize = new Vector2u(e.Width, e.Height);
 
         // Limit mode: prefer VSync for idle UI; don't enable both
         if (GraphicsConfig.VSync)
@@ -79,8 +75,6 @@ public static class GameEngine
         {
             _window.SetFramerateLimit(_foregroundFps);
         }
-
-        Effects.Camera.Camera2D.Initialize(ScreenSize);
     }
 
     /// <summary>
@@ -185,8 +179,6 @@ public static class GameEngine
         SceneManager.ProcessDestroyQueue();
         SceneManager.ProcessSpawnQueue();
         SceneManager.UpdateSceneObjects(deltaTime);
-        Effects.Camera.Camera2D.Update(deltaTime);
-        Physics.CollisionManager.Update(deltaTime);
     }
 
     /// <summary>
@@ -197,7 +189,6 @@ public static class GameEngine
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static void Render(RenderTarget target)
     {
-        Effects.Camera.Camera2D.Apply(target);
         System.Collections.Generic.List<RenderObject> renderObjects = [.. SceneManager.AllObjects<RenderObject>()];
         renderObjects.Sort(RenderObject.CompareByZIndex);
 

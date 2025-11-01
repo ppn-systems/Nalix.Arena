@@ -8,7 +8,7 @@ namespace Nalix.Rendering.Effects.Transitions.Effects;
 
 internal abstract class ScreenOverlayBase(Color color) : ITransitionDrawable
 {
-    protected readonly Vector2f Size = new(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y);
+    protected readonly Vector2f Size = new(GraphicsEngine.ScreenSize.X, GraphicsEngine.ScreenSize.Y);
     protected readonly Color BaseColor = color;
 
     public abstract void Update(Single p, Boolean closing);

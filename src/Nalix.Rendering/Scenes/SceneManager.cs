@@ -67,7 +67,7 @@ public static class SceneManager
             .GetEntryAssembly()!
             .GetTypes()
             .Where(t => t.Namespace != null &&
-                        t.Namespace.Contains(GameEngine.GraphicsConfig.ScenesNamespace));
+                        t.Namespace.Contains(GraphicsEngine.GraphicsConfig.ScenesNamespace));
 
         // HashSet to check for duplicate scene names efficiently
         System.Collections.Generic.HashSet<System.String> sceneNames = [];
@@ -128,7 +128,7 @@ public static class SceneManager
         }
 
         // Switch to the main scene defined in the config
-        ChangeScene(GameEngine.GraphicsConfig.MainScene);
+        ChangeScene(GraphicsEngine.GraphicsConfig.MainScene);
     }
 
     /// <summary>

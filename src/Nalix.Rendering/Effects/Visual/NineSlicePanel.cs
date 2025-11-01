@@ -19,9 +19,6 @@ public sealed class NineSlicePanel : Drawable
     private readonly Sprite[] _parts = new Sprite[9];
     private System.Boolean _dirty = true;
 
-    /// <param name="texture">UI frame texture. Set Smooth=false at load time if you need pixel-crisp.</param>
-    /// <param name="border">Left/Top/Right/Bottom border thickness (in source pixels)</param>
-    /// <param name="sourceRect">Optional source rect; pass default for full texture</param>
     public NineSlicePanel(Texture texture, Thickness border, IntRect sourceRect = default)
     {
         Texture = texture ?? throw new System.ArgumentNullException(nameof(texture));
