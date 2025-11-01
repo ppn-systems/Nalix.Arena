@@ -1,11 +1,11 @@
-﻿using Nalix.Desktop.Enums;
+﻿using Nalix.Launcher.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Desktop.Objects.Notifications;
+namespace Nalix.Launcher.Objects.Notifications;
 
 /// <summary>
 /// Đại diện cho một banner cuộn liên tục từ phải sang trái trên màn hình.
@@ -133,8 +133,8 @@ public class ScrollingBanner : RenderObject
         return new RectangleShape
         {
             FillColor = BackgroundColor,
-            Size = new Vector2f(GameEngine.ScreenSize.X, BannerHeightPx),
-            Position = new Vector2f(0, GameEngine.ScreenSize.Y - BannerHeightPx),
+            Size = new Vector2f(GraphicsEngine.ScreenSize.X, BannerHeightPx),
+            Position = new Vector2f(0, GraphicsEngine.ScreenSize.Y - BannerHeightPx),
         };
     }
 
@@ -153,7 +153,7 @@ public class ScrollingBanner : RenderObject
     /// <summary>
     /// Đặt lại vị trí văn bản để bắt đầu cuộn từ bên phải màn hình.
     /// </summary>
-    private void ResetPosition() => _text.Position = new Vector2f(GameEngine.ScreenSize.X, GameEngine.ScreenSize.Y - BannerHeightPx + TextOffsetYPx);
+    private void ResetPosition() => _text.Position = new Vector2f(GraphicsEngine.ScreenSize.X, GraphicsEngine.ScreenSize.Y - BannerHeightPx + TextOffsetYPx);
 
     /// <summary>
     /// Di chuyển văn bản theo tốc độ và thời gian.
@@ -167,7 +167,7 @@ public class ScrollingBanner : RenderObject
     {
         if (_text.Position.X + _textWidthPx < 0)
         {
-            _text.Position = new Vector2f(GameEngine.ScreenSize.X, _text.Position.Y);
+            _text.Position = new Vector2f(GraphicsEngine.ScreenSize.X, _text.Position.Y);
         }
     }
 

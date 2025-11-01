@@ -1,11 +1,11 @@
-﻿using Nalix.Desktop.Enums;
+﻿using Nalix.Launcher.Enums;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Input;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Desktop.Objects.Notifications;
+namespace Nalix.Launcher.Objects.Notifications;
 
 /// <summary>
 /// Hộp thông báo có nút hành động ở giữa.
@@ -68,7 +68,7 @@ public sealed class ActionNotification : Notification
         _buttonText = CreateButtonText(buttonText);
         _buttonPanel = CreateButtonPanel();
         SizeButtonToContent();
-        PositionButtonBelowText();
+        PositionButton();
     }
 
     #endregion
@@ -97,7 +97,7 @@ public sealed class ActionNotification : Notification
     public override void UpdateMessage(System.String newMessage)
     {
         base.UpdateMessage(newMessage);
-        PositionButtonBelowText();
+        PositionButton();
     }
 
     public override void Update(System.Single deltaTime)
@@ -137,7 +137,7 @@ public sealed class ActionNotification : Notification
 
         // Căn giữa origin để dễ đặt vào panel
         var lb = text.GetLocalBounds();
-        text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f) - 10);
+        text.Origin = new Vector2f(lb.Left + lb.Width / 2f, lb.Top + lb.Height / 2f - 10);
         return text;
     }
 
@@ -148,7 +148,7 @@ public sealed class ActionNotification : Notification
 
         NineSlicePanel panel = new(frame, _border);
         panel.SetPosition(new Vector2f(0f, 0f))
-             .SetSize(new Vector2f(100f, 32f))
+             .SetSize(new Vector2f(200f, 64f))
              .Layout();
 
         return panel;
@@ -179,14 +179,14 @@ public sealed class ActionNotification : Notification
                     .Layout();
     }
 
-    private void PositionButtonBelowText()
+    private void PositionButton()
     {
         var (innerCenterX, _) = ComputeInnerMetrics();
         var textGB = _messageText.GetGlobalBounds();
 
         _messageText.Position = new Vector2f(_messageText.Position.X, _messageText.Position.Y - 20);
-        System.Single buttonY = System.MathF.Round(textGB.Top + textGB.Height + VerticalGapPx) + ButtonExtraOffsetY;
-        System.Single btnX = System.MathF.Round(innerCenterX - (_buttonPanel.Size.X / 2f));
+        System.Single buttonY = System.MathF.Round(textGB.Top + textGB.Height + VerticalGapPx) - 200;
+        System.Single btnX = System.MathF.Round(innerCenterX - _buttonPanel.Size.X / 2f);
 
         _buttonPanel.SetPosition(new Vector2f(btnX, buttonY)).Layout();
 

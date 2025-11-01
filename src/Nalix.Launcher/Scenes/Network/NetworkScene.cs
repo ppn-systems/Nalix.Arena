@@ -1,16 +1,16 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Desktop.Enums;
-using Nalix.Desktop.Objects.Indicators;
-using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Injection;
+using Nalix.Launcher.Enums;
+using Nalix.Launcher.Objects.Indicators;
+using Nalix.Launcher.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using SFML.Graphics;
 
-namespace Nalix.Desktop.Scenes.Network;
+namespace Nalix.Launcher.Scenes.Network;
 
 public class NetworkScene : Scene
 {
@@ -64,7 +64,7 @@ public class NetworkScene : Scene
         {
             _timer = 0f;
             _attempt = 0;
-            _state = ConnectState.Waiting;
+            _state = ConnectState.Failed;
         }
 
         public void ForceTryNow()
@@ -155,7 +155,7 @@ public class NetworkScene : Scene
                     {
                         // Clean current banner then show a blocking box.
                         SceneManager.FindByType<Notification>()?.Destroy();
-                        NetworkHandler.ShowFinalFailureBox();
+                        ShowFinalFailureBox();
                         _state = ConnectState.ShowFail;
                         break;
                     }

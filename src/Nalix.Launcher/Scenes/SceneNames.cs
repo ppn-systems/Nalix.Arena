@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-namespace Nalix.Desktop.Scenes;
+namespace Nalix.Launcher.Scenes;
 
 /// <summary>
 /// Chứa tên của các cảnh (scene) trong trò chơi để dễ dàng quản lý.

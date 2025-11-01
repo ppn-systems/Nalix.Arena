@@ -4,11 +4,11 @@ using Nalix.Common.Protocols;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
-using Nalix.Desktop.Enums;
-using Nalix.Desktop.Objects.Controls;
-using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;
+using Nalix.Launcher.Enums;
+using Nalix.Launcher.Objects.Controls;
+using Nalix.Launcher.Objects.Notifications;
 using Nalix.Logging;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
@@ -25,7 +25,7 @@ using SFML.System;
 using SFML.Window;
 using System;
 
-namespace Nalix.Desktop.Scenes.Menu;
+namespace Nalix.Launcher.Scenes.Menu;
 
 /// <summary>
 /// Màn hình đăng nhập: nền parallax + Username/Password + nút LOGIN.
@@ -70,22 +70,22 @@ internal sealed class LoginSence : Scene
         private static readonly Color BackPanel = new(160, 160, 160);
 
         // Layout numbers
-        private const System.Single TitleFont = 26f;
-        private const System.Single LabelFont = 16f;
-        private const System.Single FieldFont = 18f;
-        private const System.Single FieldWidth = 340f;
-        private const System.Single FieldHeight = 40f;
-        private const System.Single TitleOffsetX = 10f;
-        private const System.Single TitleOffsetY = 6f;
-        private const System.Single LabelUserY = 70f;
-        private const System.Single LabelPassY = 130f;
-        private const System.Single FieldLeft = 140f;
-        private const System.Single FieldUserTop = 60f;
-        private const System.Single FieldPassTop = 120f;
-        private const System.Single BtnRowY = 70f; // khoảng cách đáy panel -> hàng nút
-        private const System.Single BtnWidth = 280f;
-        private const System.Single LoginBtnExtraX = 150f; // như code gốc
-        private const System.Single BackBtnOffsetLeft = -30f; // như code gốc (ra ngoài 1 chút)
+        private const Single TitleFont = 26f;
+        private const Single LabelFont = 16f;
+        private const Single FieldFont = 18f;
+        private const Single FieldWidth = 340f;
+        private const Single FieldHeight = 40f;
+        private const Single TitleOffsetX = 10f;
+        private const Single TitleOffsetY = 6f;
+        private const Single LabelUserY = 70f;
+        private const Single LabelPassY = 130f;
+        private const Single FieldLeft = 140f;
+        private const Single FieldUserTop = 60f;
+        private const Single FieldPassTop = 120f;
+        private const Single BtnRowY = 70f; // khoảng cách đáy panel -> hàng nút
+        private const Single BtnWidth = 280f;
+        private const Single LoginBtnExtraX = 150f; // như code gốc
+        private const Single BackBtnOffsetLeft = -30f; // như code gốc (ra ngoài 1 chút)
 
         #endregion
 
@@ -147,7 +147,7 @@ internal sealed class LoginSence : Scene
         #region Build helpers
 
         private static RectangleShape BuildBackdrop()
-            => new((Vector2f)GameEngine.ScreenSize)
+            => new((Vector2f)GraphicsEngine.ScreenSize)
             {
                 FillColor = BackdropColor,
                 Position = new Vector2f(0, 0)
@@ -161,22 +161,22 @@ internal sealed class LoginSence : Scene
 
         private (Text title, Text u, Text p) BuildTexts()
         {
-            var title = new Text("LOGIN", _font, (System.UInt32)TitleFont) { FillColor = TitleColor };
-            var u = new Text("Username", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
-            var p = new Text("Password", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
+            var title = new Text("LOGIN", _font, (UInt32)TitleFont) { FillColor = TitleColor };
+            var u = new Text("Username", _font, (UInt32)LabelFont) { FillColor = LabelColor };
+            var p = new Text("Password", _font, (UInt32)LabelFont) { FillColor = LabelColor };
             return (title, u, p);
         }
 
         private (InputField user, PasswordField pass) BuildFields()
         {
-            var user = new InputField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
+            var user = new InputField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
                                       new Vector2f(FieldWidth, FieldHeight),
                                       new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldUserTop));
             user.SetPanelColor(FieldPanel);
             user.SetTextColor(FieldText);
             user.Focused = true;
 
-            var pass = new PasswordField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
+            var pass = new PasswordField(_panelTex, Border, SrcRect, _font, (UInt32)FieldFont,
                                          new Vector2f(FieldWidth, FieldHeight),
                                          new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldPassTop));
             pass.SetPanelColor(FieldPanel);
@@ -224,8 +224,8 @@ internal sealed class LoginSence : Scene
 
             // Buttons (giữa đáy panel)
             var r = _loginBtn.GetGlobalBounds();
-            System.Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
-            System.Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
+            Single btnBaseX = _panelPos.X + (PanelSize.X - r.Width) * 0.5f;
+            Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
 
             _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
             _backBtn.SetPosition(new Vector2f(_panelPos.X + BackBtnOffsetLeft, btnBaseY));
@@ -233,15 +233,15 @@ internal sealed class LoginSence : Scene
 
         private static Vector2f Centered(Vector2f size)
             => new(
-                (GameEngine.ScreenSize.X - size.X) * 0.5f,
-                (GameEngine.ScreenSize.Y - size.Y) * 0.5f
+                (GraphicsEngine.ScreenSize.X - size.X) * 0.5f,
+                (GraphicsEngine.ScreenSize.Y - size.Y) * 0.5f
             );
 
         #endregion
 
         #region Input
 
-        public override void Update(System.Single dt)
+        public override void Update(Single dt)
         {
             if (!InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().IsConnected)
             {
@@ -266,7 +266,7 @@ internal sealed class LoginSence : Scene
                 return;
             }
 
-            System.Boolean toPass = _user.Focused;
+            Boolean toPass = _user.Focused;
             _user.Focused = !toPass;
             _pass.Focused = toPass;
         }
@@ -432,15 +432,15 @@ internal sealed class LoginSence : Scene
                     _pass.Focused = true;
                 }
             }
-            catch (System.OperationCanceledException)
+            catch (OperationCanceledException)
             {
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Login cancelled or timed out.");
             }
-            catch (System.TimeoutException)
+            catch (TimeoutException)
             {
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Login timeout. Please try again.");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 NLogix.Host.Instance.Error("LOGIN exception", ex);
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Login failed due to an error.");

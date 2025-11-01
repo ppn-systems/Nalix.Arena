@@ -3,9 +3,9 @@
 		<OutputType>Exe</OutputType>
 		<TargetFrameworks>net9.0-windows;net9.0</TargetFrameworks>
 
-		<StartupObject>Nalix.Desktop.Program</StartupObject>
+		<StartupObject>Nalix.Launcher.Program</StartupObject>
 
-		<AssemblyName>Arena</AssemblyName>
+		<AssemblyName>Launcher</AssemblyName>
 
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<RuntimeIdentifiers>win-x64;linux-x64;osx-x64;osx-arm64</RuntimeIdentifiers>

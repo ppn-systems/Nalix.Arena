@@ -5,7 +5,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Desktop.Objects.Controls;
+namespace Nalix.Launcher.Objects.Controls;
 
 /// <summary>
 /// Nút co giãn dùng NineSlicePanel (1 ảnh), textHover đổi màu bằng tint.
@@ -56,10 +56,6 @@ public class StretchableButton : RenderObject
 
     #region Ctor
 
-    /// <param name="text">Nội dung</param>
-    /// <param name="width">Chiều rộng mong muốn</param>
-    /// <param name="textureKey">Key texture trong atlas</param>
-    /// <param name="sourceRect">Subrect trong texture (để dùng atlas), để default là full</param>
     public StretchableButton(
         System.String text,
         System.Single width = 240f,
@@ -275,7 +271,7 @@ public class StretchableButton : RenderObject
     {
         // đảm bảo đủ chỗ cho text + padding
         var tb = _label.GetLocalBounds();
-        System.Single minTextWidth = tb.Width + (_horizontalPadding * 2f);
+        System.Single minTextWidth = tb.Width + _horizontalPadding * 2f;
 
         System.Single totalWidth = System.Math.Max(_buttonWidth, System.Math.Max(DefaultWidth, minTextWidth));
         System.Single totalHeight = System.Math.Max(_buttonHeight, DefaultHeight);
@@ -290,8 +286,8 @@ public class StretchableButton : RenderObject
     private void CenterLabel(System.Single totalWidth, System.Single totalHeight)
     {
         var tb = _label.GetLocalBounds();
-        System.Single x = _position.X + ((totalWidth - tb.Width) * 0.5f) - tb.Left;
-        System.Single y = _position.Y + ((totalHeight - tb.Height) * 0.5f) - tb.Top + 8f;
+        System.Single x = _position.X + (totalWidth - tb.Width) * 0.5f - tb.Left;
+        System.Single y = _position.Y + (totalHeight - tb.Height) * 0.5f - tb.Top + 8f;
         _label.Position = new Vector2f(x, y);
     }
 

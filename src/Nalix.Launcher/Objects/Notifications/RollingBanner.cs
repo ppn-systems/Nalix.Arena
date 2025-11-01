@@ -1,4 +1,4 @@
-﻿using Nalix.Desktop.Enums;
+﻿using Nalix.Launcher.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -6,7 +6,7 @@ using SFML.Graphics;
 using SFML.System;
 using System.Collections.Generic;
 
-namespace Nalix.Desktop.Objects.Notifications;
+namespace Nalix.Launcher.Objects.Notifications;
 
 /// <summary>
 /// Đại diện cho một banner cuộn liên tục từ phải sang trái trên màn hình.
@@ -123,8 +123,8 @@ public class RollingBanner : RenderObject
         return new RectangleShape
         {
             FillColor = BackgroundColor,
-            Size = new Vector2f(GameEngine.ScreenSize.X, BannerHeightPx),
-            Position = new Vector2f(0, GameEngine.ScreenSize.Y - BannerHeightPx),
+            Size = new Vector2f(GraphicsEngine.ScreenSize.X, BannerHeightPx),
+            Position = new Vector2f(0, GraphicsEngine.ScreenSize.Y - BannerHeightPx),
         };
     }
 
@@ -135,7 +135,7 @@ public class RollingBanner : RenderObject
     {
         Font font = Assets.Font.Load("1");
 
-        System.Single startX = GameEngine.ScreenSize.X;
+        System.Single startX = GraphicsEngine.ScreenSize.X;
         foreach (System.String msg in messages)
         {
             Text text = CreateText(msg, font, startX);
@@ -153,7 +153,7 @@ public class RollingBanner : RenderObject
         return new Text(message, font, FontSizePx)
         {
             FillColor = DefaultTextColor,
-            Position = new Vector2f(startX, GameEngine.ScreenSize.Y - BannerHeightPx + TextOffsetYPx)
+            Position = new Vector2f(startX, GraphicsEngine.ScreenSize.Y - BannerHeightPx + TextOffsetYPx)
         };
     }
 

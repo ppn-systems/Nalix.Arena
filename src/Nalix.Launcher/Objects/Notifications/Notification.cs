@@ -1,4 +1,4 @@
-﻿using Nalix.Desktop.Enums;
+﻿using Nalix.Launcher.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
@@ -6,7 +6,7 @@ using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Desktop.Objects.Notifications;
+namespace Nalix.Launcher.Objects.Notifications;
 
 /// <summary>
 /// Hộp thông báo nhẹ (không có nút bấm). Vẽ panel 9-slice với văn bản tự động xuống dòng.
@@ -29,7 +29,7 @@ public class Notification : RenderObject
     private const System.Single TopYRatio = 0.10f;
 
     /// <summary>Tỷ lệ Y khi đặt ở phía dưới màn hình.</summary>
-    private const System.Single BottomYRatio = 0.60f;
+    private const System.Single BottomYRatio = 0.70f;
 
     /// <summary>Tỷ lệ chiều rộng tối đa so với màn hình.</summary>
     private const System.Single MaxWidthFraction = 0.85f;
@@ -41,7 +41,7 @@ public class Notification : RenderObject
     private const System.Single InitialPanelHeightPx = 64f;
 
     /// <summary>Chiều cao panel tối thiểu (px).</summary>
-    private const System.Single MinPanelHeightPx = 142f;
+    private const System.Single MinPanelHeightPx = 162f;
 
     /// <summary>Chiều rộng bên trong tối thiểu (px).</summary>
     private const System.Single MinInnerWidthPx = 50f;
@@ -101,7 +101,7 @@ public class Notification : RenderObject
 
         // Re-center origin cho bounds mới nhưng vẫn giữ anchor.
         var lb = _messageText.GetLocalBounds();
-        _messageText.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
+        _messageText.Origin = new Vector2f(lb.Left + lb.Width / 2f, lb.Top + lb.Height / 2f);
         _messageText.Position = _textAnchor;
     }
 
@@ -150,13 +150,13 @@ public class Notification : RenderObject
         out System.Single xCentered)
     {
         System.Single ratio = side == Side.Bottom ? BottomYRatio : TopYRatio;
-        System.Single screenW = GameEngine.ScreenSize.X;
+        System.Single screenW = GraphicsEngine.ScreenSize.X;
 
         System.Single rawWidth = screenW * MaxWidthFraction;
         targetWidth = System.MathF.Round(System.MathF.Min(rawWidth, MaxWidthCapPx));
 
         xCentered = System.MathF.Round((screenW - targetWidth) / 2f);
-        floatY = GameEngine.ScreenSize.Y * ratio;
+        floatY = GraphicsEngine.ScreenSize.Y * ratio;
     }
 
     private NineSlicePanel CreatePanel(Texture frameTex, System.Single x, System.Single y, System.Single width)
@@ -170,7 +170,7 @@ public class Notification : RenderObject
     }
 
     private static System.Single ComputeInnerWidth(System.Single targetWidth)
-        => System.MathF.Max(MinInnerWidthPx, targetWidth - (2f * HorizontalPaddingPx));
+        => System.MathF.Max(MinInnerWidthPx, targetWidth - 2f * HorizontalPaddingPx);
 
     private static Text PrepareWrappedText(Font font, System.String message, System.UInt32 charSize, System.Single innerWidth)
         => new(WrapText(font, message, charSize, innerWidth), font, charSize) { FillColor = Color.Black };
@@ -178,7 +178,7 @@ public class Notification : RenderObject
     private static System.Single CenterTextOriginAndMeasure(Text text)
     {
         FloatRect lb = text.GetLocalBounds();
-        text.Origin = new Vector2f(lb.Left + (lb.Width / 2f), lb.Top + (lb.Height / 2f));
+        text.Origin = new Vector2f(lb.Left + lb.Width / 2f, lb.Top + lb.Height / 2f);
         return text.GetGlobalBounds().Height;
     }
 
@@ -201,7 +201,7 @@ public class Notification : RenderObject
         System.Single innerCenterX = System.MathF.Round((innerLeft + innerRight) * 0.5f);
         System.Single innerTop = System.MathF.Round(panel.Position.Y + _border.Top + VerticalPaddingPx);
 
-        _messageText.Position = new Vector2f(innerCenterX, innerTop + (textHeight * 0.5f));
+        _messageText.Position = new Vector2f(innerCenterX, innerTop + textHeight * 0.5f);
         anchorOut = _messageText.Position;
     }
 
@@ -267,7 +267,7 @@ public class Notification : RenderObject
     /// </summary>
     protected static Color Lerp(Color a, Color b, System.Single t)
     {
-        System.Byte L(System.Byte x, System.Byte y) => (System.Byte)(x + ((y - x) * t));
+        System.Byte L(System.Byte x, System.Byte y) => (System.Byte)(x + (y - x) * t);
         return new Color(L(a.R, b.R), L(a.G, b.G), L(a.B, b.B), L(a.A, b.A));
     }
 

@@ -1,11 +1,11 @@
-﻿using Nalix.Desktop.Enums;
+﻿using Nalix.Launcher.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Desktop.Objects.Indicators;
+namespace Nalix.Launcher.Objects.Indicators;
 
 /// <summary>
 /// Vòng quay tải (loading spinner) dạng overlay: nền mờ + icon xoay + dao động scale.
@@ -38,7 +38,7 @@ public sealed class LoadingSpinner : RenderObject
     private System.Byte _currentAlpha = 0;
 
     // resize tracking
-    private Vector2u _lastScreen = GameEngine.ScreenSize;
+    private Vector2u _lastScreen = GraphicsEngine.ScreenSize;
 
     // drawables
     private readonly RectangleShape _bg;
@@ -54,7 +54,7 @@ public sealed class LoadingSpinner : RenderObject
     public LoadingSpinner()
     {
         SetZIndex(ZIndex.Overlay.ToInt()); // luôn trên cùng
-        var screen = GameEngine.ScreenSize;
+        var screen = GraphicsEngine.ScreenSize;
         Vector2f screenSize = new(screen.X, screen.Y);
 
         _bg = new RectangleShape(screenSize)
@@ -140,9 +140,9 @@ public sealed class LoadingSpinner : RenderObject
         }
 
         // phát hiện đổi độ phân giải -> recenter
-        if (_lastScreen != GameEngine.ScreenSize)
+        if (_lastScreen != GraphicsEngine.ScreenSize)
         {
-            _lastScreen = GameEngine.ScreenSize;
+            _lastScreen = GraphicsEngine.ScreenSize;
             ResizeOverlay();
             Recenter();
         }
@@ -159,7 +159,7 @@ public sealed class LoadingSpinner : RenderObject
         _icon.Rotation = _angle;
 
         // dao động scale theo sin
-        System.Single scale = _baseScale + (System.MathF.Sin(_angle * Deg2Rad) * _scaleOsc);
+        System.Single scale = _baseScale + System.MathF.Sin(_angle * Deg2Rad) * _scaleOsc;
         _icon.Scale = new Vector2f(scale, scale);
     }
 
@@ -229,13 +229,13 @@ public sealed class LoadingSpinner : RenderObject
 
     private void ResizeOverlay()
     {
-        var sz = GameEngine.ScreenSize;
+        var sz = GraphicsEngine.ScreenSize;
         _bg.Size = new Vector2f(sz.X, sz.Y);
     }
 
     private void Recenter()
     {
-        var sz = GameEngine.ScreenSize;
+        var sz = GraphicsEngine.ScreenSize;
         _icon.Position = new Vector2f(sz.X * 0.5f, sz.Y * 0.5f);
 
         // nếu overlay chưa có màu base, set alpha nền mặc định để dễ nhìn khi fade-in

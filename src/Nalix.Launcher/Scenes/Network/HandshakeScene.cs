@@ -4,10 +4,10 @@ using Nalix.Common.Logging;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
-using Nalix.Desktop.Enums;
-using Nalix.Desktop.Objects.Indicators;
-using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Injection;
+using Nalix.Launcher.Enums;
+using Nalix.Launcher.Objects.Indicators;
+using Nalix.Launcher.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
@@ -15,7 +15,7 @@ using Nalix.SDK.Remote;
 using Nalix.SDK.Remote.Extensions;
 using SFML.Graphics;
 
-namespace Nalix.Desktop.Scenes.Network;
+namespace Nalix.Launcher.Scenes.Network;
 
 /// <summary>
 /// Scene responsible for performing a secure cryptographic handshake after TCP connect,

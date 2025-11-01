@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Desktop.Enums;
-using Nalix.Desktop.Objects.Controls;
-using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Randomization;
+using Nalix.Launcher.Enums;
+using Nalix.Launcher.Objects.Controls;
+using Nalix.Launcher.Objects.Notifications;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Objects;
@@ -12,7 +12,7 @@ using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Desktop.Scenes.Menu;
+namespace Nalix.Launcher.Scenes.Menu;
 
 /// <summary>
 /// Cảnh chính hiển thị sau khi người chơi kết nối thành công.
@@ -30,6 +30,8 @@ internal class MainScene : Scene
 
     protected override void LoadObjects()
     {
+        AddObject(new RectRevealEffect());                           // hiệu ứng mở đầu
+        AddObject(new LauncherLogo());                               // logo game
         AddObject(new ParallaxLayer());                              // nền
         AddObject(new TwelveIcon());                                 // góc 12+
         AddObject(new Menu());                                       // menu
@@ -39,6 +41,147 @@ internal class MainScene : Scene
     #endregion Scene lifecycle
 
     #region Private Types
+
+    /// <summary>
+    /// Center top game logo object.
+    /// Automatically scales to a safe width and preserves aspect ratio.
+    /// </summary>
+    public sealed class LauncherLogo : RenderObject
+    {
+        private readonly Sprite _logo;
+
+        public LauncherLogo(System.String texturePath = "0")
+        {
+            Texture tex = Assets.UiTextures.Load(texturePath);
+            tex.Smooth = true;
+
+            _logo = new Sprite(tex);
+
+            SetZIndex(8888); // always on top of UI
+            Layout();
+        }
+
+        private void Layout()
+        {
+            var screen = GraphicsEngine.ScreenSize;
+            System.Single sw = screen.X;
+
+            FloatRect r = _logo.GetLocalBounds();
+            System.Single texW = r.Width;
+
+            // scale width ~ 45% screen width
+            System.Single targetW = sw * 0.2f;
+            System.Single scale = targetW / texW;
+            _logo.Scale = new Vector2f(scale, scale);
+
+            System.Single x = (sw - targetW) * 0.5f;
+            const System.Single y = 35f; // top offset
+
+            _logo.Position = new Vector2f(x, y);
+        }
+
+        public override void Update(System.Single dt) => Layout();
+
+        protected override Drawable GetDrawable() => _logo;
+    }
+
+    /// <summary>
+    /// Rectangle "iris-open" reveal effect using four black bands that retract to screen edges,
+    /// creating an expanding rectangular window that reveals the scene underneath.
+    /// </summary>
+    [IgnoredLoad("RenderObject")]
+    public sealed class RectRevealEffect : RenderObject
+    {
+        private readonly RectangleShape _top;
+        private readonly RectangleShape _bottom;
+        private readonly RectangleShape _left;
+        private readonly RectangleShape _right;
+
+        private System.Single _t;                      // elapsed time
+        private readonly System.Single _duration = 2f; // seconds
+        private readonly Vector2f _startWindowSize; // the small starting window (w,h)
+
+        public RectRevealEffect(System.Single startWidth = 100f, System.Single startHeight = 60f)
+        {
+            // Starting size of the inner "window" (visible area)
+            _startWindowSize = new Vector2f(startWidth, startHeight);
+
+            // Create four black bands
+            _top = new RectangleShape();
+            _bottom = new RectangleShape();
+            _left = new RectangleShape();
+            _right = new RectangleShape();
+
+            var black = new Color(0, 0, 0, 255);
+            _top.FillColor = black;
+            _bottom.FillColor = black;
+            _left.FillColor = black;
+            _right.FillColor = black;
+
+            SetZIndex(9999); // on top of everything
+        }
+
+        protected override Drawable GetDrawable() => _top; // not used (we override Render)
+
+        public override void Update(System.Single deltaTime)
+        {
+            _t += deltaTime;
+            System.Single t = System.Math.Clamp(_t / _duration, 0f, 1f);
+
+            // Smooth ease-out
+            System.Single ease = 1f - System.MathF.Pow(1f - t, 3f);
+
+            // Compute current inner window half-size (hx, hy):
+            var screen = GraphicsEngine.ScreenSize; // SFML Vector2u
+            System.Single sw = screen.X;
+            System.Single sh = screen.Y;
+
+            System.Single startHX = _startWindowSize.X * 0.5f;
+            System.Single startHY = _startWindowSize.Y * 0.5f;
+
+            System.Single targetHX = sw * 0.5f;
+            System.Single targetHY = sh * 0.5f;
+
+            System.Single hx = startHX + ((targetHX - startHX) * ease);
+            System.Single hy = startHY + ((targetHY - startHY) * ease);
+
+            // Clamp to avoid negative bands when very close to full open
+            System.Single leftBandW = System.MathF.Max(0f, (sw * 0.5f) - hx);
+            System.Single rightBandW = leftBandW;
+            System.Single topBandH = System.MathF.Max(0f, (sh * 0.5f) - hy);
+            System.Single bottomBandH = topBandH;
+
+            // Top band: covers [0, 0, sw, topBandH]
+            _top.Position = new Vector2f(0f, 0f);
+            _top.Size = new Vector2f(sw, topBandH);
+
+            // Bottom band: covers [0, sh - bottomBandH, sw, bottomBandH]
+            _bottom.Position = new Vector2f(0f, sh - bottomBandH);
+            _bottom.Size = new Vector2f(sw, bottomBandH);
+
+            // Left band: covers [0, sh/2 - hy, leftBandW, 2*hy]
+            _left.Position = new Vector2f(0f, (sh * 0.5f) - hy);
+            _left.Size = new Vector2f(leftBandW, 2f * hy);
+
+            // Right band: covers [sw - rightBandW, sh/2 - hy, rightBandW, 2*hy]
+            _right.Position = new Vector2f(sw - rightBandW, (sh * 0.5f) - hy);
+            _right.Size = new Vector2f(rightBandW, 2f * hy);
+
+            if (t >= 1f)
+            {
+                Destroy(); // fully revealed, remove mask
+            }
+        }
+
+        public override void Render(RenderTarget target)
+        {
+            // Draw four bands on top of scene
+            target.Draw(_top);
+            target.Draw(_bottom);
+            target.Draw(_left);
+            target.Draw(_right);
+        }
+    }
 
     /// <summary>Menu chính: LOGIN / Settings / Credits / Exit</summary>
     [IgnoredLoad("RenderObject")]
@@ -63,8 +206,8 @@ internal class MainScene : Scene
         #region UI Controls
 
         private readonly StretchableButton _login;
-        private readonly StretchableButton _settings;
-        private readonly StretchableButton _credits;
+        private readonly StretchableButton _register;
+        private readonly StretchableButton _news;
         private readonly StretchableButton _exit;
         private readonly StretchableButton[] _buttons;
 
@@ -83,10 +226,10 @@ internal class MainScene : Scene
         {
             SetZIndex(2);
             _login = NewButton("LOGIN");
-            _settings = NewButton("Settings");
-            _credits = NewButton("Credits");
-            _exit = NewButton("Exit");
-            _buttons = [_login, _settings, _credits, _exit];
+            _register = NewButton("REGISTER");
+            _news = NewButton("NEWS");
+            _exit = NewButton("EXIT");
+            _buttons = [_login, _register, _news, _exit];
 
             ApplyStyles();
             WireHandlers();
@@ -113,14 +256,14 @@ internal class MainScene : Scene
             _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Settings
-            _ = _settings.SetColors(PanelAlt, PanelAltHv);
-            _ = _settings.SetTextColors(TextSoft, TextNeon);
-            _settings.SetTextOutline(new Color(0, 0, 0, 160), 2f);
+            _ = _register.SetColors(PanelAlt, PanelAltHv);
+            _ = _register.SetTextColors(TextSoft, TextNeon);
+            _register.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Credits
-            _ = _credits.SetColors(PanelDark, PanelHover);
-            _ = _credits.SetTextColors(TextSoft, TextNeon);
-            _credits.SetTextOutline(new Color(0, 0, 0, 160), 2f);
+            _ = _news.SetColors(PanelDark, PanelHover);
+            _ = _news.SetTextColors(TextSoft, TextNeon);
+            _news.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
             // Exit
             _ = _exit.SetColors(PanelAlt, PanelAltHv);
@@ -137,14 +280,14 @@ internal class MainScene : Scene
             _login.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
 
-            _settings.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _settings.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Settings));
+            _register.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
+            _register.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Settings));
 
-            _credits.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _credits.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Credits));
+            _news.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
+            _news.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Credits));
 
             _exit.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _exit.RegisterClickHandler(GameEngine.CloseWindow);
+            _exit.RegisterClickHandler(GraphicsEngine.CloseWindow);
         }
 
         #endregion Handlers
@@ -153,7 +296,7 @@ internal class MainScene : Scene
 
         private void LayoutButtons()
         {
-            Vector2u screen = GameEngine.ScreenSize;
+            Vector2u screen = GraphicsEngine.ScreenSize;
 
             // tổng chiều cao (bao gồm spacing giữa các nút)
             System.Single total = 0f;
@@ -164,7 +307,7 @@ internal class MainScene : Scene
 
             total -= VerticalSpacing; // bỏ khoảng cách cuối
 
-            System.Single y = (screen.Y - total) / 2f;
+            System.Single y = (screen.Y - total) / 1.65f;
 
             // căn giữa theo X
             foreach (var b in _buttons)
@@ -233,7 +376,7 @@ internal class MainScene : Scene
         public ParallaxLayer()
         {
             SetZIndex(1);
-            _parallax = new ParallaxBackground(GameEngine.ScreenSize);
+            _parallax = new ParallaxBackground(GraphicsEngine.ScreenSize);
 
             System.Int32 scene = SecureRandom.GetInt32(1, 4);
 
