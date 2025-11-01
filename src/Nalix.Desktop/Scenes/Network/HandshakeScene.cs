@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Common.Logging;
+using Nalix.Common.Packets.Abstractions;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Extensions;
 using Nalix.Desktop.Enums;
@@ -25,7 +26,14 @@ public sealed class HandshakeScene : Scene
     /// <summary>
     /// Initializes a new instance of <see cref="HandshakeScene"/> with name <see cref="SceneNames.Handshake"/>.
     /// </summary>
-    public HandshakeScene() : base(SceneNames.Handshake) { }
+    public HandshakeScene() : base(SceneNames.Handshake)
+    {
+        if (!InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().IsConnected)
+        {
+            InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().Disconnect();
+            SceneManager.ChangeScene(SceneNames.Network);
+        }
+    }
 
     /// <summary>
     /// Load visual indicator(s) and the internal handler that performs the handshake.
@@ -178,6 +186,14 @@ public sealed class HandshakeScene : Scene
                     }
 
                 case State.ShowFail:
+                    {
+                        ReliableClient client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
+                        System.Console.WriteLine(client.Options.EncryptionKey?.Length > 0
+                            ? "Handshake failed: server rejected client."
+                            : "Handshake failed: timed out.");
+                        _state = State.Done;
+                        break;
+                    }
                 case State.Done:
                 default:
                     break;
@@ -216,9 +232,19 @@ public sealed class HandshakeScene : Scene
                     // Gọi one-call handshake (timeout tổng, có thể chỉnh theo nhu cầu)
                     System.Boolean ok = await client.HandshakeAsync(
                         opCode: OpCommand.HANDSHAKE.AsUInt16(),
-                        timeoutMs: 5000,
+                        timeoutMs: 20000,
                         ct: _cts.Token
                     ).ConfigureAwait(false);
+
+                    static void OnAnyPacket(IPacket p) =>
+                        InstanceManager.Instance.GetExistingInstance<ILogger>()?.Debug($"[HS] recv {p.GetType().Name}");
+
+                    client.PacketReceived += OnAnyPacket;
+                    // nhớ gỡ: client.PacketReceived -= OnAnyPacket trong finally
+
+
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()?.Info(
+                        "Handshake process completed with result: {0}, {1}", ok, client.Options.EncryptionKey.Length);
 
                     if (!ok)
                     {

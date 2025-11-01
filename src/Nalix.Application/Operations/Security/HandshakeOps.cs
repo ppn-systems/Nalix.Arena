@@ -133,7 +133,7 @@ public sealed class HandshakeOps
             System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
             System.Array.Clear(secret, 0, secret.Length);
 
-            // Nâng cấp quyền truy cập của client lên mức User
+            // Nâng cấp quyền truy cập của client lên mức Guest
             connection.Level = PermissionLevel.Guest;
 
             // Log successful handshake
@@ -142,6 +142,7 @@ public sealed class HandshakeOps
                 connection.RemoteEndPoint);
 
             response.Initialize(keyPair.PublicKey);
+            response.OpCode = (System.UInt16)OpCommand.HANDSHAKE;
 
             NLogix.Host.Instance.Debug(
                 "len={0} hex={1}",
@@ -158,7 +159,7 @@ public sealed class HandshakeOps
 
             // Reset connection state nếu có lỗi
             connection.Secret = null;
-            connection.Level = PermissionLevel.Guest;
+            connection.Level = PermissionLevel.None;
 
             await connection.SendAsync(
                 ControlType.ERROR,

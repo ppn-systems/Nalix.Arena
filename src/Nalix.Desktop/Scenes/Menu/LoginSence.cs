@@ -4,6 +4,7 @@ using Nalix.Common.Protocols;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
+using Nalix.Desktop.Enums;
 using Nalix.Desktop.Objects.Controls;
 using Nalix.Desktop.Objects.Notifications;
 using Nalix.Framework.Injection;
@@ -38,6 +39,10 @@ internal sealed class LoginSence : Scene
     {
         AddObject(new MainScene.ParallaxLayer());
         AddObject(new LoginUi());
+        Notification notification = new("Welcome! Please log in.", Side.Top);
+        notification.Conceal();
+
+        AddObject(notification);
     }
 
     #region Login UI
@@ -339,6 +344,7 @@ internal sealed class LoginSence : Scene
             var client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
             if (!client.IsConnected)
             {
+                SceneManager.FindByType<Notification>()?.Reveal();
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Not connected to server.");
                 SceneManager.ChangeScene(SceneNames.Network);
                 return;
@@ -347,6 +353,7 @@ internal sealed class LoginSence : Scene
             // Local rate limit (match [PacketRateLimit(2, 03)])
             if (!AllowRateLimitedSend())
             {
+                SceneManager.FindByType<Notification>()?.Reveal();
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Too many attempts. Please wait a moment.");
                 return;
             }
@@ -355,6 +362,7 @@ internal sealed class LoginSence : Scene
             String pass = _pass.Text ?? String.Empty;
             if (String.IsNullOrWhiteSpace(user) || String.IsNullOrWhiteSpace(pass))
             {
+                SceneManager.FindByType<Notification>()?.Reveal();
                 SceneManager.FindByType<Notification>()?.UpdateMessage("Please enter username & password");
                 return;
             }
@@ -367,14 +375,6 @@ internal sealed class LoginSence : Scene
 
             try
             {
-                // 1) Handshake if needed (idempotent)
-                Boolean okHs = await client.HandshakeAsync(opCode: 1, timeoutMs: 3000, ct: _loginCts.Token).ConfigureAwait(false);
-                if (!okHs)
-                {
-                    SceneManager.FindByType<Notification>()?.UpdateMessage("Handshake failed. Please retry.");
-                    return;
-                }
-
                 // 2) Build CredentialsPacket (+Encrypt). Also ensure it carries a SequenceId.
                 var options = client.Options;
                 var creds = new Credentials { Username = user, Password = pass };
@@ -405,6 +405,7 @@ internal sealed class LoginSence : Scene
 
                 if (ctrl.Type == ControlType.ACK)
                 {
+                    SceneManager.FindByType<Notification>()?.Reveal();
                     SceneManager.FindByType<Notification>()?.UpdateMessage("Welcome!");
                     SceneManager.ChangeScene(SceneNames.Main); // hoặc CharacterSelect
                     return;

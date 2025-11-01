@@ -12,12 +12,12 @@ using SFML.Graphics;
 
 namespace Nalix.Desktop.Scenes.Network;
 
-public class ConnectScene : Scene
+public class NetworkScene : Scene
 {
     /// <summary>
     /// Khởi tạo một cảnh mạng với tên được xác định trong <see cref="SceneNames.Network"/>.
     /// </summary>
-    public ConnectScene() : base(SceneNames.Network)
+    public NetworkScene() : base(SceneNames.Network)
     {
     }
 
