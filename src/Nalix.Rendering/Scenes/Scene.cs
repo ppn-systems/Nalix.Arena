@@ -33,7 +33,7 @@ public abstract class Scene(System.String name)
     /// <param name="o">The <see cref="SceneObject"/> to add.</param>
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    protected void AddObject(SceneObject o) => _objects.Add(o);
+    public void AddObject(SceneObject o) => _objects.Add(o);
 
     /// <summary>
     /// Creates the scene by clearing and loading its objects.
