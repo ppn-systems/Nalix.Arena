@@ -12,16 +12,28 @@ using SFML.System;
 namespace Nalix.Launcher.Scenes.Menu;
 
 /// <summary>
-/// Màn hình hiển thị thông tin về nhóm phát triển trò chơi.
+/// Cảnh thiết lập trò chơi, nơi người dùng có thể thực hiện các tùy chỉnh.
 /// </summary>
-internal sealed class CreditsScene : Scene
+public class RegisterScene : Scene
 {
-    public CreditsScene() : base(SceneNames.Credits) { }
+    #region Ctor
 
-    protected override void LoadObjects() => AddObject(new CreditsUi("divider/002"));
+    /// <summary>Khởi tạo cảnh thiết lập với tên từ <see cref="SceneNames.Register"/>.</summary>
+    public RegisterScene() : base(SceneNames.Register) { }
+
+    #endregion
+
+    #region Scene lifecycle
+
+    /// <summary>Tải các đối tượng của cảnh thiết lập như nền, banner và biểu tượng đóng.</summary>
+    protected override void LoadObjects() => AddObject(new SettingsUi());
+
+    #endregion
+
+    #region Private types
 
     [IgnoredLoad("RenderObject")]
-    private sealed class CreditsUi : RenderObject
+    private sealed class SettingsUi : RenderObject
     {
         #region Constants
 
@@ -29,16 +41,12 @@ internal sealed class CreditsScene : Scene
         private const System.Single PanelHeightRatio = 0.6f;
         private const System.Single PanelColorGray = 40f;
         private const System.Single TitleFontSize = 32f;
-        private const System.Single BodyFontSize = 20f;
         private const System.Single TitleTopPadding = 24f;
         private const System.Single SidePadding = 24f;        // lề trong panel cho divider
         private const System.Single GapTitleToDivider = 12f;  // khoảng cách chữ <-> divider
         private const System.Single PanelSideTrim = 32f;      // rút ngắn divider về phía panel
-        private const System.Single BodyLeftPadding = 40f;
-        private const System.Single BodyTopGapFromTitle = 28f;
         private const System.Single BackBottomPadding = 28f;
         private const System.Single TitleOutlineThickness = 2f;
-        private const System.Single BodyOutlineThickness = 1.5f;
         private const System.Single BackButtonWidth = 200f;
 
         #endregion Constants
@@ -47,7 +55,6 @@ internal sealed class CreditsScene : Scene
 
         private readonly NineSlicePanel _bg;
         private readonly Text _title;
-        private readonly Text _teamInfo;
         private readonly StretchableButton _backBtn;
         private readonly Sprite _divLeft, _divRight;
         private readonly Texture _divTex;
@@ -55,7 +62,7 @@ internal sealed class CreditsScene : Scene
 
         #endregion Fields
 
-        public CreditsUi(System.String texture = "divider/002")
+        public SettingsUi(System.String texture = "divider/002")
         {
             // Build phase
             _bg = BuildBackground();
@@ -63,7 +70,6 @@ internal sealed class CreditsScene : Scene
             _title = BuildTitle(_font);
             _divTex = Assets.UiTextures.Load(texture);
             (_divLeft, _divRight) = BuildDividers(_divTex);
-            _teamInfo = BuildTeamInfo(_font);
             _backBtn = BuildBackButton();
 
             // Wire events
@@ -84,7 +90,6 @@ internal sealed class CreditsScene : Scene
             target.Draw(_title);
             target.Draw(_divLeft);
             target.Draw(_divRight);
-            target.Draw(_teamInfo);
             _backBtn.Render(target);
         }
 
@@ -112,7 +117,7 @@ internal sealed class CreditsScene : Scene
         }
 
         private static Text BuildTitle(Font font)
-            => new("Credits", font, (System.UInt32)TitleFontSize)
+            => new("Register", font, (System.UInt32)TitleFontSize)
             {
                 FillColor = Color.White,
                 OutlineColor = new Color(0, 0, 0, 200),
@@ -125,20 +130,6 @@ internal sealed class CreditsScene : Scene
             var right = new Sprite(tex) { Scale = new Vector2f(-0.5f, 0.5f) }; // mirror X
             return (left, right);
         }
-
-        private static Text BuildTeamInfo(Font font)
-            => new(
-                "Game developed by:\n" +
-                "- CHAT GPT - Github Copilot - PhcNguyen: Programming\n" +
-                "- PhcNguyen: Art & Design\n" +
-                "- PhcNguyen: Sound & Music\n" +
-                "- PhcNguyen: Project Lead",
-                font, (System.UInt32)BodyFontSize)
-            {
-                FillColor = new Color(220, 220, 220),
-                OutlineColor = new Color(0, 0, 0, 160),
-                OutlineThickness = BodyOutlineThickness,
-            };
 
         private static StretchableButton BuildBackButton()
             => new("Back", BackButtonWidth);
@@ -156,7 +147,6 @@ internal sealed class CreditsScene : Scene
         {
             LayoutTitle();
             LayoutDividers();
-            LayoutBody();
             LayoutBackButton();
         }
 
@@ -213,17 +203,6 @@ internal sealed class CreditsScene : Scene
             _divRight.Position = new Vector2f(innerRight - PanelSideTrim, divY);
         }
 
-        private void LayoutBody()
-        {
-            var p = _bg.Position;
-            var tb = _title.GetLocalBounds();
-
-            // Đặt nội dung ngay dưới title 1 khoảng
-            System.Single bodyX = p.X + BodyLeftPadding;
-            System.Single bodyY = _title.Position.Y + tb.Height + BodyTopGapFromTitle;
-            _teamInfo.Position = new Vector2f(bodyX, bodyY);
-        }
-
         private void LayoutBackButton()
         {
             var p = _bg.Position;
@@ -238,4 +217,6 @@ internal sealed class CreditsScene : Scene
 
         #endregion Build helpers
     }
+
+    #endregion Private types
 }

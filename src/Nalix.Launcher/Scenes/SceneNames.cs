@@ -20,7 +20,7 @@ internal static class SceneNames
     /// <summary>
     /// Cảnh hiện thị thông tin về nhóm phát triển trò chơi.
     /// </summary>
-    public const System.String Credits = "credits";
+    public const System.String News = "news";
 
     /// <summary>
     /// Cảnh kết nối mạng (hiển thị khi đang cố gắng kết nối đến server).
@@ -33,7 +33,7 @@ internal static class SceneNames
     public const System.String Handshake = "handshake";
 
     /// <summary>
-    /// Cảnh thiết lập trò chơi (âm thanh, hình ảnh, v.v.).
+    /// Cảnh đăng ký tài khoản mới. 
     /// </summary>
-    public const System.String Settings = "settings";
+    public const System.String Register = "register";
 }

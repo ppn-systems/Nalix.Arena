@@ -15,7 +15,7 @@ public class StretchableButton : RenderObject
     #region Config
 
     private const System.Single DefaultHeight = 50f;
-    private const System.Single DefaultWidth = 0f;     // cho phép co theo text nếu width < min
+    private const System.Single DefaultWidth = 100f;     // cho phép co theo text nếu width < min
     private const System.Single HorizontalPaddingDefault = 16f;
     private const System.UInt32 DefaultFontSize = 20;
     private static readonly Thickness DefaultSlice = new(32);

@@ -46,7 +46,7 @@ internal class MainScene : Scene
     /// Center top game logo object.
     /// Automatically scales to a safe width and preserves aspect ratio.
     /// </summary>
-    public sealed class LauncherLogo : RenderObject
+    private sealed class LauncherLogo : RenderObject
     {
         private readonly Sprite _logo;
 
@@ -70,7 +70,7 @@ internal class MainScene : Scene
             System.Single texW = r.Width;
 
             // scale width ~ 45% screen width
-            System.Single targetW = sw * 0.2f;
+            System.Single targetW = sw * 0.3f;
             System.Single scale = targetW / texW;
             _logo.Scale = new Vector2f(scale, scale);
 
@@ -183,7 +183,7 @@ internal class MainScene : Scene
         }
     }
 
-    /// <summary>Menu chính: LOGIN / Settings / Credits / Exit</summary>
+    /// <summary>Menu chính: LOGIN / Register / News / Exit</summary>
     [IgnoredLoad("RenderObject")]
     private class Menu : RenderObject
     {
@@ -255,12 +255,12 @@ internal class MainScene : Scene
             _ = _login.SetTextColors(TextWhite, TextNeon);
             _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            // Settings
+            // Register
             _ = _register.SetColors(PanelAlt, PanelAltHv);
             _ = _register.SetTextColors(TextSoft, TextNeon);
             _register.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-            // Credits
+            // News
             _ = _news.SetColors(PanelDark, PanelHover);
             _ = _news.SetTextColors(TextSoft, TextNeon);
             _news.SetTextOutline(new Color(0, 0, 0, 160), 2f);
@@ -281,10 +281,10 @@ internal class MainScene : Scene
             _login.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Login));
 
             _register.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _register.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Settings));
+            _register.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Register));
 
             _news.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
-            _news.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.Credits));
+            _news.RegisterClickHandler(() => SceneManager.ChangeScene(SceneNames.News));
 
             _exit.RegisterClickHandler(static () => Assets.Sfx.Play("1"));
             _exit.RegisterClickHandler(GraphicsEngine.CloseWindow);
