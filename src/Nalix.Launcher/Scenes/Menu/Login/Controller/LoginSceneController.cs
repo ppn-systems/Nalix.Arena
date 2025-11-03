@@ -33,6 +33,7 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
     private readonly ISceneNavigator _nav = nav ?? throw new System.ArgumentNullException(nameof(nav));
     private readonly LoginView _view = view ?? throw new System.ArgumentNullException(nameof(view));
     private readonly Notification _notification = new("Welcome! Please log in.", Side.Top);
+    private ParallaxLayerView _parallaxLayerView;
     private readonly LoginModel _model = new();
 
     private CancellationTokenSource _loginCts;
@@ -49,8 +50,8 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         // Model parallax + view
         System.Int32 v = SecureRandom.GetInt32(1, 4);
         var preset = _parallaxPresets.GetByVariant(v);
-        var parallaxView = new ParallaxLayerView(_theme.Current, preset);
-        scene.AddObject(parallaxView);
+        _parallaxLayerView = new ParallaxLayerView(_theme.Current, preset);
+        scene.AddObject(_parallaxLayerView);
         WireView();
 
         GraphicsEngine.OnUpdate += Update;
@@ -71,8 +72,6 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         if (!client.IsConnected)
         {
             GraphicsEngine.OnUpdate -= Update;
-            SceneManager.QueueDestroy(_view);
-            SceneManager.QueueDestroy(_notification);
             _nav.Change(SceneNames.Network);
             return;
         }

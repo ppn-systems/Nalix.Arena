@@ -1,5 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
+using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;
 using Nalix.Launcher.Objects.Notifications;
 using Nalix.Launcher.Scenes.Menu.Main.Model;
@@ -7,6 +8,7 @@ using Nalix.Launcher.Scenes.Menu.Main.View;
 using Nalix.Launcher.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Scenes;
+using Nalix.SDK.Remote;
 
 namespace Nalix.Launcher.Scenes.Menu.Main.Controller;
 
@@ -63,6 +65,13 @@ internal sealed class MainSceneController(
             }
 
             _sfx.Play("1");
+
+            if (!InstanceManager.Instance.GetOrCreateInstance<ReliableClient>().IsConnected)
+            {
+                _nav.Change(SceneNames.Network);
+                return;
+            }
+
             _nav.Change(SceneNames.Login);
         };
 
