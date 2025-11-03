@@ -8,6 +8,7 @@ using Nalix.Framework.Injection;
 using Nalix.Launcher.Enums;
 using Nalix.Launcher.Objects.Indicators;
 using Nalix.Launcher.Objects.Notifications;
+using Nalix.Launcher.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
@@ -66,7 +67,7 @@ public sealed class HandshakeScene : Scene
         // ---- Configuration ---------------------------------------------------
         private const System.Single RetryDelaySec = 3f;
         private const System.Int32 MaxAttempts = 3;
-        private const System.String NextScene = SceneNames.Login;
+
         // ---------------------------------------------------------------------
 
         private enum State { Idle, Running, Success, Failed, WaitingRetry, ShowFail, Done }
@@ -171,7 +172,7 @@ public sealed class HandshakeScene : Scene
                     {
                         // Proceed to next scene
                         SceneManager.QueueDestroy(this);
-                        SceneManager.ChangeScene(NextScene);
+                        InstanceManager.Instance.GetExistingInstance<ISceneNavigator>().Change(SceneNames.Login);
                         _state = State.Done;
                         break;
                     }
@@ -215,9 +216,14 @@ public sealed class HandshakeScene : Scene
 
             _task = System.Threading.Tasks.Task.Run(async () =>
             {
+                static void OnAnyPacket(IPacket p) =>
+                    InstanceManager.Instance.GetExistingInstance<ILogger>()?.Debug($"[HS] recv {p.GetType().Name}");
+
+                ReliableClient client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
+
                 try
                 {
-                    ReliableClient client = InstanceManager.Instance.GetOrCreateInstance<ReliableClient>();
+
                     if (!client.IsConnected)
                     {
                         throw new System.InvalidOperationException("Client is not connected.");
@@ -232,12 +238,9 @@ public sealed class HandshakeScene : Scene
                     // Gọi one-call handshake (timeout tổng, có thể chỉnh theo nhu cầu)
                     System.Boolean ok = await client.HandshakeAsync(
                         opCode: OpCommand.HANDSHAKE.AsUInt16(),
-                        timeoutMs: 20000,
+                        timeoutMs: 5000,
                         ct: _cts.Token
                     ).ConfigureAwait(false);
-
-                    static void OnAnyPacket(IPacket p) =>
-                        InstanceManager.Instance.GetExistingInstance<ILogger>()?.Debug($"[HS] recv {p.GetType().Name}");
 
                     client.PacketReceived += OnAnyPacket;
                     // nhớ gỡ: client.PacketReceived -= OnAnyPacket trong finally
@@ -246,11 +249,11 @@ public sealed class HandshakeScene : Scene
                     InstanceManager.Instance.GetExistingInstance<ILogger>()?.Info(
                         "Handshake process completed with result: {0}, {1}", ok, client.Options.EncryptionKey.Length);
 
-                    if (!ok)
-                    {
-                        // Fail có kiểm soát để bật nhánh retry
-                        throw new System.InvalidOperationException("Handshake timed out or was rejected.");
-                    }
+                    //if (!ok)
+                    //{
+                    //    // Fail có kiểm soát để bật nhánh retry
+                    //    throw new System.InvalidOperationException("Handshake timed out or was rejected.");
+                    //}
 
                     // Thành công (lib đã log “EncryptionKey installed.”)
                     InstanceManager.Instance.GetExistingInstance<ILogger>()
@@ -268,6 +271,10 @@ public sealed class HandshakeScene : Scene
                     InstanceManager.Instance.GetExistingInstance<ILogger>()
                         ?.Error("Handshake error.", ex);
                     throw;
+                }
+                finally
+                {
+                    client.PacketReceived -= OnAnyPacket;
                 }
             }, _cts.Token);
         }

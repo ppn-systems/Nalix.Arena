@@ -33,7 +33,7 @@ internal static class SceneNames
     public const System.String Handshake = "handshake";
 
     /// <summary>
-    /// Cảnh đăng ký tài khoản mới. 
+    /// Cảnh đăng ký tài khoản mới.
     /// </summary>
     public const System.String Register = "register";
 }

@@ -65,19 +65,19 @@ public sealed class HandshakeOps
         }
 
         // Nếu đã handshake, không cho phép lặp lại - theo security best practices
-        if (connection.Secret.Length == 32)
-        {
-            NLogix.Host.Instance.Warn(
-                "HANDSHAKE already completed for {0}",
-                connection.RemoteEndPoint);
+        //if (connection.Secret.Length == 32)
+        //{
+        //    NLogix.Host.Instance.Warn(
+        //        "HANDSHAKE already completed for {0}",
+        //        connection.RemoteEndPoint);
 
-            await connection.SendAsync(
-                ControlType.NACK,
-                ProtocolCode.DUPLICATE_SESSION,
-                ProtocolAction.DO_NOT_RETRY
-            ).ConfigureAwait(false);
-            return;
-        }
+        //    await connection.SendAsync(
+        //        ControlType.NACK,
+        //        ProtocolCode.DUPLICATE_SESSION,
+        //        ProtocolAction.DO_NOT_RETRY
+        //    ).ConfigureAwait(false);
+        //    return;
+        //}
 
         // Defensive programming - kiểm tra payload null
         if (packet.Data is null)

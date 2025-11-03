@@ -4,6 +4,7 @@ using Nalix.Framework.Injection;
 using Nalix.Launcher.Enums;
 using Nalix.Launcher.Objects.Indicators;
 using Nalix.Launcher.Objects.Notifications;
+using Nalix.Launcher.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
@@ -64,7 +65,7 @@ public class NetworkScene : Scene
         {
             _timer = 0f;
             _attempt = 0;
-            _state = ConnectState.Failed;
+            _state = ConnectState.Waiting;
         }
 
         public void ForceTryNow()
@@ -147,6 +148,7 @@ public class NetworkScene : Scene
                         // Proceed to next scene.
                         SceneManager.QueueDestroy(this);
                         SceneManager.ChangeScene(SceneNames.Handshake);
+                        InstanceManager.Instance.GetExistingInstance<ISceneNavigator>().Change(SceneNames.Handshake);
                         _state = ConnectState.Done;
                         break;
                     }
@@ -220,3 +222,4 @@ public class NetworkScene : Scene
         }
     }
 }
+
