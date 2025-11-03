@@ -66,8 +66,7 @@ public static class SceneManager
         System.Collections.Generic.IEnumerable<System.Type> sceneTypes = System.Reflection.Assembly
             .GetEntryAssembly()!
             .GetTypes()
-            .Where(t => t.Namespace != null &&
-                        t.Namespace.Contains(GraphicsEngine.GraphicsConfig.ScenesNamespace));
+            .Where(t => t.Namespace?.Contains(GraphicsEngine.GraphicsConfig.ScenesNamespace) == true);
 
         // HashSet to check for duplicate scene names efficiently
         System.Collections.Generic.HashSet<System.String> sceneNames = [];
@@ -84,9 +83,9 @@ public static class SceneManager
             if (System.Reflection.CustomAttributeExtensions.GetCustomAttribute<IgnoredLoadAttribute>(type) != null)
             {
                 NLogixFx.Debug(
-                    source: type.Name,
                     message: $"Skipping load of scene {type.Name} because it is marked as not loadable."
-                );
+,
+                    source: type.Name);
                 continue;
             }
 
@@ -216,8 +215,7 @@ public static class SceneManager
         {
             throw new System.Exception("Instance of SceneObject does not exist in the scene.");
         }
-        if (_spawnQueue.Remove(o)) { }
-        else if (!_destroyQueue.Add(o))
+        if (!_spawnQueue.Remove(o) && !_destroyQueue.Add(o))
         {
             "Instance of SceneObject is already queued to be destroyed.".Warn();
         }
@@ -242,7 +240,9 @@ public static class SceneManager
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     internal static void ProcessLoadScene()
     {
-        if (_nextScene == "")
+        if (_nextScene == _currentScene?.Name) { _nextScene = ""; return; }
+
+        if (_nextScene?.Length == 0)
         {
             return;
         }

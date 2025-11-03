@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Launcher.Services.Dtos;
+using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
@@ -8,13 +9,14 @@ using SFML.System;
 
 namespace Nalix.Launcher.Scenes.Menu.Main.View;
 
+[IgnoredLoad("RenderObject")]
 internal sealed class LauncherLogoView : RenderObject
 {
     private readonly Sprite _logo;
-    private readonly IUiTheme _theme;
+    private readonly ThemeDto _theme;
     private Vector2u _lastSize;
 
-    public LauncherLogoView(IUiTheme theme, System.String texturePath = "0")
+    public LauncherLogoView(ThemeDto theme, System.String texturePath = "0")
     {
         _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
         var tex = Assets.UiTextures.Load(texturePath);

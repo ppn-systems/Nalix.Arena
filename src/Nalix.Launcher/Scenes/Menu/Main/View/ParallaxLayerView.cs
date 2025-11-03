@@ -1,9 +1,10 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Launcher.Services.Dtos;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Parallax;
 using Nalix.Rendering.Objects;
+using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 
 namespace Nalix.Launcher.Scenes.Menu.Main.View;
@@ -12,17 +13,24 @@ namespace Nalix.Launcher.Scenes.Menu.Main.View;
 [IgnoredLoad("RenderObject")]
 internal sealed class ParallaxLayerView : RenderObject
 {
-    private readonly ParallaxBackground _parallax;
-    private readonly IUiTheme _theme;
+    private readonly ParallaxPreset _parallax;
+    private readonly ParallaxBackground _parallaxbg;
+    private readonly ThemeDto _theme;
 
-    public ParallaxLayerView(IUiTheme theme, ParallaxBackground parallax)
+    public ParallaxLayerView(ThemeDto theme, ParallaxPreset parallax)
     {
         _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
         _parallax = parallax ?? throw new System.ArgumentNullException(nameof(parallax));
+
+        _parallaxbg = new ParallaxBackground(GraphicsEngine.ScreenSize);
+        for (System.Int32 i = 0; i < _parallax.Layers.Count; i++)
+        {
+            _parallaxbg.AddLayer(Assets.UiTextures.Load(_parallax.Layers[i].TexturePath), _parallax.Layers[i].Speed, _parallax.Layers[i].Repeat);
+        }
         SetZIndex(_theme.ParallaxZ);
     }
 
-    public override void Update(System.Single dt) => _parallax.Update(dt);
+    public override void Update(System.Single dt) => _parallaxbg.Update(dt);
 
     public override void Render(RenderTarget target)
     {
@@ -31,7 +39,7 @@ internal sealed class ParallaxLayerView : RenderObject
             return;
         }
 
-        _parallax.Draw(target);
+        _parallaxbg.Draw(target);
     }
 
     protected override Drawable GetDrawable()

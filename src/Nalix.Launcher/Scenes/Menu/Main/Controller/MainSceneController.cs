@@ -5,42 +5,46 @@ using Nalix.Launcher.Objects.Notifications;
 using Nalix.Launcher.Scenes.Menu.Main.Model;
 using Nalix.Launcher.Scenes.Menu.Main.View;
 using Nalix.Launcher.Services.Abstractions;
-using Nalix.Rendering.Runtime;
+using Nalix.Rendering.Attributes;
+using Nalix.Rendering.Scenes;
 
 namespace Nalix.Launcher.Scenes.Menu.Main.Controller;
 
+[IgnoredLoad("RenderObject")]
 internal sealed class MainSceneController(
     MainMenuModel model,
     ISceneNavigator nav,
     ISfxPlayer sfx,
-    IParallaxFactory parallaxFactory,
-    IUiTheme theme)
+    IParallaxPresetProvider parallaxFactory,
+    IThemeProvider theme)
 {
-    private readonly IParallaxFactory _parallaxFactory = parallaxFactory ?? throw new System.ArgumentNullException(nameof(parallaxFactory));
-    private readonly IUiTheme _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
+    private readonly IParallaxPresetProvider _parallaxPresets = parallaxFactory ?? throw new System.ArgumentNullException(nameof(parallaxFactory));
+    private readonly IThemeProvider _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
     private readonly MainMenuModel _model = model ?? throw new System.ArgumentNullException(nameof(model));
     private readonly ISceneNavigator _nav = nav ?? throw new System.ArgumentNullException(nameof(nav));
     private readonly ISfxPlayer _sfx = sfx ?? throw new System.ArgumentNullException(nameof(sfx));
 
     // Lắp ráp MVC vào scene (composition root)
-    public void Compose(MainScene scene)
+    public void Compose(Scene scene)
     {
         // View: hiệu ứng mở đầu
-        scene.AddObject(new RectRevealEffectView(_theme));
+        scene.AddObject(new RectRevealEffectView(_theme.Current));
 
         // View: logo
-        scene.AddObject(new LauncherLogoView(_theme));
+        scene.AddObject(new LauncherLogoView(_theme.Current));
 
         // View: icon 12+
-        scene.AddObject(new TwelveIconView(_theme));
+        scene.AddObject(new TwelveIconView(_theme.Current));
 
         // Model parallax + view
-        System.Int32 variant = SecureRandom.GetInt32(1, 4); // giữ nguyên tính ngẫu nhiên
-        var parallaxModel = _parallaxFactory.Create(GraphicsEngine.ScreenSize, variant);
-        scene.AddObject(new ParallaxLayerView(_theme, parallaxModel));
+        System.Int32 v = SecureRandom.GetInt32(1, 4);
+        var preset = _parallaxPresets.GetByVariant(v);
+        var parallaxView = new ParallaxLayerView(_theme.Current, preset);
+
+        scene.AddObject(parallaxView);
 
         // View: menu
-        var menu = new MainMenuView(_theme);
+        var menu = new MainMenuView(_theme.Current);
         WireMenu(menu);
         scene.AddObject(menu);
 

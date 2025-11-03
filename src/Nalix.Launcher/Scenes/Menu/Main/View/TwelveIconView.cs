@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Launcher.Services.Dtos;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using SFML.Graphics;
@@ -13,9 +13,9 @@ namespace Nalix.Launcher.Scenes.Menu.Main.View;
 internal sealed class TwelveIconView : RenderObject
 {
     private readonly Sprite _icon;
-    private readonly IUiTheme _theme;
+    private readonly ThemeDto _theme;
 
-    public TwelveIconView(IUiTheme theme)
+    public TwelveIconView(ThemeDto theme)
     {
         _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
         SetZIndex(_theme.ParallaxZ + 1);

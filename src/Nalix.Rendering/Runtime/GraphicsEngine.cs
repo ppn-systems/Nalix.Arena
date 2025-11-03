@@ -34,7 +34,12 @@ public static class GraphicsEngine
     /// <summary>
     /// Provides access to the assembly configuration.
     /// </summary>
-    public static GraphicsConfig GraphicsConfig { get; private set; }
+    public static GraphicsConfig GraphicsConfig { get; }
+
+    /// <summary>
+    /// User-defined update event called every frame with delta time in seconds.
+    /// </summary>
+    public static System.Action<System.Single> OnUpdate { get; set; }
 
     /// <summary>
     /// Static constructor to initialize the game configuration and window.
@@ -174,6 +179,7 @@ public static class GraphicsEngine
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     private static void Update(System.Single deltaTime)
     {
+        OnUpdate?.Invoke(deltaTime);
         InputState.Update(_window);
         SceneManager.ProcessLoadScene();
         SceneManager.ProcessDestroyQueue();

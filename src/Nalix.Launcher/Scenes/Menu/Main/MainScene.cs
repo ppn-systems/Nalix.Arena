@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
+using Nalix.Framework.Injection;
 using Nalix.Launcher.Scenes.Menu.Main.Controller;
 using Nalix.Launcher.Scenes.Menu.Main.Model;
-using Nalix.Launcher.Services;
-using Nalix.Launcher.Services.Adapters;
+using Nalix.Launcher.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 
 namespace Nalix.Launcher.Scenes.Menu.Main;
@@ -16,13 +16,12 @@ internal sealed class MainScene : Scene
     public MainScene()
         : base(SceneNames.Main)
     {
-        var theme = new ThemeDto();
         _controller = new MainSceneController(
             new MainMenuModel(),
-            new SceneNavigatorAdapter(),
-            new SfxPlayerAdapter(),
-            new ParallaxFactoryAdapter(),
-            theme);
+            InstanceManager.Instance.GetExistingInstance<ISceneNavigator>(),
+            InstanceManager.Instance.GetExistingInstance<ISfxPlayer>(),
+            InstanceManager.Instance.GetExistingInstance<IParallaxPresetProvider>(),
+            InstanceManager.Instance.GetExistingInstance<IThemeProvider>());
     }
 
     // Ctor DI: nếu sau này bạn dùng container

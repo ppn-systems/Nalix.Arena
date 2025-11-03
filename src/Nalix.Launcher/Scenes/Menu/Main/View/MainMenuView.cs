@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Launcher.Objects.Controls;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Launcher.Services.Dtos;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -25,12 +25,12 @@ internal sealed class MainMenuView : RenderObject
     private readonly StretchableButton _exit;
     private readonly StretchableButton[] _buttons;
 
-    private readonly IUiTheme _theme;
+    private readonly ThemeDto _theme;
     private const System.Single ButtonWidth = 380f;
     private const System.Single VerticalSpacing = 25f;
     private Vector2u _lastSize;
 
-    public MainMenuView(IUiTheme theme)
+    public MainMenuView(ThemeDto theme)
     {
         _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
         SetZIndex(_theme.OverlayZ);
@@ -53,20 +53,20 @@ internal sealed class MainMenuView : RenderObject
 
     private void ApplyStyles()
     {
-        _ = _login.SetColors(_theme.PanelDark, _theme.PanelHover)
-                  .SetTextColors(_theme.TextWhite, _theme.TextNeon);
+        _ = _login.SetColors(C(_theme.PanelDark), C(_theme.PanelHover))
+                  .SetTextColors(C(_theme.TextWhite), C(_theme.TextNeon));
         _login.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-        _ = _register.SetColors(_theme.PanelAlt, _theme.PanelAltHover)
-                     .SetTextColors(_theme.TextSoft, _theme.TextNeon);
+        _ = _register.SetColors(C(_theme.PanelAlt), C(_theme.PanelAltHover))
+                     .SetTextColors(C(_theme.TextSoft), C(_theme.TextNeon));
         _register.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-        _ = _news.SetColors(_theme.PanelDark, _theme.PanelHover)
-                 .SetTextColors(_theme.TextSoft, _theme.TextNeon);
+        _ = _news.SetColors(C(_theme.PanelDark), C(_theme.PanelHover))
+                 .SetTextColors(C(_theme.TextSoft), C(_theme.TextNeon));
         _news.SetTextOutline(new Color(0, 0, 0, 160), 2f);
 
-        _ = _exit.SetColors(_theme.PanelAlt, _theme.PanelAltHover)
-                 .SetTextColors(_theme.ExitNormal, _theme.ExitHover);
+        _ = _exit.SetColors(C(_theme.PanelAlt), C(_theme.PanelAltHover))
+                 .SetTextColors(C(_theme.ExitNormal), C(_theme.ExitHover));
         _exit.SetTextOutline(new Color(0, 0, 0, 180), 2f);
     }
 
@@ -130,4 +130,6 @@ internal sealed class MainMenuView : RenderObject
     }
 
     protected override Drawable GetDrawable() => null;
+
+    private static Color C(System.Drawing.Color c) => new(c.R, c.G, c.B, c.A);
 }

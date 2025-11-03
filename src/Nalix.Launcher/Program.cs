@@ -1,6 +1,9 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Communication;
+using Nalix.Framework.Injection;
+using Nalix.Launcher.Adapters;
+using Nalix.Launcher.Services.Abstractions;
 using Nalix.Rendering.Runtime;
 
 namespace Nalix.Launcher;
@@ -22,6 +25,11 @@ internal static class Program
     {
         // Initialize client-side services and registrations.
         Registry.Load();
+
+        InstanceManager.Instance.Register<ISfxPlayer>(new SfxPlayerAdapter());
+        InstanceManager.Instance.Register<IThemeProvider>(new ThemeAdapter());
+        InstanceManager.Instance.Register<ISceneNavigator>(new SceneNavigatorAdapter());
+        InstanceManager.Instance.Register<IParallaxPresetProvider>(new ParallaxPresetProviderAdapter());
 
         // Open the game window.
         GraphicsEngine.OpenWindow();

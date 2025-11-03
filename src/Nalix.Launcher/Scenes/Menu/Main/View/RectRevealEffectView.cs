@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Launcher.Services.Dtos;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -22,9 +22,9 @@ internal sealed class RectRevealEffectView : RenderObject
     private System.Single _t;
     private readonly System.Single _duration = 2f;
     private readonly Vector2f _startWindowSize;
-    private readonly IUiTheme _theme;
+    private readonly ThemeDto _theme;
 
-    internal RectRevealEffectView(IUiTheme theme, System.Single startWidth = 100f, System.Single startHeight = 60f)
+    internal RectRevealEffectView(ThemeDto theme, System.Single startWidth = 100f, System.Single startHeight = 60f)
     {
         _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
 
