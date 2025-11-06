@@ -65,7 +65,7 @@ public sealed class HandshakeScene : Scene
     private sealed class HandshakeHandler : RenderObject
     {
         // ---- Configuration ---------------------------------------------------
-        private const System.Single RetryDelaySec = 3f;
+        private const System.Single RetryDelaySec = 5f;
         private const System.Int32 MaxAttempts = 3;
 
         // ---------------------------------------------------------------------
@@ -238,22 +238,21 @@ public sealed class HandshakeScene : Scene
                     // Gọi one-call handshake (timeout tổng, có thể chỉnh theo nhu cầu)
                     System.Boolean ok = await client.HandshakeAsync(
                         opCode: OpCommand.HANDSHAKE.AsUInt16(),
-                        timeoutMs: 5000,
+                        timeoutMs: 10000,
                         ct: _cts.Token
                     ).ConfigureAwait(false);
 
                     client.PacketReceived += OnAnyPacket;
                     // nhớ gỡ: client.PacketReceived -= OnAnyPacket trong finally
 
-
                     InstanceManager.Instance.GetExistingInstance<ILogger>()?.Info(
                         "Handshake process completed with result: {0}, {1}", ok, client.Options.EncryptionKey.Length);
 
-                    //if (!ok)
-                    //{
-                    //    // Fail có kiểm soát để bật nhánh retry
-                    //    throw new System.InvalidOperationException("Handshake timed out or was rejected.");
-                    //}
+                    if (!ok)
+                    {
+                        // Fail có kiểm soát để bật nhánh retry
+                        throw new System.InvalidOperationException("Handshake timed out or was rejected.");
+                    }
 
                     // Thành công (lib đã log “EncryptionKey installed.”)
                     InstanceManager.Instance.GetExistingInstance<ILogger>()
@@ -302,7 +301,9 @@ public sealed class HandshakeScene : Scene
             box.RegisterAction(() =>
             {
                 box.Destroy();
-                SceneManager.ChangeScene(SceneNames.Handshake);
+
+                System.Threading.Thread.Sleep(100); // slight delay to
+                SceneManager.ChangeScene(SceneNames.Main);
             });
 
             // Optional: add a secondary "Exit" if your ActionNotification supports multi-buttons.
