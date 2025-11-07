@@ -13,15 +13,14 @@ internal sealed class LoginSceneController(
     IParallaxPresetProvider parallaxPreset) : CredentialsSceneController<LoginView>(view, theme, nav, parallaxPreset)
 {
     protected override OpCommand Command => OpCommand.LOGIN;
-    protected override System.String SuccessMessage => "Welcome!";
 
     protected override System.String MapErrorMessage(ProtocolCode code) => code switch
     {
+        ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch.",
         ProtocolCode.UNAUTHENTICATED => "Invalid username or password.",
         ProtocolCode.ACCOUNT_LOCKED => "Too many failed attempts. Please wait and try again.",
         ProtocolCode.ACCOUNT_SUSPENDED => "Your account is suspended.",
         ProtocolCode.VALIDATION_FAILED => "Please fill both username and password.",
-        ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch.",
         ProtocolCode.CANCELLED => "Login cancelled.",
         ProtocolCode.INTERNAL_ERROR => "Server error. Please try again later.",
         _ => "Login failed."

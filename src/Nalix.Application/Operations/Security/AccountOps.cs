@@ -1,20 +1,21 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
+using Nalix.Application.Validators;
 using Nalix.Common.Connection;
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
+using Nalix.Common.Protocols;
 using Nalix.Communication.Collections;
 using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
+using Nalix.Framework.Cryptography.Security;
 using Nalix.Framework.Injection;
-using Nalix.Infrastructure.Abstractions;
+using Nalix.Framework.Randomization;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
+using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;                 // <-- for ConnectionExtensions.SendAsync(..)
 using Nalix.Shared.Memory.Pooling;
-using Nalix.Common.Protocols;
-using Nalix.Framework.Cryptography.Security;
-using Nalix.Framework.Randomization;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
 
 namespace Nalix.Application.Operations.Security;
 
@@ -23,9 +24,9 @@ namespace Nalix.Application.Operations.Security;
 /// Now emits synchronized control directives via <see cref="ConnectionExtensions.SendAsync"/>.
 /// </summary>
 [PacketController]
-public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
+public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
 {
-    private readonly ICredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
+    private readonly CredentialsRepository _accounts = accounts ?? throw new System.ArgumentNullException(nameof(accounts));
 
     private const System.Int32 MaxFailedLoginAttempts = 5;
     private static readonly System.TimeSpan LockoutWindow = System.TimeSpan.FromMinutes(3);
@@ -49,100 +50,69 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
     [PacketOpcode((System.UInt16)OpCommand.REGISTER)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public async System.Threading.Tasks.Task RegisterAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task RegisterAsync(
+        IPacket p, IConnection connection,
+        System.Threading.CancellationToken token)
     {
         System.ArgumentNullException.ThrowIfNull(connection);
         System.UInt32 seq = GetSequenceIdOrZero(p);
 
         if (p is not CredentialsPacket packet)
         {
-            NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected CredentialsPacket from {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Debug(
+                "Invalid packet type. Expected CredentialsPacket from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         if (packet.Credentials is null)
         {
-            NLogix.Host.Instance.Error(
-                "Null credentials in register packet from {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Debug(
+                "Null credentials in register packet from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         Credentials credentials = packet.Credentials;
 
-        // Basic input validation
-        if (System.String.IsNullOrWhiteSpace(credentials.Username) ||
-            System.String.IsNullOrWhiteSpace(credentials.Password))
+        if (!CredentialPolicy.IsValidUsername(credentials.Username))
         {
-            NLogix.Host.Instance.Debug(
-                "Empty username or password in register attempt from {0}",
-                connection.RemoteEndPoint);
-
-            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
-            return;
-        }
-
-        if (!Nalix.Application.Validators.CredentialPolicy.IsValidUsername(credentials.Username))
-        {
-            NLogix.Host.Instance.Debug(
-                "Invalid username format '{0}' in register attempt from {1}",
-                credentials.Username,
-                connection.RemoteEndPoint);
-
             await SendErrorAsync(
                     connection,
                     seq,
-                    ProtocolCode.VALIDATION_FAILED,
-                    // ProtocolCode.INVALID_USERNAME,
-                    ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
+                    ProtocolCode.INVALID_USERNAME,
+                    ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Debug(
+                "Invalid username format '{0}' in register attempt from {1}", credentials.Username, connection.RemoteEndPoint);
+
             return;
         }
 
-        if (!Nalix.Application.Validators.CredentialPolicy.IsStrongPassword(credentials.Password))
+        if (!CredentialPolicy.IsStrongPassword(credentials.Password))
         {
-            NLogix.Host.Instance.Debug(
-                "Weak password in register attempt from {0}",
-                connection.RemoteEndPoint);
-
             await SendErrorAsync(
                     connection,
                     seq,
-                    ProtocolCode.VALIDATION_FAILED,
-                    // ProtocolCode.WEAK_PASSWORD,
-                    ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
+                    ProtocolCode.WEAK_PASSWORD,
+                    ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Debug(
+                "Weak password in register attempt from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         try
         {
-            // Check existing username (Dapper)
-            Credentials existed = await _accounts.GetByUsernameAsync(credentials.Username).ConfigureAwait(false);
-            if (existed is not null)
-            {
-                NLogix.Host.Instance.Warn(
-                    "Username {0} already exists from connection {1}",
-                    credentials.Username, connection.RemoteEndPoint);
-
-                await SendErrorAsync(connection, seq, ProtocolCode.ALREADY_EXISTS, ProtocolAction.FIX_AND_RETRY)
-                    .ConfigureAwait(false);
-                return;
-            }
-
             // Derive salt/hash
             HASHER.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
 
-            Credentials newAccount = new()
+            Credentials entity = new()
             {
                 Username = credentials.Username,
                 Salt = salt,
@@ -153,30 +123,37 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
                 FailedLoginCount = 0
             };
 
-            _ = await _accounts.InsertAsync(newAccount).ConfigureAwait(false);
+            System.Int32 id = await _accounts.InsertOrIgnoreAsync(entity, token).ConfigureAwait(false);
 
             // Clear sensitive
             System.Array.Clear(salt, 0, salt.Length);
             System.Array.Clear(hash, 0, hash.Length);
 
-            NLogix.Host.Instance.Info(
-                "Account {0} registered successfully from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
+            if (id <= 0)
+            {
+                await SendErrorAsync(connection, seq, ProtocolCode.ALREADY_EXISTS, ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
+
+                NLogix.Host.Instance.Debug(
+                    "Username {0} already exists from connection {1}", credentials.Username, connection.RemoteEndPoint);
+
+                return;
+            }
 
             await SendAckAsync(connection, seq).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Debug(
+                "Account {0} registered successfully from connection {1}", credentials.Username, connection.RemoteEndPoint);
         }
         catch (System.Exception ex)
         {
-            NLogix.Host.Instance.Error(
-                "Failed to register account {0} from connection {1}: {2}",
-                credentials.Username, connection.RemoteEndPoint, ex.Message);
-
             await SendErrorAsync(
-                    connection, seq,
-                    ProtocolCode.INTERNAL_ERROR,
-                    ProtocolAction.BACKOFF_RETRY,
-                    flags: ControlFlags.IS_TRANSIENT)
-                .ConfigureAwait(false);
+                connection, seq,
+                ProtocolCode.INTERNAL_ERROR,
+                ProtocolAction.BACKOFF_RETRY,
+                flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Error(
+                "Failed to register account {0} from connection {1}: {2}", credentials.Username, connection.RemoteEndPoint, ex.Message);
         }
     }
 
@@ -199,35 +176,32 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
 
         if (p is not CredentialsPacket packet)
         {
-            NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected CredentialsPacket from {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.UNSUPPORTED_PACKET, ProtocolAction.DO_NOT_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Debug(
+                "Invalid packet type. Expected CredentialsPacket from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         if (packet.Credentials is null)
         {
-            NLogix.Host.Instance.Error(
-                "Null credentials in login packet from {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Debug(
+                "Null credentials in login packet from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         if (System.String.IsNullOrWhiteSpace(packet.Credentials.Username) ||
             System.String.IsNullOrWhiteSpace(packet.Credentials.Password))
         {
-            NLogix.Host.Instance.Debug(
-                "Empty username or password in login attempt from {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.VALIDATION_FAILED, ProtocolAction.FIX_AND_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Debug(
+                "Empty username or password in login attempt from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
@@ -237,121 +211,112 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
         {
             token.ThrowIfCancellationRequested();
 
-            // Look up account (Dapper)
-            Credentials account = await _accounts.GetByUsernameAsync(credentials.Username, token).ConfigureAwait(false);
+            var auth = await _accounts.GetAuthViewByUsernameAsync(packet.Credentials.Username.Trim(), token).ConfigureAwait(false);
 
-            if (account is null)
+            if (auth is null)
             {
                 FakeVerifyDelay();
 
-                NLogix.Host.Instance.Warn(
-                    "LOGIN attempt with non-existent username {0} from connection {1}",
-                    credentials.Username, connection.RemoteEndPoint);
-
                 await SendErrorAsync(
-                        connection, seq,
-                        ProtocolCode.UNAUTHENTICATED,
-                        ProtocolAction.REAUTHENTICATE,
-                        flags: ControlFlags.IS_AUTH_RELATED)
-                    .ConfigureAwait(false);
+                    connection, seq,
+                    ProtocolCode.UNAUTHENTICATED,
+                    ProtocolAction.REAUTHENTICATE,
+                    flags: ControlFlags.IS_AUTH_RELATED).ConfigureAwait(false);
+
+                NLogix.Host.Instance.Debug(
+                    "LOGIN attempt with non-existent username {0} from connection {1}", credentials.Username, connection.RemoteEndPoint);
+
                 return;
             }
+
+            var (id, salt, hash, isActive, failedCount, lastFailedAt, role) = auth.Value;
 
             // Lockout window
-            if (account.FailedLoginCount >= MaxFailedLoginAttempts &&
-                account.LastFailedLoginAt.HasValue &&
-                System.DateTime.UtcNow < account.LastFailedLoginAt.Value + LockoutWindow)
+            if (failedCount >= MaxFailedLoginAttempts &&
+                lastFailedAt.HasValue &&
+                System.DateTime.UtcNow < lastFailedAt.Value + LockoutWindow)
             {
-                NLogix.Host.Instance.Warn(
-                    "Account {0} locked due to too many failed attempts from connection {1}",
-                    credentials.Username, connection.RemoteEndPoint);
-
                 await SendErrorAsync(
-                        connection, seq,
-                        ProtocolCode.ACCOUNT_LOCKED,
-                        ProtocolAction.BACKOFF_RETRY,
-                        flags: ControlFlags.IS_AUTH_RELATED)
-                    .ConfigureAwait(false);
+                    connection, seq,
+                    ProtocolCode.ACCOUNT_LOCKED,
+                    ProtocolAction.BACKOFF_RETRY,
+                    flags: ControlFlags.IS_AUTH_RELATED).ConfigureAwait(false);
+
+                NLogix.Host.Instance.Debug(
+                    "Account {0} locked due to too many failed attempts from connection {1}", credentials.Username, connection.RemoteEndPoint);
+
                 return;
             }
 
+            System.Boolean ok = HASHER.Verify(packet.Credentials.Password, salt, hash);
+            System.Array.Clear(salt, 0, salt.Length);
+            System.Array.Clear(hash, 0, hash.Length);
+
             // Verify password
-            if (!HASHER.Verify(credentials.Password, account.Salt, account.Hash))
+            if (!ok)
             {
-                account.FailedLoginCount++;
-                account.LastFailedLoginAt = System.DateTime.UtcNow;
-                _ = await _accounts.UpdateAsync(account, token).ConfigureAwait(false);
-
-                NLogix.Host.Instance.Warn(
-                    "Incorrect password for {0}, attempt {1} from connection {2}",
-                    credentials.Username, account.FailedLoginCount, connection.RemoteEndPoint);
-
+                await _accounts.IncrementFailedAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
                 await SendErrorAsync(
-                        connection, seq,
-                        ProtocolCode.UNAUTHENTICATED,
-                        ProtocolAction.REAUTHENTICATE,
-                        flags: ControlFlags.IS_AUTH_RELATED)
-                    .ConfigureAwait(false);
+                    connection, seq,
+                    ProtocolCode.UNAUTHENTICATED,
+                    ProtocolAction.REAUTHENTICATE,
+                    flags: ControlFlags.IS_AUTH_RELATED).ConfigureAwait(false);
+
+                NLogix.Host.Instance.Debug(
+                    "Incorrect password for {0}, attempt {1} from connection {2}", credentials.Username, failedCount, connection.RemoteEndPoint);
+
                 return;
             }
 
             // Disabled account
-            if (!account.IsActive)
+            if (!isActive)
             {
-                NLogix.Host.Instance.Warn(
-                    "LOGIN attempt on disabled account {0} from connection {1}",
-                    credentials.Username, connection.RemoteEndPoint);
-
                 await SendErrorAsync(
-                        connection, seq,
-                        ProtocolCode.ACCOUNT_SUSPENDED,
-                        ProtocolAction.DO_NOT_RETRY,
-                        flags: ControlFlags.IS_AUTH_RELATED)
-                    .ConfigureAwait(false);
+                    connection, seq,
+                    ProtocolCode.ACCOUNT_SUSPENDED,
+                    ProtocolAction.DO_NOT_RETRY,
+                    flags: ControlFlags.IS_AUTH_RELATED).ConfigureAwait(false);
+
+                NLogix.Host.Instance.Debug(
+                    "LOGIN attempt on disabled account {0} from connection {1}", credentials.Username, connection.RemoteEndPoint);
+
                 return;
             }
 
-            // Reset counters and update last login
-            account.FailedLoginCount = 0;
-            account.LastFailedLoginAt = null;
-            account.LastLoginAt = System.DateTime.UtcNow;
-            _ = await _accounts.UpdateAsync(account, token).ConfigureAwait(false);
+            // Success: reset counters + stamp login time atomically
+            await _accounts.ResetFailedAndStampLoginAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
 
-            // Update connection state
-            connection.Level = account.Role;
+            // Assign permission level to connection if your pipeline uses it
+            connection.Level = (PermissionLevel)role;
             InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                    .AssociateUsername(connection, account.Username);
-
-            NLogix.Host.Instance.Info(
-                "User {0} logged in successfully from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
+                                    .AssociateUsername(connection, packet.Credentials.Username);
 
             await SendAckAsync(connection, seq).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Debug(
+                "User {0} logged in successfully from connection {1}", credentials.Username, connection.RemoteEndPoint);
         }
         catch (System.OperationCanceledException)
         {
-            NLogix.Host.Instance.Warn(
-                "LOGIN operation cancelled for {0} from connection {1}",
-                credentials.Username, connection.RemoteEndPoint);
-
             await SendErrorAsync(
-                    connection, seq,
-                    ProtocolCode.CANCELLED,
-                    ProtocolAction.DO_NOT_RETRY,
-                    flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
+                connection, seq,
+                ProtocolCode.CANCELLED,
+                ProtocolAction.DO_NOT_RETRY,
+                flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Warn(
+                "LOGIN operation cancelled for {0} from connection {1}", credentials.Username, connection.RemoteEndPoint);
         }
         catch (System.Exception ex)
         {
-            NLogix.Host.Instance.Error(
-                "LOGIN failed for {0} from connection {1}: {2}",
-                credentials.Username, connection.RemoteEndPoint, ex.Message);
-
             await SendErrorAsync(
-                    connection, seq,
-                    ProtocolCode.INTERNAL_ERROR,
-                    ProtocolAction.BACKOFF_RETRY,
-                    flags: ControlFlags.IS_TRANSIENT)
-                .ConfigureAwait(false);
+                connection, seq,
+                ProtocolCode.INTERNAL_ERROR,
+                ProtocolAction.BACKOFF_RETRY,
+                flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Error(
+                "LOGIN failed for {0} from connection {1}: {2}", credentials.Username, connection.RemoteEndPoint, ex.Message);
         }
     }
 
@@ -363,64 +328,50 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
     [PacketOpcode((System.UInt16)OpCommand.LOGOUT)]
     [System.Runtime.CompilerServices.MethodImpl(
         System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public async System.Threading.Tasks.Task LogoutAsync(IPacket p, IConnection connection)
+    public async System.Threading.Tasks.Task LogoutAsync(
+        IPacket p, IConnection connection,
+        System.Threading.CancellationToken token)
     {
         System.ArgumentNullException.ThrowIfNull(p);
         System.ArgumentNullException.ThrowIfNull(connection);
 
         System.UInt32 seq = GetSequenceIdOrZero(p);
-
         System.String username = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
-                                                 .GetUsername(connection.ID);
+                                                         .GetUsername(connection.ID);
 
         if (username is null)
         {
-            NLogix.Host.Instance.Warn(
-                "LOGOUT attempt without valid session from connection {0}",
-                connection.RemoteEndPoint);
+            await SendErrorAsync(connection, seq, ProtocolCode.SESSION_NOT_FOUND, ProtocolAction.DO_NOT_RETRY).ConfigureAwait(false);
 
-            await SendErrorAsync(connection, seq, ProtocolCode.SESSION_NOT_FOUND, ProtocolAction.DO_NOT_RETRY)
-                .ConfigureAwait(false);
+            NLogix.Host.Instance.Warn(
+                "LOGOUT attempt without valid session from connection {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         try
         {
-            Credentials account = await _accounts.GetByUsernameAsync(username).ConfigureAwait(false);
-
-            if (account is not null)
-            {
-                // NOTE: Typically you do NOT deactivate account on logout.
-                // Keep IsActive as-is; just stamp LastLogoutAt.
-                account.LastLogoutAt = System.DateTime.UtcNow;
-                _ = await _accounts.UpdateAsync(account).ConfigureAwait(false);
-            }
+            await _accounts.StampLogoutAsync(username, System.DateTime.UtcNow, token).ConfigureAwait(false);
 
             // Reset connection state
-            connection.Level = PermissionLevel.Guest;
+            connection.Level = PermissionLevel.None;
             _ = InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>()
                                         .UnregisterConnection(connection);
 
-            NLogix.Host.Instance.Info(
-                "User {0} logged out successfully from connection {1}",
-                username, connection.RemoteEndPoint);
-
             // Inform client to close (correlated), then disconnect so client receives it
             await connection.SendAsync(
-                    ControlType.DISCONNECT,
-                    ProtocolCode.CLIENT_QUIT,
-                    ProtocolAction.NONE,
-                    sequenceId: seq)
-                .ConfigureAwait(false);
+                ControlType.DISCONNECT,
+                ProtocolCode.CLIENT_QUIT,
+                ProtocolAction.NONE,
+                sequenceId: seq).ConfigureAwait(false);
 
             connection.Disconnect();
+
+            NLogix.Host.Instance.Debug(
+                "User {0} logged out successfully from connection {1}", username, connection.RemoteEndPoint);
         }
         catch (System.Exception ex)
         {
-            NLogix.Host.Instance.Error(
-                "LOGOUT failed for {0} from connection {1}: {2}",
-                username, connection.RemoteEndPoint, ex.Message);
-
             // Best-effort error report then drop
             await SendErrorAsync(
                     connection, seq,
@@ -429,8 +380,11 @@ public sealed class AccountOps(ICredentialsRepository accounts) : OpsBase
                     flags: ControlFlags.IS_TRANSIENT)
                 .ConfigureAwait(false);
 
-            connection.Level = PermissionLevel.Guest;
+            connection.Level = PermissionLevel.None;
             connection.Disconnect();
+
+            NLogix.Host.Instance.Error(
+                "LOGOUT failed for {0} from connection {1}: {2}", username, connection.RemoteEndPoint, ex.Message);
         }
     }
 

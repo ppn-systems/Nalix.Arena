@@ -57,9 +57,6 @@ internal abstract class CredentialsSceneController<TView>
     /// <summary>Message mapping for errors (per scene).</summary>
     protected abstract System.String MapErrorMessage(ProtocolCode code);
 
-    /// <summary>Success toast.</summary>
-    protected abstract System.String SuccessMessage { get; }
-
     /// <summary>Scene to navigate when success.</summary>
     protected virtual System.String SuccessScene => SceneNames.Main;
 
@@ -192,7 +189,6 @@ internal abstract class CredentialsSceneController<TView>
 
             if (ctrl.Type == ControlType.ACK)
             {
-                ShowNote(SuccessMessage);
                 _nav.Change(SuccessScene);
                 GraphicsEngine.OnUpdate -= Update;
                 return;

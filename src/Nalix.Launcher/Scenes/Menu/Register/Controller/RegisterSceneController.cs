@@ -20,17 +20,16 @@ internal sealed class RegisterSceneController
     }
 
     protected override OpCommand Command => OpCommand.REGISTER;
-    protected override System.String SuccessMessage => "Welcome!";
 
     protected override System.String MapErrorMessage(ProtocolCode code) => code switch
     {
-        ProtocolCode.UNAUTHENTICATED => "Invalid username or password.",
-        ProtocolCode.ACCOUNT_LOCKED => "Too many failed attempts. Please wait and try again.",
-        ProtocolCode.ACCOUNT_SUSPENDED => "Your account is suspended.",
-        ProtocolCode.VALIDATION_FAILED => "Please check your username and password again.",
-        ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch.",
-        ProtocolCode.CANCELLED => "Register cancelled.",
+        ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch detected.",
+        ProtocolCode.INVALID_USERNAME => "Invalid credentials.",
+        ProtocolCode.WEAK_PASSWORD => "Password is too weak. Choose a stronger one.",
+        ProtocolCode.ALREADY_EXISTS => "Unable to complete registration.",
+        ProtocolCode.VALIDATION_FAILED => "Please verify all fields are correct.",
         ProtocolCode.INTERNAL_ERROR => "Server error. Please try again later.",
-        _ => "Register failed."
+        ProtocolCode.NONE => "None",
+        _ => "Registration failed. Try again later."
     };
 }
