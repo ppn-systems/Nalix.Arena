@@ -10,7 +10,6 @@ internal interface ICredentialsView
     // Events
     event System.Action SubmitRequested;
     event System.Action BackRequested;
-    event System.Action TogglePasswordRequested;
     event System.Action<System.Boolean> TabToggled;
 
     // Data

@@ -17,7 +17,6 @@ internal sealed class LoginView : RenderObject, ICredentialsView
     // ===== events để Controller bắt =====
     public event System.Action SubmitRequested;
     public event System.Action BackRequested;
-    public event System.Action TogglePasswordRequested;
     public event System.Action<System.Boolean> TabToggled; // true: user->pass, false: pass->user
 
     // ===== UI config =====
@@ -152,8 +151,6 @@ internal sealed class LoginView : RenderObject, ICredentialsView
     public System.Boolean IsUserFocused => _user.Focused;
     public System.Boolean IsPassFocused => _pass.Focused;
 
-    public void TogglePassword() => _pass.Toggle();
-
     public void LockUi(System.Boolean on)
     {
         _user.Enabled = !on;
@@ -218,7 +215,7 @@ internal sealed class LoginView : RenderObject, ICredentialsView
         TabToggled?.Invoke(toPass);
     }
 
-    public void OnTogglePassword() => TogglePasswordRequested?.Invoke();
+    public void OnTogglePassword() => _pass.Toggle();
 
     public void ShowWarning(System.String msg) => _warn.DisplayedString = msg;
 }

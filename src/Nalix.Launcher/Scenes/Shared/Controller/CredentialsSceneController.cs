@@ -85,7 +85,6 @@ internal abstract class CredentialsSceneController<TView>
     {
         _view.SubmitRequested += () => _ = TrySendAsync();
         _view.BackRequested += () => SceneManager.ChangeScene(SceneNames.Main);
-        _view.TogglePasswordRequested += _view.OnTogglePassword;
         _view.TabToggled += _ => { /* no-op: view already switches focus */ };
     }
 
