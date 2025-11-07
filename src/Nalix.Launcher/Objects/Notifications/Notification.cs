@@ -1,4 +1,4 @@
-﻿using Nalix.Launcher.Enums;
+﻿using Nalix.Portal.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
@@ -6,7 +6,7 @@ using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Objects.Notifications;
+namespace Nalix.Portal.Objects.Notifications;
 
 /// <summary>
 /// Hộp thông báo nhẹ (không có nút bấm). Vẽ panel 9-slice với văn bản tự động xuống dòng.

@@ -1,5 +1,6 @@
-﻿using Nalix.Launcher.Objects.Controls;
-using Nalix.Launcher.Scenes.Shared.View;
+﻿using Nalix.Portal;
+using Nalix.Portal.Objects.Controls;
+using Nalix.Portal.Scenes.Shared.View;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Effects.Visual.UI;
@@ -8,7 +9,7 @@ using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Scenes.Menu.Register.View;
+namespace Nalix.Portal.Scenes.Menu.Register.View;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class RegisterView : RenderObject, ICredentialsView
@@ -132,10 +133,10 @@ internal sealed class RegisterView : RenderObject, ICredentialsView
         _title.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + TitleOffsetY);
         _uLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelUserY);
         _pLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelPassY);
-        _warn.Position = new Vector2f(_panelPos.X + TitleOffsetX - FieldHeight, _panelPos.Y + FieldPassTop + (FieldHeight * 2));
+        _warn.Position = new Vector2f(_panelPos.X + TitleOffsetX - FieldHeight, _panelPos.Y + FieldPassTop + FieldHeight * 2);
 
         var r = _loginBtn.GetGlobalBounds();
-        System.Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
+        System.Single btnBaseX = _panelPos.X + (PanelSize.X - r.Width) * 0.5f;
         System.Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
 
         _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));

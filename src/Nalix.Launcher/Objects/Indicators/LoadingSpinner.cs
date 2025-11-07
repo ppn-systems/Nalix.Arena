@@ -1,11 +1,12 @@
-﻿using Nalix.Launcher.Enums;
+﻿using Nalix.Portal;
+using Nalix.Portal.Enums;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Objects.Indicators;
+namespace Nalix.Portal.Objects.Indicators;
 
 /// <summary>
 /// Vòng quay tải (loading spinner) dạng overlay: nền mờ + icon xoay + dao động scale.

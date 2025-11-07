@@ -1,12 +1,12 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Injection;
-using Nalix.Launcher.Scenes.Menu.Main.Controller;
 using Nalix.Launcher.Scenes.Menu.Main.Model;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Scenes.Menu.Main.Controller;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 
-namespace Nalix.Launcher.Scenes.Menu.Main;
+namespace Nalix.Portal.Scenes.Menu.Main;
 
 internal sealed class MainScene : Scene
 {

@@ -2,13 +2,13 @@
 
 using Nalix.Framework.Randomization;
 using Nalix.Launcher.Objects.Notifications;
-using Nalix.Launcher.Scenes.Menu.Main.Model;
-using Nalix.Launcher.Scenes.Menu.Main.View;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Scenes.Menu.Main.Model;
+using Nalix.Portal.Scenes.Menu.Main.View;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Scenes;
 
-namespace Nalix.Launcher.Scenes.Menu.Main.Controller;
+namespace Nalix.Portal.Scenes.Menu.Main.Controller;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class MainSceneController(

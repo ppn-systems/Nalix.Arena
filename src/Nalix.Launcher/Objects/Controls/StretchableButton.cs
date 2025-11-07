@@ -1,11 +1,12 @@
-﻿using Nalix.Rendering.Effects.Visual;
+﻿using Nalix.Portal;
+using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Launcher.Objects.Controls;
+namespace Nalix.Portal.Objects.Controls;
 
 /// <summary>
 /// Nút co giãn dùng NineSlicePanel (1 ảnh), textHover đổi màu bằng tint.

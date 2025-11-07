@@ -4,10 +4,10 @@ using Nalix.Framework.Injection;
 using Nalix.Launcher.Scenes.Menu.News.Controller;
 using Nalix.Launcher.Scenes.Menu.News.Model;
 using Nalix.Launcher.Scenes.Menu.News.View;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 
-namespace Nalix.Launcher.Scenes.Menu.News;
+namespace Nalix.Portal.Scenes.Menu.News;
 
 internal sealed class NewsScene : Scene
 {

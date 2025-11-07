@@ -1,6 +1,6 @@
-﻿using Nalix.Launcher.Services.Dtos;
+﻿using Nalix.Portal.Services.Dtos;
 
-namespace Nalix.Launcher.Services.Abstractions;
+namespace Nalix.Portal.Services.Abstractions;
 
 // Cấp theme thuần DTO
 public interface IThemeProvider

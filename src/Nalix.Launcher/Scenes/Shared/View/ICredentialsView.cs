@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-namespace Nalix.Launcher.Scenes.Shared.View;
+namespace Nalix.Portal.Scenes.Shared.View;
 
 /// <summary>
 /// Minimal contract a credentials view must provide (Login/Register).

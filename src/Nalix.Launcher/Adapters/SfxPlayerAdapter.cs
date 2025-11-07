@@ -1,6 +1,7 @@
-﻿using Nalix.Launcher.Services.Abstractions;
+﻿using Nalix.Portal;
+using Nalix.Portal.Services.Abstractions;
 
-namespace Nalix.Launcher.Adapters;
+namespace Nalix.Portal.Adapters;
 
 internal sealed class SfxPlayerAdapter : ISfxPlayer
 {

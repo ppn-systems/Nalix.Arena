@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Objects.Controls;
+using Nalix.Portal;
+using Nalix.Portal.Objects.Controls;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Objects;
@@ -8,7 +9,7 @@ using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Scenes.Menu.News.View;
+namespace Nalix.Portal.Scenes.Menu.News.View;
 
 /// <summary>
 /// View-only: draw/layout News UI; raise events for controller.

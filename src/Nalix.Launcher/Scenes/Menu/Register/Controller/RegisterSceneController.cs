@@ -1,10 +1,10 @@
 ﻿using Nalix.Common.Protocols;
 using Nalix.Communication.Enums;
-using Nalix.Launcher.Scenes.Menu.Register.View;
-using Nalix.Launcher.Scenes.Shared.Controller;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Scenes.Menu.Register.View;
+using Nalix.Portal.Scenes.Shared.Controller;
+using Nalix.Portal.Services.Abstractions;
 
-namespace Nalix.Launcher.Scenes.Menu.Register.Controller;
+namespace Nalix.Portal.Scenes.Menu.Register.Controller;
 
 internal sealed class RegisterSceneController
     : CredentialsSceneController<RegisterView>

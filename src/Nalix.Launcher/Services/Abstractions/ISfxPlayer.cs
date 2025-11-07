@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-namespace Nalix.Launcher.Services.Abstractions;
+namespace Nalix.Portal.Services.Abstractions;
 
 internal interface ISfxPlayer
 {

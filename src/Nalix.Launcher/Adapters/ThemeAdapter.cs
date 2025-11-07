@@ -1,9 +1,9 @@
 ﻿using System.Drawing;                    // cho ThemeDto
-using Nalix.Launcher.Services.Abstractions;
-using Nalix.Launcher.Services.Dtos;
-using Nalix.Launcher.Enums;
+using Nalix.Portal.Enums;
+using Nalix.Portal.Services.Abstractions;
+using Nalix.Portal.Services.Dtos;
 
-namespace Nalix.Launcher.Adapters;
+namespace Nalix.Portal.Adapters;
 
 // Cấp ThemeDto từ cấu hình hiện tại
 internal sealed class ThemeAdapter : IThemeProvider

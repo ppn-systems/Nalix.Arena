@@ -4,11 +4,12 @@ using Nalix.Communication.Enums;
 using Nalix.Communication.Models;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;
-using Nalix.Launcher.Scenes.Menu.Main.View;
-using Nalix.Launcher.Scenes.Shared.Model;
-using Nalix.Launcher.Scenes.Shared.View;
-using Nalix.Launcher.Services.Abstractions;
 using Nalix.Logging;
+using Nalix.Portal.Scenes;
+using Nalix.Portal.Scenes.Menu.Main.View;
+using Nalix.Portal.Scenes.Shared.Model;
+using Nalix.Portal.Scenes.Shared.View;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -18,7 +19,7 @@ using Nalix.SDK.Remote.Extensions;
 using Nalix.Shared.Messaging.Controls;
 using SFML.Window;
 
-namespace Nalix.Launcher.Scenes.Shared.Controller;
+namespace Nalix.Portal.Scenes.Shared.Controller;
 
 /// <summary>
 /// Base controller consolidating common flow for Login/Register scenes.

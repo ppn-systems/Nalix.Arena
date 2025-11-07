@@ -2,7 +2,7 @@
 
 using Nalix.Rendering.Attributes;
 
-namespace Nalix.Launcher.Scenes.Menu.Main.Model;
+namespace Nalix.Portal.Scenes.Menu.Main.Model;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class MainMenuModel

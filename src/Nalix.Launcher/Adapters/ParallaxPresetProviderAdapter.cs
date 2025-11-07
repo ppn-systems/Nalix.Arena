@@ -1,8 +1,8 @@
-﻿using Nalix.Launcher.Services.Abstractions;
-using Nalix.Launcher.Services.Dtos;
+﻿using Nalix.Portal.Services.Abstractions;
+using Nalix.Portal.Services.Dtos;
 using System.Collections.Generic;
 
-namespace Nalix.Launcher.Adapters;
+namespace Nalix.Portal.Adapters;
 
 internal sealed class ParallaxPresetProviderAdapter : IParallaxPresetProvider
 {

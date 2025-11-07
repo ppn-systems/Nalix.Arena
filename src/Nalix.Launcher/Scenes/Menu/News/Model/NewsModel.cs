@@ -2,7 +2,7 @@
 
 using Nalix.Rendering.Attributes;
 
-namespace Nalix.Launcher.Scenes.Menu.News.Model;
+namespace Nalix.Portal.Scenes.Menu.News.Model;
 
 /// <summary>
 /// Simple model for News scene state (extendable).

@@ -1,17 +1,18 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Randomization;
-using Nalix.Launcher.Scenes.Menu.Main.View;
-using Nalix.Launcher.Scenes.Menu.News.Model;
-using Nalix.Launcher.Scenes.Menu.News.View;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Scenes;
+using Nalix.Portal.Scenes.Menu.Main.View;
+using Nalix.Portal.Scenes.Menu.News.Model;
+using Nalix.Portal.Scenes.Menu.News.View;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 
-namespace Nalix.Launcher.Scenes.Menu.News.Controller;
+namespace Nalix.Portal.Scenes.Menu.News.Controller;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class NewsSceneController
@@ -135,7 +136,7 @@ internal sealed class NewsSceneController
                 System.Single localStart = i * _stagger;
                 System.Single localT = (_t - localStart) / _duration;
                 System.Single eased = localT <= 0f ? 0f : _ease(localT);
-                System.Boolean moveDown = (i % 2) == 0;
+                System.Boolean moveDown = i % 2 == 0;
                 System.Single targetY = moveDown ? sh : -sh;
                 System.Single yOffset = targetY * eased;
 

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Injection;
-using Nalix.Launcher.Scenes.Menu.Register.Controller;
-using Nalix.Launcher.Scenes.Menu.Register.View;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Scenes.Menu.Register.Controller;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 
-namespace Nalix.Launcher.Scenes.Menu.Register;
+namespace Nalix.Portal.Scenes.Menu.Register;
 
 internal sealed class RegisterScene : Scene
 {

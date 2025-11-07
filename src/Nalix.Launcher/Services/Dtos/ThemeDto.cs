@@ -2,7 +2,7 @@
 
 using System.Drawing;
 
-namespace Nalix.Launcher.Services.Dtos;
+namespace Nalix.Portal.Services.Dtos;
 
 public sealed class ThemeDto
 {

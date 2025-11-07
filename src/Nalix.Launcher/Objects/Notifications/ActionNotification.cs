@@ -1,11 +1,12 @@
-﻿using Nalix.Launcher.Enums;
+﻿using Nalix.Portal;
+using Nalix.Portal.Enums;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Input;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace Nalix.Launcher.Objects.Notifications;
+namespace Nalix.Portal.Objects.Notifications;
 
 /// <summary>
 /// Hộp thông báo có nút hành động ở giữa.
@@ -160,7 +161,7 @@ public sealed class ActionNotification : Notification
         System.Single innerRight = System.MathF.Round(_panel.Position.X + _panel.Size.X - _border.Right - HorizontalPaddingPx);
         System.Single innerCenterX = System.MathF.Round((innerLeft + innerRight) / 2f);
 
-        System.Single innerWidth = _panel.Size.X - (_border.Left + _border.Right) - (HorizontalPaddingPx * 2f);
+        System.Single innerWidth = _panel.Size.X - (_border.Left + _border.Right) - HorizontalPaddingPx * 2f;
         innerWidth = System.MathF.Max(innerWidth, MinInnerWidthPx);
 
         return (innerCenterX, innerWidth);
@@ -172,7 +173,7 @@ public sealed class ActionNotification : Notification
         var lb = _buttonText.GetLocalBounds();
 
         System.Single targetW = System.MathF.Round(innerWidth);
-        System.Single targetH = System.MathF.Round(lb.Height + (ButtonPadYPx * 2f) + _border.Top + _border.Bottom);
+        System.Single targetH = System.MathF.Round(lb.Height + ButtonPadYPx * 2f + _border.Top + _border.Bottom);
         targetH = System.MathF.Max(targetH, MinButtonHeightPx);
 
         _buttonPanel.SetSize(new Vector2f(targetW * (ButtonScaleRatio - 0.1f), targetH * ButtonScaleRatio))
@@ -191,8 +192,8 @@ public sealed class ActionNotification : Notification
         _buttonPanel.SetPosition(new Vector2f(btnX, buttonY)).Layout();
 
         // Căn text vào giữa panel
-        System.Single btnCenterX = System.MathF.Round(btnX + (_buttonPanel.Size.X / 2f));
-        System.Single btnCenterY = System.MathF.Round(buttonY + (_buttonPanel.Size.Y / 2f));
+        System.Single btnCenterX = System.MathF.Round(btnX + _buttonPanel.Size.X / 2f);
+        System.Single btnCenterY = System.MathF.Round(buttonY + _buttonPanel.Size.Y / 2f);
         _buttonText.Position = new Vector2f(btnCenterX, btnCenterY);
     }
 
@@ -246,7 +247,7 @@ public sealed class ActionNotification : Notification
     {
         t = System.Math.Clamp(t, 0f, 1f);
 
-        System.Byte LerpB(System.Byte x, System.Byte y) => (System.Byte)(x + ((y - x) * t));
+        System.Byte LerpB(System.Byte x, System.Byte y) => (System.Byte)(x + (y - x) * t);
         return new Color(
             LerpB(a.R, b.R),
             LerpB(a.G, b.G),

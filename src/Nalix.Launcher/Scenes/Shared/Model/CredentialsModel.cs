@@ -1,6 +1,6 @@
 ﻿using Nalix.Rendering.Attributes;
 
-namespace Nalix.Launcher.Scenes.Shared.Model;
+namespace Nalix.Portal.Scenes.Shared.Model;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class CredentialsModel

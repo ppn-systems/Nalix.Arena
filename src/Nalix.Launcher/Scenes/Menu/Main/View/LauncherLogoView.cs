@@ -1,13 +1,14 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
-using Nalix.Launcher.Services.Dtos;
+using Nalix.Portal;
+using Nalix.Portal.Services.Dtos;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Scenes.Menu.Main.View;
+namespace Nalix.Portal.Scenes.Menu.Main.View;
 
 [IgnoredLoad("RenderObject")]
 internal sealed class LauncherLogoView : RenderObject

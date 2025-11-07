@@ -1,17 +1,16 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Injection;
-using Nalix.Launcher.Enums;
-using Nalix.Launcher.Objects.Indicators;
-using Nalix.Launcher.Objects.Notifications;
-using Nalix.Launcher.Services.Abstractions;
+using Nalix.Portal.Enums;
+using Nalix.Portal.Objects.Notifications;
+using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using SFML.Graphics;
 
-namespace Nalix.Launcher.Scenes.Network;
+namespace Nalix.Portal.Scenes.Network;
 
 public class NetworkScene : Scene
 {
