@@ -51,61 +51,41 @@ public sealed class HandshakeOps
     {
         if (p is not Handshake packet)
         {
-            NLogix.Host.Instance.Error(
-                "Invalid packet type. Expected HandshakePacket from {0}",
-                connection.RemoteEndPoint);
-
             await connection.SendAsync(
                 ControlType.ERROR,
                 ProtocolCode.UNSUPPORTED_PACKET,
-                ProtocolAction.DO_NOT_RETRY
-            ).ConfigureAwait(false);
+                ProtocolAction.DO_NOT_RETRY).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Error(
+                "Invalid packet type. Expected HandshakePacket from {0}", connection.RemoteEndPoint);
 
             return;
         }
 
-        // Nếu đã handshake, không cho phép lặp lại - theo security best practices
-        //if (connection.Secret.Length == 32)
-        //{
-        //    NLogix.Host.Instance.Warn(
-        //        "HANDSHAKE already completed for {0}",
-        //        connection.RemoteEndPoint);
-
-        //    await connection.SendAsync(
-        //        ControlType.NACK,
-        //        ProtocolCode.DUPLICATE_SESSION,
-        //        ProtocolAction.DO_NOT_RETRY
-        //    ).ConfigureAwait(false);
-        //    return;
-        //}
-
         // Defensive programming - kiểm tra payload null
         if (packet.Data is null)
         {
-            NLogix.Host.Instance.Error(
-                "Null payload in handshake packet from {0}",
-                connection.RemoteEndPoint);
-
             await connection.SendAsync(
                 ControlType.ERROR,
                 ProtocolCode.MISSING_REQUIRED_FIELD,
-                ProtocolAction.FIX_AND_RETRY
-            ).ConfigureAwait(false);
+                ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Error(
+                "Null payload in handshake packet from {0}", connection.RemoteEndPoint);
+
             return;
         }
 
         // Xác thực độ dài khóa công khai, phải đúng 32 byte theo chuẩn X25519
         if (packet.Data.Length != 32)
         {
-            NLogix.Host.Instance.Debug(
-                "Invalid public key length [Length={0}] from {1}",
-                packet.Data.Length, connection.RemoteEndPoint);
-
             await connection.SendAsync(
                 ControlType.ERROR,
                 ProtocolCode.VALIDATION_FAILED,
-                ProtocolAction.FIX_AND_RETRY
-            ).ConfigureAwait(false);
+                ProtocolAction.FIX_AND_RETRY).ConfigureAwait(false);
+
+            NLogix.Host.Instance.Debug(
+                "Invalid public key length [Length={0}] from {1}", packet.Data.Length, connection.RemoteEndPoint);
 
             return;
         }
@@ -126,9 +106,6 @@ public sealed class HandshakeOps
             // Băm bí mật chung bằng SHA3256 để tạo khóa mã hóa an toàn
             connection.Secret = SHA3256.HashData(secret);
 
-            NLogix.Host.Instance.Info(
-                System.Convert.ToHexStringLower(connection.Secret));
-
             // Security: Clear sensitive data từ memory
             System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);
             System.Array.Clear(secret, 0, secret.Length);
@@ -136,17 +113,8 @@ public sealed class HandshakeOps
             // Nâng cấp quyền truy cập của client lên mức Guest
             connection.Level = PermissionLevel.Guest;
 
-            // Log successful handshake
-            NLogix.Host.Instance.Info(
-                "HANDSHAKE completed successfully for {0}",
-                connection.RemoteEndPoint);
-
             response.Initialize(keyPair.PublicKey);
             response.OpCode = (System.UInt16)OpCommand.HANDSHAKE;
-
-            NLogix.Host.Instance.Debug(
-                "len={0} hex={1}",
-                keyPair.PublicKey.Length, keyPair.PublicKey.ToString());
 
             payload = response.Serialize();
         }
@@ -165,8 +133,7 @@ public sealed class HandshakeOps
                 ControlType.ERROR,
                 ProtocolCode.INTERNAL_ERROR,
                 ProtocolAction.BACKOFF_RETRY,
-                flags: ControlFlags.IS_TRANSIENT
-            ).ConfigureAwait(false);
+                flags: ControlFlags.IS_TRANSIENT).ConfigureAwait(false);
         }
         finally
         {
@@ -184,6 +151,10 @@ public sealed class HandshakeOps
                 connection.Level = PermissionLevel.Guest;
                 NLogix.Host.Instance.Warn("HANDSHAKE send failed; rolled back state for {0}", connection.RemoteEndPoint);
                 return;
+            }
+            else
+            {
+                NLogix.Host.Instance.Info("HANDSHAKE completed for {0}", connection.RemoteEndPoint);
             }
         }
     }
