@@ -9,7 +9,7 @@ using Nalix.Rendering.Scenes;
 using SFML.Graphics;
 using SFML.System;
 
-namespace Nalix.Launcher.Scenes.Menu;
+namespace Nalix.Launcher.Scenes.Menu.News;
 
 /// <summary>
 /// Màn hình hiển thị thông tin về nhóm phát triển trò chơi.
@@ -126,7 +126,7 @@ internal sealed class NewsScene : Scene
                 System.Single eased = localT <= 0f ? 0f : _ease(localT);
 
                 // Direction: even index moves down, odd moves up
-                System.Boolean moveDown = (i % 2) == 0;
+                System.Boolean moveDown = i % 2 == 0;
 
                 // Compute Y offset based on eased progress
                 System.Single targetY = moveDown ? sh : -sh; // slide completely out of view

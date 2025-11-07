@@ -172,7 +172,7 @@ public sealed class HandshakeScene : Scene
                     {
                         // Proceed to next scene
                         SceneManager.QueueDestroy(this);
-                        InstanceManager.Instance.GetExistingInstance<ISceneNavigator>().Change(SceneNames.Login);
+                        InstanceManager.Instance.GetExistingInstance<ISceneNavigator>().Change(SceneNames.Main);
                         _state = State.Done;
                         break;
                     }

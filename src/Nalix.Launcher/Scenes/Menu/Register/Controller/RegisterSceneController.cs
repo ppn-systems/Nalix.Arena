@@ -7,8 +7,8 @@ using Nalix.Framework.Randomization;
 using Nalix.Launcher.Enums;
 using Nalix.Launcher.Objects.Notifications;
 using Nalix.Launcher.Scenes.Menu.Login.Model;
-using Nalix.Launcher.Scenes.Menu.Login.View;
 using Nalix.Launcher.Scenes.Menu.Main.View;
+using Nalix.Launcher.Scenes.Menu.Register.View;
 using Nalix.Launcher.Services.Abstractions;
 using Nalix.Logging;
 using Nalix.Rendering.Attributes;
@@ -16,25 +16,23 @@ using Nalix.Rendering.Input;
 using Nalix.Rendering.Runtime;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
+using Nalix.SDK.Remote.Configuration;
 using Nalix.SDK.Remote.Extensions;
 using Nalix.Shared.Messaging.Controls;
-using SFML.Window;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Nalix.Launcher.Scenes.Menu.Login.Controller;
+namespace Nalix.Launcher.Scenes.Menu.Register.Controller;
 
 [IgnoredLoad("RenderObject")]
-internal sealed class LoginSceneController(LoginView view, IThemeProvider theme, ISceneNavigator nav, IParallaxPresetProvider parallaxPreset)
+internal sealed class RegisterSceneController(RegisterView view, IThemeProvider theme, ISceneNavigator nav, IParallaxPresetProvider parallaxPreset)
 {
     private readonly IParallaxPresetProvider _parallaxPresets = parallaxPreset ?? throw new System.ArgumentNullException(nameof(parallaxPreset));
     private readonly IThemeProvider _theme = theme ?? throw new System.ArgumentNullException(nameof(theme));
     private readonly ISceneNavigator _nav = nav ?? throw new System.ArgumentNullException(nameof(nav));
-    private readonly LoginView _view = view ?? throw new System.ArgumentNullException(nameof(view));
-    private readonly Notification _notification = new("Welcome! Please log in.", Side.Top);
+    private readonly RegisterView _view = view ?? throw new System.ArgumentNullException(nameof(view));
+    private readonly Notification _notification = new("Welcome! Please register.", Side.Top);
     private readonly LoginModel _model = new();
 
-    private CancellationTokenSource _loginCts;
+    private System.Threading.CancellationTokenSource _loginCts;
     private const System.Int32 CooldownMs = 600;
     private ParallaxLayerView _parallaxLayerView;
     private const System.Int32 ServerTimeoutMs = 4000;
@@ -76,28 +74,28 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         }
 
         // ==== phím tắt ====
-        if (InputState.IsKeyPressed(Keyboard.Key.Tab))
+        if (InputState.IsKeyPressed(SFML.Window.Keyboard.Key.Tab))
         {
             _view.OnTab();
         }
 
-        if (InputState.IsKeyPressed(Keyboard.Key.Enter))
+        if (InputState.IsKeyPressed(SFML.Window.Keyboard.Key.Enter))
         {
             _view.OnEnter();
         }
 
-        if (InputState.IsKeyPressed(Keyboard.Key.Escape))
+        if (InputState.IsKeyPressed(SFML.Window.Keyboard.Key.Escape))
         {
             _view.OnEscape();
         }
 
-        if (InputState.IsKeyPressed(Keyboard.Key.F2))
+        if (InputState.IsKeyPressed(SFML.Window.Keyboard.Key.F2))
         {
             _view.OnTogglePassword();
         }
     }
 
-    private async Task TryLoginAsync()
+    private async System.Threading.Tasks.Task TryLoginAsync()
     {
         if (_model.IsBusy)
         {
@@ -137,30 +135,33 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         }
 
         _loginCts?.Dispose();
-        _loginCts = new CancellationTokenSource(ServerTimeoutMs);
+        _loginCts = new System.Threading.CancellationTokenSource(ServerTimeoutMs);
         _model.IsBusy = true;
         _view.LockUi(true);
 
         try
         {
             // Build credentials packet (mã hoá + sequence id)
-            var options = client.Options;
-            var creds = new Credentials { Username = user, Password = pass };
-            var login = new CredentialsPacket();
-            login.Initialize((System.UInt16)OpCommand.LOGIN, creds);
-            login.SequenceId = SecureRandom.NextUInt32();
-            await client.SendAsync(login, _loginCts.Token).ConfigureAwait(false);
+            CredentialsPacket register = new();
+            TransportOptions options = client.Options;
+            Credentials creds = new() { Username = user, Password = pass };
 
-            using var subs = client.Subscribe(
+            register.SequenceId = SecureRandom.NextUInt32();
+            register.Initialize((System.UInt16)OpCommand.REGISTER, creds);
+
+            await client.SendAsync(register, _loginCts.Token).ConfigureAwait(false);
+
+            using CompositeSubscription subs = client.Subscribe(
                 client.On<Directive>(d => client.TryHandleDirectiveAsync(d, null, null, _loginCts.Token))
             );
 
-            var ctrl = await client.AwaitPacketAsync<Directive>(
+            Directive ctrl = await client.AwaitPacketAsync<Directive>(
                 predicate: c =>
-                    c.SequenceId == login.SequenceId &&
+                    c.SequenceId == register.SequenceId &&
                     (c.Type == ControlType.ACK || c.Type == ControlType.ERROR),
                 timeoutMs: ServerTimeoutMs,
-                ct: _loginCts.Token).ConfigureAwait(false);
+                ct: _loginCts.Token
+            ).ConfigureAwait(false);
 
             if (ctrl.Type == ControlType.ACK)
             {
@@ -170,18 +171,18 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
                 return;
             }
 
-            var msg = MapErrorMessage(ctrl.Reason);
+            System.String msg = MapErrorMessage(ctrl.Reason);
             ShowNote(msg);
 
-            var backoff = MapBackoff(ctrl.Action);
+            System.TimeSpan? backoff = MapBackoff(ctrl.Action);
             if (backoff is System.TimeSpan wait && wait > System.TimeSpan.Zero)
             {
-                await Task.Delay(wait, _loginCts.Token).ConfigureAwait(false);
+                await System.Threading.Tasks.Task.Delay(wait, _loginCts.Token).ConfigureAwait(false);
             }
 
             if (ctrl.Action == ProtocolAction.DO_NOT_RETRY)
             {
-                // khoá nút login tuỳ chính sách
+                // khoá nút register tuỳ chính sách
                 _view.LockUi(true);
             }
             else if (ctrl.Action == ProtocolAction.REAUTHENTICATE)
@@ -191,16 +192,16 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         }
         catch (System.OperationCanceledException)
         {
-            ShowNote("Login cancelled or timed out.");
+            ShowNote("Register cancelled or timed out.");
         }
         catch (System.TimeoutException)
         {
-            ShowNote("Login timeout. Please try again.");
+            ShowNote("Register timeout. Please try again.");
         }
         catch (System.Exception ex)
         {
-            NLogix.Host.Instance.Error("LOGIN exception", ex);
-            ShowNote("Login failed due to an error.");
+            NLogix.Host.Instance.Error("REGISTER exception", ex);
+            ShowNote("Register failed due to an error.");
         }
         finally
         {
@@ -222,9 +223,9 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
     /// <summary>
     /// Hides the notification after a fixed delay.
     /// </summary>
-    private async Task AutoHideAsync()
+    private async System.Threading.Tasks.Task AutoHideAsync()
     {
-        await Task.Delay(System.TimeSpan.FromSeconds(5));
+        await System.Threading.Tasks.Task.Delay(System.TimeSpan.FromSeconds(5));
         _notification.Conceal();
     }
 
@@ -233,11 +234,11 @@ internal sealed class LoginSceneController(LoginView view, IThemeProvider theme,
         ProtocolCode.UNAUTHENTICATED => "Invalid username or password.",
         ProtocolCode.ACCOUNT_LOCKED => "Too many failed attempts. Please wait and try again.",
         ProtocolCode.ACCOUNT_SUSPENDED => "Your account is suspended.",
-        ProtocolCode.VALIDATION_FAILED => "Please fill both username and password.",
+        ProtocolCode.VALIDATION_FAILED => "Please check your username and password again.",
         ProtocolCode.UNSUPPORTED_PACKET => "Client/server version mismatch.",
-        ProtocolCode.CANCELLED => "Login cancelled.",
+        ProtocolCode.CANCELLED => "Register cancelled.",
         ProtocolCode.INTERNAL_ERROR => "Server error. Please try again later.",
-        _ => "Login failed."
+        _ => "Register failed."
     };
 
     private static System.TimeSpan? MapBackoff(ProtocolAction action) => action switch
