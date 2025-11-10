@@ -3,7 +3,7 @@
 		<OutputType>Exe</OutputType>
 		<TargetFrameworks>net9.0-windows;net9.0</TargetFrameworks>
 
-		<StartupObject>Nalix.Launcher.Program</StartupObject>
+		<StartupObject>Nalix.Portal.Program</StartupObject>
 
 		<AssemblyName>Launcher</AssemblyName>
 
@@ -26,7 +26,7 @@
 		<PackageReference Include="Nalix.SDK" Version="7.1.2" />
 
 		<ProjectReference Include="..\Nalix.Rendering\Nalix.Rendering.csproj" />
-		<ProjectReference Include="..\Nalix.Communication\Nalix.Protocol.csproj" />
+		<ProjectReference Include="..\Nalix.Protocol\Nalix.Protocol.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

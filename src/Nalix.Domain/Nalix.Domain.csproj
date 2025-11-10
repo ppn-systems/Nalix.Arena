@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Nalix.Communication\Nalix.Protocol.csproj" />
+		<ProjectReference Include="..\Nalix.Protocol\Nalix.Protocol.csproj" />
 	</ItemGroup>
 
 </Project>
