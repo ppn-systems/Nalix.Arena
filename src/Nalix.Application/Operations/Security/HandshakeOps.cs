@@ -2,15 +2,15 @@
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
-using Nalix.Protocol.Enums;
+using Nalix.Common.Protocols;
 using Nalix.Framework.Injection;
 using Nalix.Logging;
+using Nalix.Network.Connection;
+using Nalix.Protocol.Enums;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging.Controls;
-using Nalix.Network.Connection;
-using Nalix.Common.Protocols;
-using Nalix.Framework.Cryptography.Asymmetric;
-using Nalix.Framework.Cryptography.Hashing;
+using Nalix.Shared.Security.Asymmetric;
+using Nalix.Shared.Security.Hashing;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -103,8 +103,8 @@ public sealed class HandshakeOps
             // Tính toán shared secret từ private key của server và public key của client
             System.Byte[] secret = X25519.Agreement(keyPair.PrivateKey, packet.Data);
 
-            // Băm bí mật chung bằng SHA3256 để tạo khóa mã hóa an toàn
-            connection.Secret = SHA3256.HashData(secret);
+            // Băm bí mật chung bằng Keccak256  để tạo khóa mã hóa an toàn
+            connection.Secret = Keccak256.HashData(secret);
 
             // Security: Clear sensitive data từ memory
             System.Array.Clear(keyPair.PrivateKey, 0, keyPair.PrivateKey.Length);

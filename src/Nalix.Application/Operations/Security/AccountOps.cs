@@ -6,16 +6,16 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Protocols;
-using Nalix.Protocol.Collections;
-using Nalix.Protocol.Enums;
-using Nalix.Protocol.Models;
-using Nalix.Framework.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags
 using Nalix.Infrastructure.Repositories;
 using Nalix.Logging;
 using Nalix.Network.Connection;                 // <-- for ConnectionExtensions.SendAsync(..)
+using Nalix.Protocol.Collections;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Models;
 using Nalix.Shared.Memory.Pooling;
+using Nalix.Shared.Security.Credentials;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -110,7 +110,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
         try
         {
             // Derive salt/hash
-            HASHER.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
+            CredentialHasher.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
 
             Credentials entity = new()
             {
@@ -248,7 +248,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
                 return;
             }
 
-            System.Boolean ok = HASHER.Verify(packet.Credentials.Password, salt, hash);
+            System.Boolean ok = CredentialHasher.Verify(packet.Credentials.Password, salt, hash);
             System.Array.Clear(salt, 0, salt.Length);
             System.Array.Clear(hash, 0, hash.Length);
 
@@ -394,7 +394,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
     {
         System.Byte[] salt = new System.Byte[16];
         SecureRandom.Fill(salt);
-        HASHER.Hash("FakePwd_For_Timing", out salt, out System.Byte[] hash);
+        CredentialHasher.Hash("FakePwd_For_Timing", out salt, out System.Byte[] hash);
         System.Array.Clear(salt, 0, salt.Length);
         System.Array.Clear(hash, 0, hash.Length);
     }

@@ -1,6 +1,6 @@
 using Nalix.Common.Attributes;
 using Nalix.Common.Environment;
-using Nalix.Shared.Configuration.Binding;
+using Nalix.Framework.Configuration.Binding;
 
 namespace Nalix.Rendering.Runtime;
 

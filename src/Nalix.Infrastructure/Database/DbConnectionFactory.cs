@@ -1,13 +1,13 @@
 ﻿// Copyright (c) 2025 PPN.
 
 using Nalix.Infrastructure.Abstractions;
-using Nalix.Shared.Configuration;
 using Npgsql;
 using Microsoft.Data.Sqlite; // <-- use Microsoft.Data.Sqlite
 using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Nalix.Framework.Configuration;
 
 namespace Nalix.Infrastructure.Database;
 

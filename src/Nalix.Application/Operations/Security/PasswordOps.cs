@@ -6,13 +6,13 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Protocols;
-using Nalix.Protocol.Collections;
-using Nalix.Protocol.Enums;
-using Nalix.Framework.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Infrastructure.Repositories;            // ControlType, ProtocolCode, ProtocolAction, ControlFlags
 using Nalix.Logging;
 using Nalix.Network.Connection;          // ConnectionExtensions.SendAsync
+using Nalix.Protocol.Collections;
+using Nalix.Protocol.Enums;
+using Nalix.Shared.Security.Credentials;
 
 namespace Nalix.Application.Operations.Security;
 
@@ -111,7 +111,7 @@ public sealed class PasswordOps(CredentialsRepository accounts) : OpsBase
             }
 
             // 2) Verify current password locally
-            if (!HASHER.Verify(packet.OldPassword, salt, hash))
+            if (!CredentialHasher.Verify(packet.OldPassword, salt, hash))
             {
                 await SendErrorAsync(
                         connection, seq,
@@ -126,7 +126,7 @@ public sealed class PasswordOps(CredentialsRepository accounts) : OpsBase
             }
 
             // 3) Hash new password
-            HASHER.Hash(packet.NewPassword, out System.Byte[] newSalt, out System.Byte[] newHash);
+            CredentialHasher.Hash(packet.NewPassword, out System.Byte[] newSalt, out System.Byte[] newHash);
 
             // 4) Atomic update (match on old hash to avoid races)
             System.Int32 changed = await _accounts.UpdatePasswordIfMatchesAsync(id, hash, newSalt, newHash)

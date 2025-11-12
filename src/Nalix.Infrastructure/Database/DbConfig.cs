@@ -1,5 +1,5 @@
 ﻿using Nalix.Common.Environment;
-using Nalix.Shared.Configuration.Binding;
+using Nalix.Framework.Configuration.Binding;
 using System.IO;
 
 namespace Nalix.Infrastructure.Database;
