@@ -6,9 +6,9 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
 using Nalix.Common.Protocols;
-using Nalix.Communication.Collections;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Models;
+using Nalix.Protocol.Collections;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Models;
 using Nalix.Framework.Cryptography.Security;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;                   // <-- ControlType / ProtocolCode / ProtocolAction / ControlFlags

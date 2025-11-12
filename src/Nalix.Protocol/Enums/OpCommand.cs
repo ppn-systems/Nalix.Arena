@@ -1,4 +1,4 @@
-﻿namespace Nalix.Communication.Enums;
+﻿namespace Nalix.Protocol.Enums;
 
 public enum OpCommand : System.UInt16
 {

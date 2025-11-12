@@ -1,5 +1,5 @@
 ﻿using Dapper;
-using Nalix.Communication.Models;           // Credentials entity (Id, Username, Salt, Hash, Role, ...)
+using Nalix.Protocol.Models;           // Credentials entity (Id, Username, Salt, Hash, Role, ...)
 using Nalix.Infrastructure.Abstractions;    // IDbConnectionFactory, ICredentialsRepository
 using System.Threading;
 using System.Threading.Tasks;

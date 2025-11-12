@@ -1,6 +1,6 @@
-﻿using Nalix.Communication.Enums;
+﻿using Nalix.Protocol.Enums;
 
-namespace Nalix.Communication.Extensions;
+namespace Nalix.Protocol.Extensions;
 
 public static class CommandExtensions
 {

@@ -1,7 +1,7 @@
 ﻿using Nalix.Common.Protocols;
-using Nalix.Communication.Collections;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Models;
+using Nalix.Protocol.Collections;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Models;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;
 using Nalix.Logging;

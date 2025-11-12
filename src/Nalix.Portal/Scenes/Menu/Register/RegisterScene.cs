@@ -2,6 +2,7 @@
 
 using Nalix.Framework.Injection;
 using Nalix.Portal.Scenes.Menu.Register.Controller;
+using Nalix.Portal.Scenes.Menu.Register.View;
 using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 

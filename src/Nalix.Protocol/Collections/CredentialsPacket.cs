@@ -4,16 +4,16 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Serialization;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions;
-using Nalix.Communication.Models;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Extensions;
+using Nalix.Protocol.Models;
 using Nalix.Framework.Injection;
 using Nalix.Shared.Extensions;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
 
-namespace Nalix.Communication.Collections;
+namespace Nalix.Protocol.Collections;
 
 /// <summary>
 /// Gói tin chứa thông tin đăng nhập từ client (username, mật khẩu băm, metadata),

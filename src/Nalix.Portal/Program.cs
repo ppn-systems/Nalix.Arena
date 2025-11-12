@@ -1,5 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
+using Nalix.Protocol;
 using Nalix.Framework.Injection;
 using Nalix.Portal.Adapters;
 using Nalix.Portal.Services.Abstractions;

@@ -2,7 +2,7 @@
 
 using Nalix.Application.Operations.Security;
 using Nalix.Common.Logging;
-using Nalix.Communication;
+using Nalix.Protocol;
 using Nalix.Framework.Injection;
 using Nalix.Host.Assemblies;
 using Nalix.Infrastructure.Database;

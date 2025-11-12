@@ -1,4 +1,4 @@
-﻿namespace Nalix.Communication.Enums;
+﻿namespace Nalix.Protocol.Enums;
 
 public enum PacketMagic : System.UInt32
 {

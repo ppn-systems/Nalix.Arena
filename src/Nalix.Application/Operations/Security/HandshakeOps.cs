@@ -2,7 +2,7 @@
 using Nalix.Common.Enums;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Packets.Attributes;
-using Nalix.Communication.Enums;
+using Nalix.Protocol.Enums;
 using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Shared.Memory.Pooling;

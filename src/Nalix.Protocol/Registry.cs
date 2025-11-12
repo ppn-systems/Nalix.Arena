@@ -1,11 +1,11 @@
 ﻿using Nalix.Common.Logging;
 using Nalix.Common.Packets.Abstractions;
-using Nalix.Communication.Collections;
+using Nalix.Protocol.Collections;
 using Nalix.Framework.Injection;
 using Nalix.Logging;
 using Nalix.Shared.Messaging.Catalog;
 
-namespace Nalix.Communication;
+namespace Nalix.Protocol;
 
 /// <summary>
 /// Performs client-side initialization such as packet registrations

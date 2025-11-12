@@ -4,15 +4,15 @@ using Nalix.Common.Enums;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions; // if IPacketTransformer is here
 using Nalix.Common.Serialization;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Extensions;
 using Nalix.Framework.Injection;
 using Nalix.Shared.Extensions;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
 
-namespace Nalix.Communication.Collections;
+namespace Nalix.Protocol.Collections;
 
 /// <summary>
 /// Represents a password change request with old/new password.

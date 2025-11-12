@@ -1,5 +1,4 @@
-﻿using Nalix.Portal;
-using Nalix.Portal.Objects.Controls;
+﻿using Nalix.Portal.Objects.Controls;
 using Nalix.Portal.Scenes.Shared.View;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
@@ -17,7 +16,6 @@ internal sealed class RegisterView : RenderObject, ICredentialsView
     // ===== events để Controller bắt =====
     public event System.Action SubmitRequested;
     public event System.Action BackRequested;
-    public event System.Action TogglePasswordRequested;
     public event System.Action<System.Boolean> TabToggled; // true: user->pass, false: pass->user
 
     // ===== UI config =====

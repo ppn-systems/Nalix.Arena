@@ -1,9 +1,9 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Injection;
-using Nalix.Launcher.Scenes.Menu.News.Controller;
-using Nalix.Launcher.Scenes.Menu.News.Model;
-using Nalix.Launcher.Scenes.Menu.News.View;
+using Nalix.Portal.Scenes.Menu.News.Controller;
+using Nalix.Portal.Scenes.Menu.News.Model;
+using Nalix.Portal.Scenes.Menu.News.View;
 using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Scenes;
 

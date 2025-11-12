@@ -2,8 +2,8 @@
 
 using Nalix.Common.Logging;
 using Nalix.Common.Packets.Abstractions;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Extensions;
 using Nalix.Framework.Injection;
 using Nalix.Portal.Enums;
 using Nalix.Portal.Objects.Notifications;
@@ -14,6 +14,7 @@ using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using Nalix.SDK.Remote.Extensions;
 using SFML.Graphics;
+using Nalix.Portal.Objects.Indicators;
 
 namespace Nalix.Portal.Scenes.Network;
 

@@ -1,5 +1,5 @@
 ﻿using Nalix.Common.Protocols;
-using Nalix.Communication.Enums;
+using Nalix.Protocol.Enums;
 using Nalix.Portal.Scenes.Menu.Login.View;
 using Nalix.Portal.Scenes.Shared.Controller;
 using Nalix.Portal.Services.Abstractions;

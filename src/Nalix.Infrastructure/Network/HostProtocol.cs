@@ -13,7 +13,7 @@ namespace Nalix.Infrastructure.Network;
 /// <summary>
 /// Lớp `HostProtocol` xử lý giao thức máy chủ, quản lý kết nối và xử lý dữ liệu.
 /// </summary>
-public sealed class HostProtocol : Protocol
+public sealed class HostProtocol : Nalix.Network.Protocols.Protocol
 {
     /// <summary>
     /// Bộ điều phối gói tin được sử dụng để xử lý dữ liệu nhận được.

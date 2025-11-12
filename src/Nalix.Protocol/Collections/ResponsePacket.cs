@@ -3,14 +3,14 @@ using Nalix.Common.Caching;
 using Nalix.Common.Packets;
 using Nalix.Common.Packets.Abstractions;
 using Nalix.Common.Serialization;
-using Nalix.Communication.Enums;
-using Nalix.Communication.Extensions;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Extensions;
 using Nalix.Framework.Injection;
 using Nalix.Shared.Memory.Pooling;
 using Nalix.Shared.Messaging;
 using Nalix.Shared.Serialization;
 
-namespace Nalix.Communication.Collections;
+namespace Nalix.Protocol.Collections;
 
 /// <summary>
 /// Gói phản hồi siêu nhẹ từ server.

@@ -1,4 +1,4 @@
-﻿namespace Nalix.Communication.Enums;
+﻿namespace Nalix.Protocol.Enums;
 
 /// <summary>
 /// Trạng thái phản hồi từ server cho client.

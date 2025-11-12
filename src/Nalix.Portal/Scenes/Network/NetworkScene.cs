@@ -2,6 +2,7 @@
 
 using Nalix.Framework.Injection;
 using Nalix.Portal.Enums;
+using Nalix.Portal.Objects.Indicators;
 using Nalix.Portal.Objects.Notifications;
 using Nalix.Portal.Services.Abstractions;
 using Nalix.Rendering.Attributes;
