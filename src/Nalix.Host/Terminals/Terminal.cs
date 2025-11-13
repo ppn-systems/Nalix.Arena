@@ -6,6 +6,7 @@ using Nalix.Framework.Tasks;
 using Nalix.Host.Runtime;
 using Nalix.Infrastructure.Network;
 using Nalix.Logging;
+using Nalix.Logging.Interop;
 using Nalix.Network.Connection;
 using Nalix.Network.Throttling;
 using Nalix.Shared.Memory.Pooling;
@@ -25,6 +26,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
     private System.Threading.CancellationToken _hostToken;
     private System.Threading.Tasks.Task? _loopTask;
     private volatile System.Boolean _started;
+    private volatile System.Boolean _stopped;
     private volatile System.Boolean _disposed;
 
     // double-press tracking
@@ -45,7 +47,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         InitializeConsole(); // events + console config
         RegisterDefaultShortcuts();
 
-        _loopTask = System.Threading.Tasks.Task.Run(EventLoop, token);
+        _loopTask = System.Threading.Tasks.Task.Run(EVENT_LOOP, token);
         _started = true;
         NLogix.Host.Instance.Info("[TERMINAL] started");
     }
@@ -175,23 +177,39 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         var sb = new System.Text.StringBuilder().AppendLine("Available shortcuts:");
         foreach (var (mod, key, desc) in _shortcuts.GetAllShortcuts())
         {
-            sb.AppendLine($"{FormatModifiers(mod)}{key,-6} → {desc}");
+            sb.AppendLine($"{FORMAT_MODIFIERS(mod)}{key,-6} → {desc}");
         }
         NLogix.Host.Instance.Info(sb.ToString());
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Interoperability", "CA1416:Validate platform compatibility", Justification = "<Pending>")]
     private void SHOW_REPORT()
     {
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
-        System.Console.WriteLine(InstanceManager.Instance.GenerateReport());
+        using TransientConsoleScope _scope = new("Report");
+        using (TransientConsoleScope.Shared())
+        {
+            TransientConsoleScope.WriteLine("Generating report...");
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TaskManager>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<BufferPoolManager>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ObjectPoolManager>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionHub>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<ConnectionLimiter>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+            TransientConsoleScope.WriteLine(InstanceManager.Instance.GetOrCreateInstance<TokenBucketLimiter>().GenerateReport());
+            TransientConsoleScope.WriteLine("\n-------------------------------------------------------------\n");
+
+            TransientConsoleScope.ReadKey();
+        }
     }
 
-    private static System.String FormatModifiers(System.ConsoleModifiers mod)
+    private static System.String FORMAT_MODIFIERS(System.ConsoleModifiers mod)
     {
         if (mod == 0)
         {
@@ -219,7 +237,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
     // ===== event loop =====
 
-    private async System.Threading.Tasks.Task EventLoop()
+    private async System.Threading.Tasks.Task EVENT_LOOP()
     {
         try
         {
@@ -231,10 +249,14 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
                     lock (ReadLock) { keyInfo = _reader.ReadKey(intercept: true); }
                     _ = _shortcuts.TryExecuteShortcut(keyInfo.Modifiers, keyInfo.Key);
                 }
+
                 await System.Threading.Tasks.Task.Delay(10, _hostToken).ConfigureAwait(false);
             }
         }
         catch (System.OperationCanceledException) { /* normal */ }
-        catch (System.Exception ex) { NLogix.Host.Instance.Error("[TERMINAL] loop faulted", ex); }
+        catch (System.Exception ex)
+        {
+            NLogix.Host.Instance.Error("[TERMINAL] loop faulted", ex);
+        }
     }
 }
