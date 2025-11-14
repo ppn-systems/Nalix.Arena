@@ -37,7 +37,7 @@ internal sealed class MainSceneController(
         scene.AddObject(new TwelveIconView(_theme.Current));
 
         // Model parallax + view
-        System.Int32 v = SecureRandom.GetInt32(1, 4);
+        System.Int32 v = Csprng.GetInt32(1, 4);
         var preset = _parallaxPresets.GetByVariant(v);
         var parallaxView = new ParallaxLayerView(_theme.Current, preset);
 

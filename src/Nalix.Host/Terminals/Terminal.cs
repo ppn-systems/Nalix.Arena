@@ -26,7 +26,6 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
     private System.Threading.CancellationToken _hostToken;
     private System.Threading.Tasks.Task? _loopTask;
     private volatile System.Boolean _started;
-    private volatile System.Boolean _stopped;
     private volatile System.Boolean _disposed;
 
     // double-press tracking
@@ -64,7 +63,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
 
         if (_loopTask is not null)
         {
-            try { _loopTask.Wait(System.TimeSpan.FromSeconds(2), token); }
+            try { _ = _loopTask.Wait(System.TimeSpan.FromSeconds(2), token); }
             catch { /* ignore */ }
         }
 
@@ -177,7 +176,7 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         var sb = new System.Text.StringBuilder().AppendLine("Available shortcuts:");
         foreach (var (mod, key, desc) in _shortcuts.GetAllShortcuts())
         {
-            sb.AppendLine($"{FORMAT_MODIFIERS(mod)}{key,-6} → {desc}");
+            _ = sb.AppendLine($"{FORMAT_MODIFIERS(mod)}{key,-6} → {desc}");
         }
         NLogix.Host.Instance.Info(sb.ToString());
     }
@@ -219,17 +218,17 @@ internal sealed class TerminalService(IConsoleReader reader, ShortcutManager sho
         var sb = new System.Text.StringBuilder();
         if (mod.HasFlag(System.ConsoleModifiers.Control))
         {
-            sb.Append("Ctrl+");
+            _ = sb.Append("Ctrl+");
         }
 
         if (mod.HasFlag(System.ConsoleModifiers.Shift))
         {
-            sb.Append("Shift+");
+            _ = sb.Append("Shift+");
         }
 
         if (mod.HasFlag(System.ConsoleModifiers.Alt))
         {
-            sb.Append("Alt+");
+            _ = sb.Append("Alt+");
         }
 
         return sb.ToString();

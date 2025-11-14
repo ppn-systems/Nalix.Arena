@@ -110,7 +110,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
         try
         {
             // Derive salt/hash
-            CredentialHasher.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
+            Pbkdf2.Hash(credentials.Password, out System.Byte[] salt, out System.Byte[] hash);
 
             Credentials entity = new()
             {
@@ -248,14 +248,14 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
                 return;
             }
 
-            System.Boolean ok = CredentialHasher.Verify(packet.Credentials.Password, salt, hash);
+            System.Boolean ok = Pbkdf2.Verify(packet.Credentials.Password, salt, hash);
             System.Array.Clear(salt, 0, salt.Length);
             System.Array.Clear(hash, 0, hash.Length);
 
             // Verify password
             if (!ok)
             {
-                await _accounts.IncrementFailedAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
+                _ = await _accounts.IncrementFailedAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
                 await SendErrorAsync(
                     connection, seq,
                     ProtocolCode.UNAUTHENTICATED,
@@ -284,7 +284,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
             }
 
             // Success: reset counters + stamp login time atomically
-            await _accounts.ResetFailedAndStampLoginAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
+            _ = await _accounts.ResetFailedAndStampLoginAsync(id, System.DateTime.UtcNow, token).ConfigureAwait(false);
 
             // Assign permission level to connection if your pipeline uses it
             connection.Level = (PermissionLevel)role;
@@ -351,7 +351,7 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
 
         try
         {
-            await _accounts.StampLogoutAsync(username, System.DateTime.UtcNow, token).ConfigureAwait(false);
+            _ = await _accounts.StampLogoutAsync(username, System.DateTime.UtcNow, token).ConfigureAwait(false);
 
             // Reset connection state
             connection.Level = PermissionLevel.None;
@@ -393,8 +393,8 @@ public sealed class AccountOps(CredentialsRepository accounts) : OpsBase
     private static void FakeVerifyDelay()
     {
         System.Byte[] salt = new System.Byte[16];
-        SecureRandom.Fill(salt);
-        CredentialHasher.Hash("FakePwd_For_Timing", out salt, out System.Byte[] hash);
+        Csprng.Fill(salt);
+        Pbkdf2.Hash("FakePwd_For_Timing", out salt, out System.Byte[] hash);
         System.Array.Clear(salt, 0, salt.Length);
         System.Array.Clear(hash, 0, hash.Length);
     }

@@ -1,15 +1,14 @@
 ﻿using Nalix.Common.Protocols;
-using Nalix.Protocol.Collections;
-using Nalix.Protocol.Enums;
-using Nalix.Protocol.Models;
 using Nalix.Framework.Injection;
 using Nalix.Framework.Randomization;
 using Nalix.Logging;
-using Nalix.Portal.Scenes;
 using Nalix.Portal.Scenes.Menu.Main.View;
 using Nalix.Portal.Scenes.Shared.Model;
 using Nalix.Portal.Scenes.Shared.View;
 using Nalix.Portal.Services.Abstractions;
+using Nalix.Protocol.Collections;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Models;
 using Nalix.Rendering.Input;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
@@ -73,7 +72,7 @@ internal abstract class CredentialsSceneController<TView>
         scene.AddObject(_view);
 
         // Parallax
-        System.Int32 v = SecureRandom.GetInt32(1, 4);
+        System.Int32 v = Csprng.GetInt32(1, 4);
         var preset = _parallaxPresets.GetByVariant(v);
         _parallaxLayerView = new ParallaxLayerView(_theme.Current, preset);
         scene.AddObject(_parallaxLayerView);
@@ -170,7 +169,7 @@ internal abstract class CredentialsSceneController<TView>
             var creds = new Credentials { Username = user, Password = pass };
             var packet = new CredentialsPacket
             {
-                SequenceId = SecureRandom.NextUInt32()
+                SequenceId = Csprng.NextUInt32()
             };
             packet.Initialize((System.UInt16)Command, creds);
 

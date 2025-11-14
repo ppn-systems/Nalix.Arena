@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2025 PPN Corporation. All rights reserved.
 
 using Nalix.Framework.Randomization;
-using Nalix.Portal.Scenes;
 using Nalix.Portal.Scenes.Menu.Main.View;
 using Nalix.Portal.Scenes.Menu.News.Model;
 using Nalix.Portal.Scenes.Menu.News.View;
@@ -44,7 +43,7 @@ internal sealed class NewsSceneController
     public void Compose(Scene scene)
     {
         // Add parallax background (optional but consistent with other menus)
-        System.Int32 v = SecureRandom.GetInt32(1, 4);
+        System.Int32 v = Csprng.GetInt32(1, 4);
         var preset = _parallaxPresets.GetByVariant(v);
         _parallax = new ParallaxLayerView(_theme.Current, preset);
         scene.AddObject(_parallax);

@@ -111,7 +111,7 @@ public sealed class PasswordOps(CredentialsRepository accounts) : OpsBase
             }
 
             // 2) Verify current password locally
-            if (!CredentialHasher.Verify(packet.OldPassword, salt, hash))
+            if (!Pbkdf2.Verify(packet.OldPassword, salt, hash))
             {
                 await SendErrorAsync(
                         connection, seq,
@@ -126,7 +126,7 @@ public sealed class PasswordOps(CredentialsRepository accounts) : OpsBase
             }
 
             // 3) Hash new password
-            CredentialHasher.Hash(packet.NewPassword, out System.Byte[] newSalt, out System.Byte[] newHash);
+            Pbkdf2.Hash(packet.NewPassword, out System.Byte[] newSalt, out System.Byte[] newHash);
 
             // 4) Atomic update (match on old hash to avoid races)
             System.Int32 changed = await _accounts.UpdatePasswordIfMatchesAsync(id, hash, newSalt, newHash)
