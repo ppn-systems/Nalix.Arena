@@ -9,7 +9,6 @@ using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
-using SFML.Graphics;
 
 namespace Nalix.Portal.Scenes.Network;
 
@@ -198,8 +197,8 @@ public class NetworkScene : Scene
 
         public override void BeforeDestroy() => CleanupTask();
 
-        public override void Render(RenderTarget target) { }
-        protected override Drawable GetDrawable() => null;
+        public override void Render(SFML.Graphics.RenderTarget target) { }
+        protected override SFML.Graphics.Drawable GetDrawable() => null;
 
         /// <summary>
         /// Shows the final non-recoverable failure dialog.

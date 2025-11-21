@@ -1,13 +1,10 @@
-﻿using Nalix.Portal;
-using Nalix.Portal.Objects.Controls;
+﻿using Nalix.Portal.Objects.Controls;
 using Nalix.Portal.Scenes.Shared.View;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Effects.Visual;
 using Nalix.Rendering.Effects.Visual.UI;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Runtime;
-using SFML.Graphics;
-using SFML.System;
 
 namespace Nalix.Portal.Scenes.Menu.Login.View;
 
@@ -21,22 +18,22 @@ internal sealed class LoginView : RenderObject, ICredentialsView
     public event System.Action<System.Boolean> TabToggled; // true: user->pass, false: pass->user
 
     // ===== UI config =====
-    private static readonly Vector2f PanelSize = new(520, 300);
+    private static readonly SFML.System.Vector2f PanelSize = new(520, 300);
     private static readonly Thickness Border = new(32, 32, 32, 32);
-    private static readonly IntRect SrcRect = default;
+    private static readonly SFML.Graphics.IntRect SrcRect = default;
 
-    private static readonly Color BackdropColor = new(25, 25, 25, 110);
-    private static readonly Color BgPanelColor = new(20, 20, 20, 235);
-    private static readonly Color LabelColor = new(240, 240, 240);
-    private static readonly Color TitleColor = Color.White;
-    private static readonly Color WarnColor = Color.Red;
-    private static readonly Color FieldPanel = new(180, 180, 180);
-    private static readonly Color FieldText = new(30, 30, 30);
-    private static readonly Color BtnPanel = new(180, 180, 180);
-    private static readonly Color BtnPanelHover = new(70, 70, 70);
-    private static readonly Color BtnText = new(30, 30, 30);
-    private static readonly Color BtnTextHover = new(255, 255, 255);
-    private static readonly Color BackPanel = new(160, 160, 160);
+    private static readonly SFML.Graphics.Color BackdropColor = new(25, 25, 25, 110);
+    private static readonly SFML.Graphics.Color BgPanelColor = new(20, 20, 20, 235);
+    private static readonly SFML.Graphics.Color LabelColor = new(240, 240, 240);
+    private static readonly SFML.Graphics.Color TitleColor = SFML.Graphics.Color.White;
+    private static readonly SFML.Graphics.Color WarnColor = SFML.Graphics.Color.Red;
+    private static readonly SFML.Graphics.Color FieldPanel = new(180, 180, 180);
+    private static readonly SFML.Graphics.Color FieldText = new(30, 30, 30);
+    private static readonly SFML.Graphics.Color BtnPanel = new(180, 180, 180);
+    private static readonly SFML.Graphics.Color BtnPanelHover = new(70, 70, 70);
+    private static readonly SFML.Graphics.Color BtnText = new(30, 30, 30);
+    private static readonly SFML.Graphics.Color BtnTextHover = new(255, 255, 255);
+    private static readonly SFML.Graphics.Color BackPanel = new(160, 160, 160);
 
     private const System.Single TitleFont = 26f;
     private const System.Single LabelFont = 16f;
@@ -57,16 +54,16 @@ internal sealed class LoginView : RenderObject, ICredentialsView
     private const System.Single BackBtnOffsetLeft = -30f;
 
     // ===== fields & assets =====
-    private readonly RectangleShape _backdrop;
+    private readonly SFML.Graphics.RectangleShape _backdrop;
     private readonly NineSlicePanel _bgPanel;
-    private readonly Text _title, _uLabel, _pLabel, _warn;
+    private readonly SFML.Graphics.Text _title, _uLabel, _pLabel, _warn;
     private readonly InputField _user;
     private readonly PasswordField _pass;
     private readonly StretchableButton _backBtn;
     private readonly StretchableButton _loginBtn;
-    private readonly Texture _panelTex;
-    private readonly Font _font;
-    private readonly Vector2f _panelPos;
+    private readonly SFML.Graphics.Texture _panelTex;
+    private readonly SFML.Graphics.Font _font;
+    private readonly SFML.System.Vector2f _panelPos;
 
     public LoginView()
     {
@@ -76,28 +73,28 @@ internal sealed class LoginView : RenderObject, ICredentialsView
         _font = Assets.Font.Load("1");
         _panelTex = Assets.UiTextures.Load("panels/004");
 
-        _backdrop = new RectangleShape((Vector2f)GraphicsEngine.ScreenSize) { FillColor = BackdropColor };
+        _backdrop = new SFML.Graphics.RectangleShape((SFML.System.Vector2f)GraphicsEngine.ScreenSize) { FillColor = BackdropColor };
 
         _bgPanel = new NineSlicePanel(Assets.UiTextures.Load("panels/020"), Border, SrcRect)
             .SetSize(PanelSize * 1.3f)
             .SetPosition(_panelPos * 0.8f)
             .SetColor(BgPanelColor);
 
-        _warn = new Text("", _font, (System.UInt32)WarnFont) { FillColor = WarnColor };
-        _title = new Text("LOGIN", _font, (System.UInt32)TitleFont) { FillColor = TitleColor };
-        _uLabel = new Text("Username", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
-        _pLabel = new Text("Password", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
+        _warn = new SFML.Graphics.Text("", _font, (System.UInt32)WarnFont) { FillColor = WarnColor };
+        _title = new SFML.Graphics.Text("LOGIN", _font, (System.UInt32)TitleFont) { FillColor = TitleColor };
+        _uLabel = new SFML.Graphics.Text("Username", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
+        _pLabel = new SFML.Graphics.Text("Password", _font, (System.UInt32)LabelFont) { FillColor = LabelColor };
 
         _user = new InputField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
-                               new Vector2f(FieldWidth, FieldHeight),
-                               new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldUserTop));
+                               new SFML.System.Vector2f(FieldWidth, FieldHeight),
+                               new SFML.System.Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldUserTop));
         _user.SetPanelColor(FieldPanel);
         _user.SetTextColor(FieldText);
         _user.Focused = true;
 
         _pass = new PasswordField(_panelTex, Border, SrcRect, _font, (System.UInt32)FieldFont,
-                                  new Vector2f(FieldWidth, FieldHeight),
-                                  new Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldPassTop));
+                                  new SFML.System.Vector2f(FieldWidth, FieldHeight),
+                                  new SFML.System.Vector2f(_panelPos.X + FieldLeft, _panelPos.Y + FieldPassTop));
         _pass.SetPanelColor(FieldPanel);
         _pass.SetTextColor(FieldText);
 
@@ -126,20 +123,20 @@ internal sealed class LoginView : RenderObject, ICredentialsView
 
     private void Layout()
     {
-        _title.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + TitleOffsetY);
-        _uLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelUserY);
-        _pLabel.Position = new Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelPassY);
-        _warn.Position = new Vector2f(_panelPos.X + TitleOffsetX - FieldHeight, _panelPos.Y + FieldPassTop + FieldHeight * 2);
+        _title.Position = new SFML.System.Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + TitleOffsetY);
+        _uLabel.Position = new SFML.System.Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelUserY);
+        _pLabel.Position = new SFML.System.Vector2f(_panelPos.X + TitleOffsetX, _panelPos.Y + LabelPassY);
+        _warn.Position = new SFML.System.Vector2f(_panelPos.X + TitleOffsetX - FieldHeight, _panelPos.Y + FieldPassTop + (FieldHeight * 2));
 
         var r = _loginBtn.GetGlobalBounds();
-        System.Single btnBaseX = _panelPos.X + (PanelSize.X - r.Width) * 0.5f;
+        System.Single btnBaseX = _panelPos.X + ((PanelSize.X - r.Width) * 0.5f);
         System.Single btnBaseY = _panelPos.Y + PanelSize.Y - BtnRowY;
 
-        _loginBtn.SetPosition(new Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
-        _backBtn.SetPosition(new Vector2f(_panelPos.X + BackBtnOffsetLeft, btnBaseY));
+        _loginBtn.SetPosition(new SFML.System.Vector2f(btnBaseX + LoginBtnExtraX, btnBaseY));
+        _backBtn.SetPosition(new SFML.System.Vector2f(_panelPos.X + BackBtnOffsetLeft, btnBaseY));
     }
 
-    private static Vector2f Centered(Vector2f size)
+    private static SFML.System.Vector2f Centered(SFML.System.Vector2f size)
         => new((GraphicsEngine.ScreenSize.X - size.X) * 0.5f,
                (GraphicsEngine.ScreenSize.Y - size.Y) * 0.5f);
 
@@ -158,7 +155,7 @@ internal sealed class LoginView : RenderObject, ICredentialsView
         _pass.Enabled = !on;
         _backBtn.Enabled = !on;
         _loginBtn.Enabled = !on;
-        _loginBtn.SetText(on ? "Signing in..." : "Sign in");
+        _ = _loginBtn.SetText(on ? "Signing in..." : "Sign in");
     }
 
     public override void Update(System.Single dt)
@@ -169,7 +166,7 @@ internal sealed class LoginView : RenderObject, ICredentialsView
         _loginBtn.Update(dt);
     }
 
-    public override void Render(RenderTarget target)
+    public override void Render(SFML.Graphics.RenderTarget target)
     {
         target.Draw(_backdrop);
         target.Draw(_bgPanel);
@@ -184,7 +181,7 @@ internal sealed class LoginView : RenderObject, ICredentialsView
         _loginBtn.Render(target);
     }
 
-    protected override Drawable GetDrawable() => _title;
+    protected override SFML.Graphics.Drawable GetDrawable() => _title;
 
     // các hook keyboard sẽ do Controller gọi vào:
     public void OnEnter()

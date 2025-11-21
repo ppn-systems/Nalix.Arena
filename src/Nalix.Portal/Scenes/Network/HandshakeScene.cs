@@ -2,19 +2,18 @@
 
 using Nalix.Common.Logging;
 using Nalix.Common.Packets.Abstractions;
-using Nalix.Protocol.Enums;
-using Nalix.Protocol.Extensions;
 using Nalix.Framework.Injection;
 using Nalix.Portal.Enums;
+using Nalix.Portal.Objects.Indicators;
 using Nalix.Portal.Objects.Notifications;
 using Nalix.Portal.Services.Abstractions;
+using Nalix.Protocol.Enums;
+using Nalix.Protocol.Extensions;
 using Nalix.Rendering.Attributes;
 using Nalix.Rendering.Objects;
 using Nalix.Rendering.Scenes;
 using Nalix.SDK.Remote;
 using Nalix.SDK.Remote.Extensions;
-using SFML.Graphics;
-using Nalix.Portal.Objects.Indicators;
 
 namespace Nalix.Portal.Scenes.Network;
 
@@ -203,8 +202,8 @@ public sealed class HandshakeScene : Scene
 
         public override void BeforeDestroy() => CleanupTask();
 
-        public override void Render(RenderTarget target) { }
-        protected override Drawable GetDrawable() => null;
+        public override void Render(SFML.Graphics.RenderTarget target) { }
+        protected override SFML.Graphics.Drawable GetDrawable() => null;
 
         // ---------------------------------------------------------------------
         // Handshake flow
